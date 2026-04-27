@@ -2,104 +2,100 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* Rick & Morty inspired LIGHT theme.
+   Palette: portal green, acid yellow, alien pink, cosmic blue on warm off-white.
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 60 30% 98%;          /* warm off-white */
+    --foreground: 220 25% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 220 25% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 220 25% 12%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Portal green */
+    --primary: 152 78% 38%;
+    --primary-foreground: 60 30% 98%;
+    --primary-glow: 142 84% 55%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Acid yellow accent */
+    --secondary: 48 100% 60%;
+    --secondary-foreground: 220 30% 12%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 60 14% 94%;
+    --muted-foreground: 220 12% 38%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Alien pink */
+    --accent: 338 90% 65%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 78% 52%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 220 14% 88%;
+    --input: 220 14% 88%;
+    --ring: 152 78% 38%;
 
-    --radius: 0.5rem;
+    --radius: 0.85rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Custom tokens */
+    --portal: 152 78% 38%;
+    --portal-glow: 142 84% 55%;
+    --acid: 48 100% 60%;
+    --pink: 338 90% 65%;
+    --cosmic: 220 70% 55%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --gradient-portal: radial-gradient(circle at 30% 30%, hsl(var(--portal-glow) / 0.55), hsl(var(--portal) / 0.15) 60%, transparent 75%);
+    --gradient-hero: linear-gradient(135deg, hsl(var(--portal) / 0.12), hsl(var(--acid) / 0.18) 50%, hsl(var(--pink) / 0.12));
+    --shadow-portal: 0 12px 40px -12px hsl(var(--portal) / 0.45);
+    --shadow-card: 0 4px 18px -8px hsl(220 30% 20% / 0.18);
 
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 60 30% 98%;
+    --sidebar-foreground: 220 25% 12%;
+    --sidebar-primary: 152 78% 38%;
+    --sidebar-primary-foreground: 60 30% 98%;
+    --sidebar-accent: 60 14% 94%;
+    --sidebar-accent-foreground: 220 25% 12%;
+    --sidebar-border: 220 14% 88%;
+    --sidebar-ring: 152 78% 38%;
   }
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-
+  * { @apply border-border; }
+  html, body, #root { height: 100%; }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-image:
+      radial-gradient(circle at 12% 8%, hsl(var(--portal) / 0.10), transparent 35%),
+      radial-gradient(circle at 88% 12%, hsl(var(--acid) / 0.16), transparent 38%),
+      radial-gradient(circle at 80% 90%, hsl(var(--pink) / 0.10), transparent 40%);
+    background-attachment: fixed;
   }
+  h1, h2, h3, h4 {
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    @apply tracking-tight;
+  }
+}
+
+@layer components {
+  .portal-orb {
+    @apply rounded-full;
+    background: var(--gradient-portal);
+    filter: blur(2px);
+    animation: spin 18s linear infinite;
+  }
+  .glass-card {
+    @apply bg-card/85 backdrop-blur-sm border border-border;
+    box-shadow: var(--shadow-card);
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

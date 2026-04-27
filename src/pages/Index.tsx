@@ -1,16 +1,96 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { Link } from "react-router-dom";
+import { SiteHeader } from "@/components/SiteHeader";
+import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { MessageSquare, Zap, Trophy } from "lucide-react";
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+const Index = () => {
+  const [scenarios, setScenarios] = useState<{ id: string; title: string; description: string }[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from("scenarios")
+      .select("id,title,description")
+      .eq("is_active", true)
+      .order("id")
+      .then(({ data }) => setScenarios(data ?? []));
+  }, []);
+
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
+    <div className="min-h-screen flex flex-col">
+      <SiteHeader />
+      <main className="flex-1">
+        {/* Hero */}
+        <section className="container py-20 md:py-28 relative overflow-hidden">
+          <div className="absolute -top-20 -left-20 h-80 w-80 portal-orb opacity-60 pointer-events-none" />
+          <div className="absolute -bottom-32 -right-20 h-96 w-96 portal-orb opacity-40 pointer-events-none" />
+          <div className="relative max-w-3xl">
+            <span className="inline-flex items-center gap-2 rounded-full bg-acid/30 text-foreground px-3 py-1 text-xs font-semibold mb-5">
+              ⚡ MVP-сезон 1 · 10 сценариев
+            </span>
+            <h1 className="text-5xl md:text-7xl font-display font-bold text-balance leading-[1.05]">
+              Текстовые квесты <span className="text-portal">в мультивселенной</span>
+            </h1>
+            <p className="mt-6 text-lg text-muted-foreground text-pretty max-w-2xl">
+              Открывай порталы, торгуйся с инопланетянами, спасай Морти. Каждый сценарий —
+              30–45 минут чата, до 50 шагов, с финальной иллюстрацией.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link to="/play">
+                <Button size="lg" className="bg-portal hover:bg-portal/90 text-primary-foreground shadow-[var(--shadow-portal)]">
+                  Начать приключение
+                </Button>
+              </Link>
+              <Link to="/pricing">
+                <Button size="lg" variant="outline">Тарифы и промокод</Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* How it works */}
+        <section className="container py-12">
+          <h2 className="text-3xl font-display font-bold mb-8">Как это работает</h2>
+          <div className="grid md:grid-cols-3 gap-4">
+            {[
+              { i: <Zap className="h-5 w-5" />, t: "Выбери сценарий", d: "10 готовых историй: от паразита-имитатора до ограбления хранилища." },
+              { i: <MessageSquare className="h-5 w-5" />, t: "Играй в чате", d: "Пиши действия (до 80 символов). ИИ-ведущий отвечает в духе Рика." },
+              { i: <Trophy className="h-5 w-5" />, t: "Дойди до финала", d: "До 50 шагов, чекпойнты сохраняют прогресс. В конце — финальная картинка." },
+            ].map((s, i) => (
+              <div key={i} className="glass-card rounded-2xl p-6">
+                <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-portal/15 text-portal mb-3">
+                  {s.i}
+                </div>
+                <h3 className="font-display font-semibold text-lg">{s.t}</h3>
+                <p className="text-sm text-muted-foreground mt-1">{s.d}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Scenarios preview */}
+        <section className="container py-16">
+          <div className="flex items-end justify-between mb-6">
+            <h2 className="text-3xl font-display font-bold">Сценарии сезона</h2>
+            <Link to="/play" className="text-sm font-medium text-portal hover:underline">Все →</Link>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {scenarios.slice(0, 6).map((s) => (
+              <div key={s.id} className="glass-card rounded-2xl p-5">
+                <div className="text-xs font-mono text-portal mb-1">{s.id}</div>
+                <h3 className="font-display font-semibold text-lg">{s.title}</h3>
+                <p className="text-sm text-muted-foreground mt-1 line-clamp-3">{s.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
+      <footer className="border-t border-border py-8 text-center text-sm text-muted-foreground">
+        © Портал-Квест · Фан-проект, не аффилирован с Adult Swim
+      </footer>
     </div>
   );
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;
