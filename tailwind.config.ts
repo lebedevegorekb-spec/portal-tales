@@ -72,15 +72,23 @@ export default {
         "accordion-down": { from: { height: "0" }, to: { height: "var(--radix-accordion-content-height)" } },
         "accordion-up": { from: { height: "var(--radix-accordion-content-height)" }, to: { height: "0" } },
         "blink": { "0%, 100%": { opacity: "1" }, "50%": { opacity: "0.2" } },
+        "fade-in": { "0%": { opacity: "0", transform: "translateY(10px)" }, "100%": { opacity: "1", transform: "translateY(0)" } },
+        "neon-pulse": {
+          "0%, 100%": { boxShadow: "0 0 0 1px hsl(var(--portal) / 0.4), 0 0 18px -2px hsl(var(--portal-glow) / 0.55)" },
+          "50%": { boxShadow: "0 0 0 1px hsl(var(--portal) / 0.7), 0 0 32px 2px hsl(var(--portal-glow) / 0.85)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "blink": "blink 1.2s ease-in-out infinite",
+        "fade-in": "fade-in 0.5s ease-out",
+        "neon-pulse": "neon-pulse 2.6s ease-in-out infinite",
       },
       fontFamily: {
         display: ["'Space Grotesk'", "Inter", "sans-serif"],
         sans: ["Inter", "system-ui", "sans-serif"],
+        mono: ["'JetBrains Mono'", "ui-monospace", "SFMono-Regular", "monospace"],
       },
     },
   },
