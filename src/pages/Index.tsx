@@ -30,9 +30,13 @@ const Index = () => {
           <div className="relative grid lg:grid-cols-[1.05fr_1fr] gap-10 lg:gap-8 items-center">
             {/* Left: copy */}
             <div className="relative z-10 max-w-2xl">
-              <span className="inline-flex items-center gap-2 rounded-full bg-acid/30 text-foreground px-3 py-1 text-xs font-semibold mb-5">
-                ⚡ MVP-сезон 1 · 10 сценариев
+              <span className="hud-chip mb-5">
+                <span className="h-1.5 w-1.5 rounded-full bg-portal-glow shadow-[0_0_8px_hsl(var(--portal-glow))] animate-blink" />
+                MVP · Сезон 1 · 10 сценариев
               </span>
+              <h1 className="text-5xl md:text-7xl font-display font-bold text-balance leading-[1.05]">
+                Текстовые квесты <span className="text-portal neon-text">в мультивселенной</span>
+              </h1>
               <h1 className="text-5xl md:text-7xl font-display font-bold text-balance leading-[1.05]">
                 Текстовые квесты <span className="text-portal">в мультивселенной</span>
               </h1>
