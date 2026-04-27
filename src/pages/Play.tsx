@@ -17,6 +17,8 @@ const Play = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
+  const [scenariosLoading, setScenariosLoading] = useState(true);
+  const [scenariosError, setScenariosError] = useState<string | null>(null);
   const [entitledScopes, setEntitledScopes] = useState<Set<string>>(new Set());
   const [activeRuns, setActiveRuns] = useState<Map<string, string>>(new Map());
   const [busy, setBusy] = useState<string | null>(null);
@@ -28,12 +30,34 @@ const Play = () => {
   }, [user, loading, navigate]);
 
   const refresh = async () => {
-    const { data: ss } = await supabase
-      .from("scenarios")
-      .select("id,title,description")
-      .eq("is_active", true)
-      .order("id");
-    setScenarios(ss ?? []);
+    setScenariosLoading(true);
+    setScenariosError(null);
+
+    let loadedScenarios: Scenario[] | null = null;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      const { data, error } = await supabase
+        .from("scenarios")
+        .select("id,title,description")
+        .eq("is_active", true)
+        .order("id");
+
+      if (!error && data) {
+        loadedScenarios = data;
+        break;
+      }
+
+      if (attempt < 2) {
+        await new Promise((resolve) => setTimeout(resolve, 900 * (attempt + 1)));
+      }
+    }
+
+    if (loadedScenarios) {
+      setScenarios(loadedScenarios);
+    } else {
+      setScenariosError("Не удалось загрузить сценарии. Попробуй ещё раз.");
+    }
+
+    setScenariosLoading(false);
 
     if (!user) return;
     const { data: ents } = await supabase
@@ -64,7 +88,7 @@ const Play = () => {
   }, [user]);
 
   const isEntitled = (id: string) =>
-    FREE_SCENARIOS.has(id) || entitledScopes.has("all") || entitledScopes.has(id);
+    FREE_SCENARIOS.has(id) || entitledScopes.has("all") || entitledScopes.has(id) || entitledScopes.has(`scenario:${id}`);
 
   const startRun = async (id: string) => {
     setBusy(id);
@@ -133,6 +157,17 @@ const Play = () => {
             </DialogContent>
           </Dialog>
         </div>
+
+        {scenariosError ? (
+          <div className="glass-card rounded-2xl p-5 flex items-center justify-between gap-4 mb-4">
+            <p className="text-sm text-muted-foreground">{scenariosError}</p>
+            <Button variant="outline" onClick={refresh}>Повторить</Button>
+          </div>
+        ) : null}
+
+        {scenariosLoading ? (
+          <div className="text-sm text-muted-foreground mb-4">Загружаю сценарии...</div>
+        ) : null}
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {scenarios.map((s) => {
