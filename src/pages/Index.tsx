@@ -37,9 +37,6 @@ const Index = () => {
               <h1 className="text-5xl md:text-7xl font-display font-bold text-balance leading-[1.05]">
                 Текстовые квесты <span className="text-portal neon-text">в мультивселенной</span>
               </h1>
-              <h1 className="text-5xl md:text-7xl font-display font-bold text-balance leading-[1.05]">
-                Текстовые квесты <span className="text-portal">в мультивселенной</span>
-              </h1>
               <p className="mt-6 text-lg text-muted-foreground text-pretty max-w-2xl">
                 Открывай порталы, торгуйся с инопланетянами, спасай Морти. Каждый сценарий —
                 30–45 минут чата, до 50 шагов, с финальной иллюстрацией.
