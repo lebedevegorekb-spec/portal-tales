@@ -11,6 +11,8 @@ import { Lock, Play as PlayIcon, Ticket, RotateCcw } from "lucide-react";
 
 type Scenario = { id: string; title: string; description: string };
 
+const FREE_SCENARIOS = new Set(["S01"]);
+
 const Play = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -61,7 +63,8 @@ const Play = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  const isEntitled = (id: string) => entitledScopes.has("all") || entitledScopes.has(id);
+  const isEntitled = (id: string) =>
+    FREE_SCENARIOS.has(id) || entitledScopes.has("all") || entitledScopes.has(id);
 
   const startRun = async (id: string) => {
     setBusy(id);
