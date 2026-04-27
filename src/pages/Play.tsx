@@ -12,6 +12,14 @@ import { Lock, Play as PlayIcon, Ticket, RotateCcw } from "lucide-react";
 type Scenario = { id: string; title: string; description: string };
 
 const FREE_SCENARIOS = new Set(["S01"]);
+const FREE_SCENARIO_FALLBACKS: Scenario[] = [
+  {
+    id: "S01",
+    title: "Налог на Реальность C-137",
+    description:
+      "Инспектор-бюрократ из Налоговой Службы Мультивселенной требует утилизировать измерение C-137 за 47 лет неуплаты налога на существование.",
+  },
+];
 
 const Play = () => {
   const { user, loading } = useAuth();
@@ -52,8 +60,14 @@ const Play = () => {
     }
 
     if (loadedScenarios) {
-      setScenarios(loadedScenarios);
+      const merged = [...loadedScenarios];
+      FREE_SCENARIO_FALLBACKS.forEach((fallback) => {
+        if (!merged.some((scenario) => scenario.id === fallback.id)) merged.push(fallback);
+      });
+      merged.sort((a, b) => a.id.localeCompare(b.id));
+      setScenarios(merged);
     } else {
+      setScenarios(FREE_SCENARIO_FALLBACKS);
       setScenariosError("Не удалось загрузить сценарии. Попробуй ещё раз.");
     }
 
