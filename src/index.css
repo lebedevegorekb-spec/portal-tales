@@ -2,66 +2,67 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Rick & Morty inspired LIGHT theme.
-   Palette: portal green, acid yellow, alien pink, cosmic blue on warm off-white.
+/* Rick & Morty × Sci-Fi.
+   Dark cosmic theme: deep space background, neon portal green, plasma cyan,
+   alien magenta, acid yellow accents. Mono accents for HUD/terminal feel.
 */
 
 @layer base {
   :root {
-    --background: 60 30% 98%;          /* warm off-white */
-    --foreground: 220 25% 12%;
+    --background: 222 38% 6%;            /* deep space */
+    --foreground: 160 30% 92%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 25% 12%;
+    --card: 222 32% 9%;
+    --card-foreground: 160 25% 94%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 25% 12%;
+    --popover: 222 38% 8%;
+    --popover-foreground: 160 25% 94%;
 
     /* Portal green */
-    --primary: 152 78% 38%;
-    --primary-foreground: 60 30% 98%;
-    --primary-glow: 142 84% 55%;
+    --primary: 152 90% 48%;
+    --primary-foreground: 222 50% 6%;
+    --primary-glow: 142 100% 60%;
 
-    /* Acid yellow accent */
-    --secondary: 48 100% 60%;
-    --secondary-foreground: 220 30% 12%;
+    /* Plasma cyan */
+    --secondary: 188 95% 55%;
+    --secondary-foreground: 222 50% 6%;
 
-    --muted: 60 14% 94%;
-    --muted-foreground: 220 12% 38%;
+    --muted: 222 25% 14%;
+    --muted-foreground: 200 12% 65%;
 
-    /* Alien pink */
-    --accent: 338 90% 65%;
-    --accent-foreground: 0 0% 100%;
+    /* Alien magenta */
+    --accent: 320 95% 62%;
+    --accent-foreground: 222 50% 6%;
 
-    --destructive: 0 78% 52%;
+    --destructive: 0 85% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 14% 88%;
-    --input: 220 14% 88%;
-    --ring: 152 78% 38%;
+    --border: 200 30% 18%;
+    --input: 222 30% 14%;
+    --ring: 152 90% 48%;
 
-    --radius: 0.85rem;
+    --radius: 0.5rem;
 
     /* Custom tokens */
-    --portal: 152 78% 38%;
-    --portal-glow: 142 84% 55%;
-    --acid: 48 100% 60%;
-    --pink: 338 90% 65%;
-    --cosmic: 220 70% 55%;
+    --portal: 152 90% 48%;
+    --portal-glow: 142 100% 60%;
+    --acid: 64 95% 60%;
+    --pink: 320 95% 62%;
+    --cosmic: 200 95% 55%;
 
-    --gradient-portal: radial-gradient(circle at 30% 30%, hsl(var(--portal-glow) / 0.55), hsl(var(--portal) / 0.15) 60%, transparent 75%);
-    --gradient-hero: linear-gradient(135deg, hsl(var(--portal) / 0.12), hsl(var(--acid) / 0.18) 50%, hsl(var(--pink) / 0.12));
-    --shadow-portal: 0 12px 40px -12px hsl(var(--portal) / 0.45);
-    --shadow-card: 0 4px 18px -8px hsl(220 30% 20% / 0.18);
+    --gradient-portal: radial-gradient(circle at 30% 30%, hsl(var(--portal-glow) / 0.65), hsl(var(--portal) / 0.2) 55%, transparent 75%);
+    --gradient-hero: linear-gradient(135deg, hsl(var(--portal) / 0.18), hsl(var(--cosmic) / 0.12) 50%, hsl(var(--pink) / 0.18));
+    --shadow-portal: 0 0 0 1px hsl(var(--portal) / 0.5), 0 0 30px -4px hsl(var(--portal-glow) / 0.7), 0 12px 40px -10px hsl(var(--portal) / 0.55);
+    --shadow-card: 0 0 0 1px hsl(var(--portal) / 0.08), 0 8px 28px -12px hsl(var(--cosmic) / 0.45);
 
-    --sidebar-background: 60 30% 98%;
-    --sidebar-foreground: 220 25% 12%;
-    --sidebar-primary: 152 78% 38%;
-    --sidebar-primary-foreground: 60 30% 98%;
-    --sidebar-accent: 60 14% 94%;
-    --sidebar-accent-foreground: 220 25% 12%;
-    --sidebar-border: 220 14% 88%;
-    --sidebar-ring: 152 78% 38%;
+    --sidebar-background: 222 38% 6%;
+    --sidebar-foreground: 160 25% 92%;
+    --sidebar-primary: 152 90% 48%;
+    --sidebar-primary-foreground: 222 50% 6%;
+    --sidebar-accent: 222 30% 12%;
+    --sidebar-accent-foreground: 160 25% 92%;
+    --sidebar-border: 200 30% 18%;
+    --sidebar-ring: 152 90% 48%;
   }
 }
 
@@ -71,15 +72,24 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: hsl(var(--background));
     background-image:
-      radial-gradient(circle at 12% 8%, hsl(var(--portal) / 0.10), transparent 35%),
-      radial-gradient(circle at 88% 12%, hsl(var(--acid) / 0.16), transparent 38%),
-      radial-gradient(circle at 80% 90%, hsl(var(--pink) / 0.10), transparent 40%);
+      radial-gradient(ellipse at 12% 8%, hsl(var(--portal) / 0.18), transparent 45%),
+      radial-gradient(ellipse at 88% 12%, hsl(var(--cosmic) / 0.18), transparent 45%),
+      radial-gradient(ellipse at 80% 95%, hsl(var(--pink) / 0.16), transparent 50%),
+      linear-gradient(hsl(var(--portal) / 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--portal) / 0.045) 1px, transparent 1px);
+    background-size: auto, auto, auto, 44px 44px, 44px 44px;
+    background-position: 0 0, 0 0, 0 0, -1px -1px, -1px -1px;
     background-attachment: fixed;
   }
   h1, h2, h3, h4 {
     font-family: 'Space Grotesk', 'Inter', sans-serif;
     @apply tracking-tight;
+  }
+  ::selection {
+    background: hsl(var(--portal) / 0.4);
+    color: hsl(var(--foreground));
   }
 }
 
@@ -91,8 +101,43 @@
     animation: spin 18s linear infinite;
   }
   .glass-card {
-    @apply bg-card/85 backdrop-blur-sm border border-border;
+    position: relative;
+    @apply bg-card/70 backdrop-blur-md border border-border;
     box-shadow: var(--shadow-card);
+  }
+  .glass-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    background: linear-gradient(180deg, hsl(var(--portal) / 0.08), transparent 30%);
+  }
+  .hud-chip {
+    @apply inline-flex items-center gap-2 rounded-sm border border-portal/40 bg-portal/10 px-2.5 py-1 text-[11px] font-mono uppercase tracking-[0.18em] text-portal;
+    text-shadow: 0 0 12px hsl(var(--portal-glow) / 0.6);
+  }
+  .neon-text {
+    text-shadow: 0 0 18px hsl(var(--portal-glow) / 0.5);
+  }
+  .scanlines {
+    position: relative;
+    overflow: hidden;
+  }
+  .scanlines::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      hsl(var(--portal) / 0.05) 0px,
+      hsl(var(--portal) / 0.05) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    mix-blend-mode: overlay;
+    opacity: 0.6;
   }
 }
 
