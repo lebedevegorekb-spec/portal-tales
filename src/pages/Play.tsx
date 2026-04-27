@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Lock, Play, Ticket, RotateCcw } from "lucide-react";
+import { Lock, Play as PlayIcon, Ticket, RotateCcw } from "lucide-react";
 
 type Scenario = { id: string; title: string; description: string };
 
