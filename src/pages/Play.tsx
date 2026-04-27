@@ -165,7 +165,7 @@ const Play = () => {
                       disabled={busy === s.id}
                       className="flex-1 bg-portal hover:bg-portal/90"
                     >
-                      <Play className="h-4 w-4 mr-2" /> {busy === s.id ? "..." : "Начать"}
+                      <PlayIcon className="h-4 w-4 mr-2" /> {busy === s.id ? "..." : "Начать"}
                     </Button>
                   ) : (
                     <Link to="/pricing" className="flex-1">
