@@ -47,6 +47,11 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        portal: "hsl(var(--portal))",
+        "portal-glow": "hsl(var(--portal-glow))",
+        acid: "hsl(var(--acid))",
+        pink: "hsl(var(--pink))",
+        cosmic: "hsl(var(--cosmic))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
