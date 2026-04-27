@@ -38,19 +38,24 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (sErr || !scenario) return json({ error: "Scenario not found" }, 404);
 
-    // Check entitlements
-    const { data: ent } = await supabase
-      .from("entitlements")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("active", true);
-    const now = Date.now();
-    const has = (ent ?? []).some(
-      (e: any) =>
-        (e.scope === "all" || e.scope === scenarioId) &&
-        (!e.expires_at || new Date(e.expires_at).getTime() > now),
-    );
-    if (!has) return json({ error: "No access to this scenario" }, 403);
+    // Free scenarios — open to everyone authenticated
+    const FREE_SCENARIOS = new Set(["S01"]);
+
+    if (!FREE_SCENARIOS.has(scenarioId)) {
+      // Check entitlements
+      const { data: ent } = await supabase
+        .from("entitlements")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("active", true);
+      const now = Date.now();
+      const has = (ent ?? []).some(
+        (e: any) =>
+          (e.scope === "all" || e.scope === scenarioId) &&
+          (!e.expires_at || new Date(e.expires_at).getTime() > now),
+      );
+      if (!has) return json({ error: "No access to this scenario" }, 403);
+    }
 
     // Reuse existing active run if any
     const { data: existing } = await supabase
