@@ -86,16 +86,23 @@ const Index = () => {
 
         {/* How it works */}
         <section className="container py-12">
-          <h2 className="text-3xl font-display font-bold mb-8">Как это работает</h2>
+          <div className="flex items-center gap-3 mb-8">
+            <span className="font-mono text-xs text-portal/70">// 01</span>
+            <h2 className="text-3xl font-display font-bold">Как это работает</h2>
+            <div className="flex-1 h-px bg-gradient-to-r from-portal/40 to-transparent" />
+          </div>
           <div className="grid md:grid-cols-3 gap-4">
             {[
-              { i: <Zap className="h-5 w-5" />, t: "Выбери сценарий", d: "10 готовых историй: от паразита-имитатора до ограбления хранилища." },
-              { i: <MessageSquare className="h-5 w-5" />, t: "Играй в чате", d: "Пиши действия (до 80 символов). ИИ-ведущий отвечает в духе Рика." },
-              { i: <Trophy className="h-5 w-5" />, t: "Дойди до финала", d: "До 50 шагов, чекпойнты сохраняют прогресс. В конце — финальная картинка." },
+              { i: <Zap className="h-5 w-5" />, t: "Выбери сценарий", d: "10 готовых историй: от паразита-имитатора до ограбления хранилища.", k: "01" },
+              { i: <MessageSquare className="h-5 w-5" />, t: "Играй в чате", d: "Пиши действия (до 80 символов). ИИ-ведущий отвечает в духе Рика.", k: "02" },
+              { i: <Trophy className="h-5 w-5" />, t: "Дойди до финала", d: "До 50 шагов, чекпойнты сохраняют прогресс. В конце — финальная картинка.", k: "03" },
             ].map((s, i) => (
-              <div key={i} className="glass-card rounded-2xl p-6">
-                <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-portal/15 text-portal mb-3">
-                  {s.i}
+              <div key={i} className="glass-card scanlines rounded-md p-6 hover:border-portal/50 transition-colors">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-portal/40 bg-portal/15 text-portal shadow-[0_0_20px_-6px_hsl(var(--portal-glow)/0.8)]">
+                    {s.i}
+                  </div>
+                  <span className="font-mono text-xs text-portal/60">{`>`} {s.k}</span>
                 </div>
                 <h3 className="font-display font-semibold text-lg">{s.t}</h3>
                 <p className="text-sm text-muted-foreground mt-1">{s.d}</p>
@@ -106,14 +113,20 @@ const Index = () => {
 
         {/* Scenarios preview */}
         <section className="container py-16">
-          <div className="flex items-end justify-between mb-6">
-            <h2 className="text-3xl font-display font-bold">Сценарии сезона</h2>
-            <Link to="/play" className="text-sm font-medium text-portal hover:underline">Все →</Link>
+          <div className="flex items-end justify-between mb-6 gap-3">
+            <div className="flex items-center gap-3">
+              <span className="font-mono text-xs text-portal/70">// 02</span>
+              <h2 className="text-3xl font-display font-bold">Сценарии сезона</h2>
+            </div>
+            <Link to="/play" className="font-mono text-xs uppercase tracking-[0.18em] text-portal hover:text-portal-glow transition-colors">[ Все → ]</Link>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {scenarios.slice(0, 6).map((s) => (
-              <div key={s.id} className="glass-card rounded-2xl p-5">
-                <div className="text-xs font-mono text-portal mb-1">{s.id}</div>
+              <div key={s.id} className="glass-card rounded-md p-5 hover:border-portal/50 transition-colors group">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-xs font-mono text-portal">{s.id}</div>
+                  <span className="h-1.5 w-1.5 rounded-full bg-portal-glow shadow-[0_0_10px_hsl(var(--portal-glow))] opacity-60 group-hover:opacity-100 transition-opacity" />
+                </div>
                 <h3 className="font-display font-semibold text-lg">{s.title}</h3>
                 <p className="text-sm text-muted-foreground mt-1 line-clamp-3">{s.description}</p>
               </div>
@@ -121,7 +134,7 @@ const Index = () => {
           </div>
         </section>
       </main>
-      <footer className="border-t border-border py-8 text-center text-sm text-muted-foreground">
+      <footer className="border-t border-portal/15 py-8 text-center text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
         © Портал-Квест · Фан-проект, не аффилирован с Adult Swim
       </footer>
     </div>
