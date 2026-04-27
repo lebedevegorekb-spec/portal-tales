@@ -14,13 +14,258 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      entitlements: {
+        Row: {
+          active: boolean
+          created_at: string
+          expires_at: string | null
+          id: string
+          scope: string
+          source: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          scope: string
+          source?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          scope?: string
+          source?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          payload: Json
+          run_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          payload?: Json
+          run_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          payload?: Json
+          run_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          char_count: number
+          content: string
+          created_at: string
+          id: string
+          role: string
+          run_id: string
+        }
+        Insert: {
+          char_count: number
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          run_id: string
+        }
+        Update: {
+          char_count?: number
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          run_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          role: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          role?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          role?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      promo_codes: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          expires_at: string | null
+          max_uses: number
+          scope: string
+          used_count: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          expires_at?: string | null
+          max_uses?: number
+          scope: string
+          used_count?: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          expires_at?: string | null
+          max_uses?: number
+          scope?: string
+          used_count?: number
+        }
+        Relationships: []
+      }
+      runs: {
+        Row: {
+          created_at: string
+          current_scene_id: string
+          finished_at: string | null
+          id: string
+          last_checkpoint_step: number
+          last_step_at: string | null
+          scenario_id: string
+          state_json: Json
+          status: string
+          step_count: number
+          summary: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_scene_id?: string
+          finished_at?: string | null
+          id?: string
+          last_checkpoint_step?: number
+          last_step_at?: string | null
+          scenario_id: string
+          state_json?: Json
+          status?: string
+          step_count?: number
+          summary?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_scene_id?: string
+          finished_at?: string | null
+          id?: string
+          last_checkpoint_step?: number
+          last_step_at?: string | null
+          scenario_id?: string
+          state_json?: Json
+          status?: string
+          step_count?: number
+          summary?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "runs_scenario_id_fkey"
+            columns: ["scenario_id"]
+            isOneToOne: false
+            referencedRelation: "scenarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scenarios: {
+        Row: {
+          created_at: string
+          description: string
+          final_image_url: string
+          id: string
+          is_active: boolean
+          scenario_json: Json
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          final_image_url: string
+          id: string
+          is_active?: boolean
+          scenario_json: Json
+          title: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          final_image_url?: string
+          id?: string
+          is_active?: boolean
+          scenario_json?: Json
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
