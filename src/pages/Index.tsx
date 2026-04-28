@@ -49,7 +49,7 @@ const Index = () => {
                 ор и измена за столом — всё что нужно для вечера.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Link to="/play">
+                <Link to="/catalog">
                   <Button
                     size="lg"
                     className="bg-portal hover:bg-portal/90 text-primary-foreground shadow-[var(--shadow-portal)]"
@@ -155,7 +155,7 @@ const Index = () => {
           </div>
 
           <div className="mt-10 flex justify-center">
-            <Link to="/play">
+            <Link to="/catalog">
               <Button
                 size="lg"
                 className="bg-portal hover:bg-portal/90 text-primary-foreground shadow-[var(--shadow-portal)]"
@@ -174,7 +174,7 @@ const Index = () => {
               <h2 className="text-3xl font-display font-bold">Примеры сценариев</h2>
             </div>
             <Link
-              to="/play"
+              to="/catalog"
               className="font-mono text-xs uppercase tracking-[0.18em] text-portal hover:text-portal-glow transition-colors"
             >
               [ Все → ]
@@ -184,7 +184,7 @@ const Index = () => {
             {scenarios.slice(0, 6).map((s) => (
               <Link
                 key={s.id}
-                to="/play"
+                to="/catalog"
                 className="glass-card rounded-md p-5 hover:border-portal/50 transition-colors group"
               >
                 <div className="flex items-center justify-between mb-2">
@@ -273,7 +273,7 @@ const Index = () => {
                 Бесплатная комната за 10 секунд. Без карты, без скачиваний, без душноты.
               </p>
               <div className="mt-8">
-                <Link to="/play">
+                <Link to="/catalog">
                   <Button
                     size="lg"
                     className="bg-portal hover:bg-portal/90 text-primary-foreground shadow-[var(--shadow-portal)]"

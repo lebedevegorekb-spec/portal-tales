@@ -48,7 +48,7 @@ const Run = () => {
       .maybeSingle();
     if (error || !r) {
       toast.error("Прохождение не найдено");
-      navigate("/play");
+      navigate("/catalog");
       return;
     }
     setRun(r);
@@ -142,7 +142,7 @@ const Run = () => {
       <SiteHeader />
       <main className="flex-1 container py-6 max-w-3xl flex flex-col">
         <div className="flex items-center justify-between mb-3 gap-3">
-          <Link to="/play" className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+          <Link to="/catalog" className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
             <ArrowLeft className="h-4 w-4" /> К сценариям
           </Link>
           <div className="text-right">
@@ -199,7 +199,7 @@ const Run = () => {
                   className="w-full rounded-xl border border-border"
                 />
                 <div className="flex gap-2 mt-4 justify-center">
-                  <Link to="/play"><Button variant="outline">Другой сценарий</Button></Link>
+                  <Link to="/catalog"><Button variant="outline">Другой сценарий</Button></Link>
                 </div>
               </div>
             </div>
