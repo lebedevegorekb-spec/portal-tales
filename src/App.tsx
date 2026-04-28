@@ -1,9 +1,10 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+﻿import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index.tsx";
 import Login from "./pages/Login.tsx";
 import Catalog from "./pages/Catalog.tsx";
@@ -33,44 +34,46 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/catalog" element={<Catalog />} />
-            <Route path="/lobby/:roomId" element={<Lobby />} />
-            <Route path="/join" element={<Join />} />
-            <Route path="/join/:code" element={<Join />} />
-            <Route path="/character/:characterId" element={<Character />} />
-            <Route path="/character" element={<Character />} />
-            <Route path="/secret/:roleId" element={<Secret />} />
-            <Route path="/secret" element={<Secret />} />
-            <Route path="/secret-action/:roleId" element={<SecretAction />} />
-            <Route path="/secret-action" element={<SecretAction />} />
-            <Route path="/waiting/:runId" element={<Waiting />} />
-            <Route path="/waiting" element={<Waiting />} />
-            <Route path="/me/result/:resultId" element={<PersonalResult />} />
-            <Route path="/me/result" element={<PersonalResult />} />
-            <Route path="/reconnect" element={<Reconnect />} />
-            <Route path="/intro/:runId" element={<Intro />} />
-            <Route path="/scene/:runId" element={<Scene />} />
-            <Route path="/scene" element={<Scene />} />
-            <Route path="/consequence/:runId" element={<Consequence />} />
-            <Route path="/consequence" element={<Consequence />} />
-            <Route path="/final/:runId" element={<Final />} />
-            <Route path="/final" element={<Final />} />
-            <Route path="/offer/:runId" element={<Offer />} />
-            <Route path="/offer" element={<Offer />} />
-            <Route path="/payment/:scenarioId" element={<Payment />} />
-            <Route path="/payment" element={<Payment />} />
-            <Route path="/play/run/:runId" element={<Run />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
+      <ErrorBoundary>
+        <BrowserRouter>
+          <AuthProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/catalog" element={<Catalog />} />
+              <Route path="/lobby/:roomId" element={<Lobby />} />
+              <Route path="/join" element={<Join />} />
+              <Route path="/join/:code" element={<Join />} />
+              <Route path="/character/:characterId" element={<Character />} />
+              <Route path="/character" element={<Character />} />
+              <Route path="/secret/:roleId" element={<Secret />} />
+              <Route path="/secret" element={<Secret />} />
+              <Route path="/secret-action/:roleId" element={<SecretAction />} />
+              <Route path="/secret-action" element={<SecretAction />} />
+              <Route path="/waiting/:runId" element={<Waiting />} />
+              <Route path="/waiting" element={<Waiting />} />
+              <Route path="/me/result/:resultId" element={<PersonalResult />} />
+              <Route path="/me/result" element={<PersonalResult />} />
+              <Route path="/reconnect" element={<Reconnect />} />
+              <Route path="/intro/:runId" element={<Intro />} />
+              <Route path="/scene/:runId" element={<Scene />} />
+              <Route path="/scene" element={<Scene />} />
+              <Route path="/consequence/:runId" element={<Consequence />} />
+              <Route path="/consequence" element={<Consequence />} />
+              <Route path="/final/:runId" element={<Final />} />
+              <Route path="/final" element={<Final />} />
+              <Route path="/offer/:runId" element={<Offer />} />
+              <Route path="/offer" element={<Offer />} />
+              <Route path="/payment/:scenarioId" element={<Payment />} />
+              <Route path="/payment" element={<Payment />} />
+              <Route path="/play/run/:runId" element={<Run />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </ErrorBoundary>
     </TooltipProvider>
   </QueryClientProvider>
 );
