@@ -135,7 +135,10 @@ const Lobby = () => {
 
   const isHost = !!user && !!room && room.host_user_id === user.id;
   const playerCount = players.length;
-  const canStart = isHost && playerCount >= (room?.min_players ?? 4);
+  // TEST MODE: разрешаем хосту стартовать с любым числом игроков. Потом убрать.
+  const TEST_BYPASS_MIN_PLAYERS = true;
+  const minReached = playerCount >= (room?.min_players ?? 4);
+  const canStart = isHost && (TEST_BYPASS_MIN_PLAYERS || minReached);
 
   const start = async () => {
     if (!room || !canStart) return;
