@@ -9,6 +9,7 @@ import Login from "./pages/Login.tsx";
 import Catalog from "./pages/Catalog.tsx";
 import Lobby from "./pages/Lobby.tsx";
 import Join from "./pages/Join.tsx";
+import Character from "./pages/Character.tsx";
 import Run from "./pages/Run.tsx";
 import Intro from "./pages/Intro.tsx";
 import Scene from "./pages/Scene.tsx";
@@ -36,6 +37,8 @@ const App = () => (
             <Route path="/lobby/:roomId" element={<Lobby />} />
             <Route path="/join" element={<Join />} />
             <Route path="/join/:code" element={<Join />} />
+            <Route path="/character/:characterId" element={<Character />} />
+            <Route path="/character" element={<Character />} />
             <Route path="/intro/:runId" element={<Intro />} />
             <Route path="/scene/:runId" element={<Scene />} />
             <Route path="/scene" element={<Scene />} />
