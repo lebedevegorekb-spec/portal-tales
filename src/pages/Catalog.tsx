@@ -226,7 +226,10 @@ const Catalog = () => {
   };
 
   useEffect(() => {
-    if (user) refresh();
+    if (!user) return;
+    // Каталог уже отрисован из локального fallback — обновляем тихо в фоне.
+    fetchScenariosFresh(false);
+    fetchUserData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
