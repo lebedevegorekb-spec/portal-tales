@@ -16,8 +16,6 @@ import SecretAction from "./pages/SecretAction.tsx";
 import Waiting from "./pages/Waiting.tsx";
 import PersonalResult from "./pages/PersonalResult.tsx";
 import Reconnect from "./pages/Reconnect.tsx";
-import Run from "./pages/Run.tsx";
-import Intro from "./pages/Intro.tsx";
 import Scene from "./pages/Scene.tsx";
 import Consequence from "./pages/Consequence.tsx";
 import Final from "./pages/Final.tsx";
@@ -41,7 +39,17 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/catalog" element={<Catalog />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/profile" element={<Profile />} />
               <Route path="/lobby/:roomId" element={<Lobby />} />
+              <Route path="/scene/:runId" element={<Scene />} />
+              <Route path="/scene" element={<Scene />} />
+              <Route path="/consequence/:runId" element={<Consequence />} />
+              <Route path="/consequence" element={<Consequence />} />
+              <Route path="/final/:runId" element={<Final />} />
+              <Route path="/final" element={<Final />} />
+              <Route path="/offer/:runId" element={<Offer />} />
+              <Route path="/offer" element={<Offer />} />
               <Route path="/join" element={<Join />} />
               <Route path="/join/:code" element={<Join />} />
               <Route path="/character/:characterId" element={<Character />} />
@@ -55,20 +63,8 @@ const App = () => (
               <Route path="/me/result/:resultId" element={<PersonalResult />} />
               <Route path="/me/result" element={<PersonalResult />} />
               <Route path="/reconnect" element={<Reconnect />} />
-              <Route path="/intro/:runId" element={<Intro />} />
-              <Route path="/scene/:runId" element={<Scene />} />
-              <Route path="/scene" element={<Scene />} />
-              <Route path="/consequence/:runId" element={<Consequence />} />
-              <Route path="/consequence" element={<Consequence />} />
-              <Route path="/final/:runId" element={<Final />} />
-              <Route path="/final" element={<Final />} />
-              <Route path="/offer/:runId" element={<Offer />} />
-              <Route path="/offer" element={<Offer />} />
               <Route path="/payment/:scenarioId" element={<Payment />} />
               <Route path="/payment" element={<Payment />} />
-              <Route path="/play/run/:runId" element={<Run />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/profile" element={<Profile />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
