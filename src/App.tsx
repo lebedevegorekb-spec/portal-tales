@@ -10,6 +10,7 @@ import Catalog from "./pages/Catalog.tsx";
 import Lobby from "./pages/Lobby.tsx";
 import Join from "./pages/Join.tsx";
 import Run from "./pages/Run.tsx";
+import Intro from "./pages/Intro.tsx";
 import Pricing from "./pages/Pricing.tsx";
 import Profile from "./pages/Profile.tsx";
 import NotFound from "./pages/NotFound.tsx";
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/lobby/:roomId" element={<Lobby />} />
             <Route path="/join" element={<Join />} />
             <Route path="/join/:code" element={<Join />} />
+            <Route path="/intro/:runId" element={<Intro />} />
             <Route path="/play/run/:runId" element={<Run />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/profile" element={<Profile />} />

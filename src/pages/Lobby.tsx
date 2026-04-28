@@ -113,7 +113,7 @@ const Lobby = () => {
           const next = payload.new as Room;
           setRoom(next);
           if (next.status === "started" && next.run_id) {
-            navigate(`/play/run/${next.run_id}`);
+            navigate(`/intro/${next.run_id}`);
           }
         },
       )
@@ -152,7 +152,7 @@ const Lobby = () => {
       .from("rooms")
       .update({ status: "started", run_id: data.run_id })
       .eq("id", room.id);
-    navigate(`/play/run/${data.run_id}`);
+    navigate(`/intro/${data.run_id}`);
   };
 
   if (authLoading || !user || loading || !room) {
