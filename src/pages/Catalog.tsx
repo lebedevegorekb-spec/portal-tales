@@ -150,8 +150,9 @@ const Catalog = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 
-  const [scenarios, setScenarios] = useState<Scenario[]>([]);
-  const [scenariosLoading, setScenariosLoading] = useState(true);
+  // Стартуем сразу с локальным каталогом — никакого спиннера на старте.
+  const [scenarios, setScenarios] = useState<Scenario[]>(SCENARIO_FALLBACKS);
+  const [scenariosLoading, setScenariosLoading] = useState(false);
   const [scenariosError, setScenariosError] = useState<string | null>(null);
   const [entitledScopes, setEntitledScopes] = useState<Set<string>>(new Set());
   const [activeRuns, setActiveRuns] = useState<Map<string, string>>(new Map());
@@ -161,37 +162,46 @@ const Catalog = () => {
     if (!loading && !user) navigate("/login");
   }, [user, loading, navigate]);
 
-  const refresh = async () => {
-    setScenariosLoading(true);
-    setScenariosError(null);
+  const fetchScenariosFresh = async (showSpinner: boolean) => {
+    if (showSpinner) {
+      setScenariosLoading(true);
+      setScenariosError(null);
+    }
 
-    let loaded: Scenario[] | null = null;
-    for (let attempt = 0; attempt < 3; attempt += 1) {
+    // Одна быстрая попытка с таймаутом 4с — без долгих ретраев в UI.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    try {
       const { data, error } = await supabase
         .from("scenarios")
         .select("id,title,description")
         .eq("is_active", true)
-        .order("id");
-      if (!error && data) {
-        loaded = data;
-        break;
+        .order("id")
+        .abortSignal(controller.signal);
+      clearTimeout(timeout);
+      if (!error && data && data.length > 0) {
+        const merged = [...data];
+        SCENARIO_FALLBACKS.forEach((f) => {
+          if (!merged.some((s) => s.id === f.id)) merged.push(f);
+        });
+        merged.sort((a, b) => a.id.localeCompare(b.id));
+        setScenarios(merged);
+      } else if (showSpinner) {
+        setScenariosError("Показан локальный каталог. Свежие данные подтянутся позже.");
       }
-      if (attempt < 2) await new Promise((r) => setTimeout(r, 900 * (attempt + 1)));
+    } catch {
+      clearTimeout(timeout);
+      if (showSpinner) {
+        setScenariosError("Показан локальный каталог. Свежие данные подтянутся позже.");
+      }
+    } finally {
+      if (showSpinner) setScenariosLoading(false);
     }
+  };
 
-    if (loaded) {
-      const merged = [...loaded];
-      FREE_SCENARIO_FALLBACKS.forEach((f) => {
-        if (!merged.some((s) => s.id === f.id)) merged.push(f);
-      });
-      merged.sort((a, b) => a.id.localeCompare(b.id));
-      setScenarios(merged);
-    } else {
-      setScenarios(FREE_SCENARIO_FALLBACKS);
-      setScenariosError("Не удалось загрузить сценарии. Попробуй ещё раз.");
-    }
-    setScenariosLoading(false);
+  const refresh = () => fetchScenariosFresh(true);
 
+  const fetchUserData = async () => {
     if (!user) return;
     const { data: ents } = await supabase
       .from("entitlements")
