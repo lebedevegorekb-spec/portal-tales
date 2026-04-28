@@ -31,6 +31,7 @@ const App = () => (
             <Route path="/lobby/:roomId" element={<Lobby />} />
             <Route path="/join" element={<Join />} />
             <Route path="/join/:code" element={<Join />} />
+            <Route path="/intro/:runId" element={<Intro />} />
             <Route path="/play/run/:runId" element={<Run />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/profile" element={<Profile />} />
