@@ -12,6 +12,7 @@ import Join from "./pages/Join.tsx";
 import Character from "./pages/Character.tsx";
 import Secret from "./pages/Secret.tsx";
 import SecretAction from "./pages/SecretAction.tsx";
+import Waiting from "./pages/Waiting.tsx";
 import Run from "./pages/Run.tsx";
 import Intro from "./pages/Intro.tsx";
 import Scene from "./pages/Scene.tsx";
@@ -45,6 +46,8 @@ const App = () => (
             <Route path="/secret" element={<Secret />} />
             <Route path="/secret-action/:roleId" element={<SecretAction />} />
             <Route path="/secret-action" element={<SecretAction />} />
+            <Route path="/waiting/:runId" element={<Waiting />} />
+            <Route path="/waiting" element={<Waiting />} />
             <Route path="/intro/:runId" element={<Intro />} />
             <Route path="/scene/:runId" element={<Scene />} />
             <Route path="/scene" element={<Scene />} />
