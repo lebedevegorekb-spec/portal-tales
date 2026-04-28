@@ -14,6 +14,7 @@ import Intro from "./pages/Intro.tsx";
 import Scene from "./pages/Scene.tsx";
 import Consequence from "./pages/Consequence.tsx";
 import Final from "./pages/Final.tsx";
+import Offer from "./pages/Offer.tsx";
 import Pricing from "./pages/Pricing.tsx";
 import Profile from "./pages/Profile.tsx";
 import NotFound from "./pages/NotFound.tsx";
@@ -41,6 +42,8 @@ const App = () => (
             <Route path="/consequence" element={<Consequence />} />
             <Route path="/final/:runId" element={<Final />} />
             <Route path="/final" element={<Final />} />
+            <Route path="/offer/:runId" element={<Offer />} />
+            <Route path="/offer" element={<Offer />} />
             <Route path="/play/run/:runId" element={<Run />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/profile" element={<Profile />} />
