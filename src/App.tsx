@@ -13,6 +13,7 @@ import Character from "./pages/Character.tsx";
 import Secret from "./pages/Secret.tsx";
 import SecretAction from "./pages/SecretAction.tsx";
 import Waiting from "./pages/Waiting.tsx";
+import PersonalResult from "./pages/PersonalResult.tsx";
 import Run from "./pages/Run.tsx";
 import Intro from "./pages/Intro.tsx";
 import Scene from "./pages/Scene.tsx";
@@ -48,6 +49,8 @@ const App = () => (
             <Route path="/secret-action" element={<SecretAction />} />
             <Route path="/waiting/:runId" element={<Waiting />} />
             <Route path="/waiting" element={<Waiting />} />
+            <Route path="/me/result/:resultId" element={<PersonalResult />} />
+            <Route path="/me/result" element={<PersonalResult />} />
             <Route path="/intro/:runId" element={<Intro />} />
             <Route path="/scene/:runId" element={<Scene />} />
             <Route path="/scene" element={<Scene />} />
