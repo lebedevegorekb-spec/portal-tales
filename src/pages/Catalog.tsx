@@ -171,16 +171,25 @@ const Catalog = () => {
     entitledScopes.has(`scenario:${id}`);
 
   const startRun = async (id: string) => {
+    if (!user) return;
     setBusy(id);
-    const { data, error } = await supabase.functions.invoke("run-start", {
-      body: { scenario_id: id },
+    const { data, error } = await supabase.functions.invoke("room-create", {
+      body: {
+        scenario_id: id,
+        host_user_id: user.id,
+        host_name:
+          (user.user_metadata as { display_name?: string })?.display_name ||
+          user.email?.split("@")[0] ||
+          "Хост",
+        min_players: 4,
+      },
     });
     setBusy(null);
     if (error || data?.error) {
-      toast.error(data?.error || error?.message || "Не удалось запустить");
+      toast.error(data?.error || error?.message || "Не удалось создать комнату");
       return;
     }
-    navigate(`/play/run/${data.run_id}`);
+    navigate(`/lobby/${data.room.id}`);
   };
 
   const cards = useMemo(
