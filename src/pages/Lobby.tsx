@@ -314,9 +314,9 @@ const Lobby = () => {
                 ) : (
                   <PlayCircle className="h-5 w-5" />
                 )}
-                {canStart
+                {minReached
                   ? "Начать"
-                  : `Нужно ещё ${Math.max(0, room.min_players - playerCount)}`}
+                  : `Начать (тест, не хватает ${Math.max(0, room.min_players - playerCount)})`}
               </Button>
             ) : (
               <div className="text-xs font-mono text-center text-muted-foreground">
