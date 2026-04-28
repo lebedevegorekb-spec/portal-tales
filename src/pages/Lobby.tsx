@@ -113,7 +113,7 @@ const Lobby = () => {
           const next = payload.new as Room;
           setRoom(next);
           if (next.status === "started" && next.run_id) {
-            navigate(`/play/run/${next.run_id}`);
+            navigate(`/intro/${next.run_id}`);
           }
         },
       )
