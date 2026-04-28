@@ -15,6 +15,7 @@ import Scene from "./pages/Scene.tsx";
 import Consequence from "./pages/Consequence.tsx";
 import Final from "./pages/Final.tsx";
 import Offer from "./pages/Offer.tsx";
+import Payment from "./pages/Payment.tsx";
 import Pricing from "./pages/Pricing.tsx";
 import Profile from "./pages/Profile.tsx";
 import NotFound from "./pages/NotFound.tsx";
