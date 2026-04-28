@@ -79,12 +79,68 @@ const DEFAULT_META: ScenarioMeta = {
   emoji: "🌀",
 };
 
-const FREE_SCENARIO_FALLBACKS: Scenario[] = [
+// Полный локальный fallback каталога — рендерим мгновенно, не дожидаясь API.
+// Если REST вернёт свежие данные, они перезапишут эти.
+const SCENARIO_FALLBACKS: Scenario[] = [
   {
     id: "S01",
     title: "Налог на Реальность C-137",
     description:
       "Инспектор-бюрократ из Налоговой Службы Мультивселенной требует утилизировать измерение C-137 за 47 лет неуплаты налога на существование.",
+  },
+  {
+    id: "S02",
+    title: "Паразит-имитатор",
+    description:
+      "Один из вас — не вы. Мозговой паразит копирует воспоминания и притворяется другом. Найдите имитатора, пока он не размножился.",
+  },
+  {
+    id: "S03",
+    title: "Сделка с инопланетным торговцем",
+    description:
+      "Загадочный торговец предлагает обменять что-то очень ценное на что-то очень странное. Договоритесь — или потеряйте больше, чем готовы.",
+  },
+  {
+    id: "S04",
+    title: "Лаборатория-ловушка",
+    description:
+      "Эксперимент Рика вышел из-под контроля. Лаборатория запечатана, кислород уходит, и кто-то здесь явно знает больше остальных.",
+  },
+  {
+    id: "S05",
+    title: "Суд мультивселенной",
+    description:
+      "Совет Риков судит вас за преступления, которых вы ещё не совершили. Защищайтесь, обвиняйте друг друга и торгуйтесь за приговор.",
+  },
+  {
+    id: "S06",
+    title: "Вирус в устройстве Рика",
+    description:
+      "Портал-пушка заражена. Каждый прыжок может быть последним. Найдите источник вируса раньше, чем он найдёт вас.",
+  },
+  {
+    id: "S07",
+    title: "Арена испытаний",
+    description:
+      "Вас выбросило на арену, где правила меняются каждый раунд. Союзы недолговечны, а победитель — только один.",
+  },
+  {
+    id: "S08",
+    title: "Планета одной эмоции",
+    description:
+      "На этой планете все чувствуют только одно. Угадайте, какое — иначе застрянете здесь навсегда вместе с местными.",
+  },
+  {
+    id: "S09",
+    title: "Реверс времени",
+    description:
+      "Время течёт назад. Чтобы выбраться, нужно совершить поступки в обратном порядке — и не перепутать причину со следствием.",
+  },
+  {
+    id: "S10",
+    title: "Ограбление идеального хранилища",
+    description:
+      "Хранилище защищено логикой, а не замками. У каждого — своя роль и свои тайные мотивы. Доверяй, но проверяй.",
   },
 ];
 
@@ -94,8 +150,9 @@ const Catalog = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 
-  const [scenarios, setScenarios] = useState<Scenario[]>([]);
-  const [scenariosLoading, setScenariosLoading] = useState(true);
+  // Стартуем сразу с локальным каталогом — никакого спиннера на старте.
+  const [scenarios, setScenarios] = useState<Scenario[]>(SCENARIO_FALLBACKS);
+  const [scenariosLoading, setScenariosLoading] = useState(false);
   const [scenariosError, setScenariosError] = useState<string | null>(null);
   const [entitledScopes, setEntitledScopes] = useState<Set<string>>(new Set());
   const [activeRuns, setActiveRuns] = useState<Map<string, string>>(new Map());
@@ -105,37 +162,46 @@ const Catalog = () => {
     if (!loading && !user) navigate("/login");
   }, [user, loading, navigate]);
 
-  const refresh = async () => {
-    setScenariosLoading(true);
-    setScenariosError(null);
+  const fetchScenariosFresh = async (showSpinner: boolean) => {
+    if (showSpinner) {
+      setScenariosLoading(true);
+      setScenariosError(null);
+    }
 
-    let loaded: Scenario[] | null = null;
-    for (let attempt = 0; attempt < 3; attempt += 1) {
+    // Одна быстрая попытка с таймаутом 4с — без долгих ретраев в UI.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    try {
       const { data, error } = await supabase
         .from("scenarios")
         .select("id,title,description")
         .eq("is_active", true)
-        .order("id");
-      if (!error && data) {
-        loaded = data;
-        break;
+        .order("id")
+        .abortSignal(controller.signal);
+      clearTimeout(timeout);
+      if (!error && data && data.length > 0) {
+        const merged = [...data];
+        SCENARIO_FALLBACKS.forEach((f) => {
+          if (!merged.some((s) => s.id === f.id)) merged.push(f);
+        });
+        merged.sort((a, b) => a.id.localeCompare(b.id));
+        setScenarios(merged);
+      } else if (showSpinner) {
+        setScenariosError("Показан локальный каталог. Свежие данные подтянутся позже.");
       }
-      if (attempt < 2) await new Promise((r) => setTimeout(r, 900 * (attempt + 1)));
+    } catch {
+      clearTimeout(timeout);
+      if (showSpinner) {
+        setScenariosError("Показан локальный каталог. Свежие данные подтянутся позже.");
+      }
+    } finally {
+      if (showSpinner) setScenariosLoading(false);
     }
+  };
 
-    if (loaded) {
-      const merged = [...loaded];
-      FREE_SCENARIO_FALLBACKS.forEach((f) => {
-        if (!merged.some((s) => s.id === f.id)) merged.push(f);
-      });
-      merged.sort((a, b) => a.id.localeCompare(b.id));
-      setScenarios(merged);
-    } else {
-      setScenarios(FREE_SCENARIO_FALLBACKS);
-      setScenariosError("Не удалось загрузить сценарии. Попробуй ещё раз.");
-    }
-    setScenariosLoading(false);
+  const refresh = () => fetchScenariosFresh(true);
 
+  const fetchUserData = async () => {
     if (!user) return;
     const { data: ents } = await supabase
       .from("entitlements")
@@ -160,7 +226,10 @@ const Catalog = () => {
   };
 
   useEffect(() => {
-    if (user) refresh();
+    if (!user) return;
+    // Каталог уже отрисован из локального fallback — обновляем тихо в фоне.
+    fetchScenariosFresh(false);
+    fetchUserData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
