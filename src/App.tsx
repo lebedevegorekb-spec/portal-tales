@@ -12,6 +12,7 @@ import Join from "./pages/Join.tsx";
 import Run from "./pages/Run.tsx";
 import Intro from "./pages/Intro.tsx";
 import Scene from "./pages/Scene.tsx";
+import Consequence from "./pages/Consequence.tsx";
 import Pricing from "./pages/Pricing.tsx";
 import Profile from "./pages/Profile.tsx";
 import NotFound from "./pages/NotFound.tsx";
@@ -35,6 +36,8 @@ const App = () => (
             <Route path="/intro/:runId" element={<Intro />} />
             <Route path="/scene/:runId" element={<Scene />} />
             <Route path="/scene" element={<Scene />} />
+            <Route path="/consequence/:runId" element={<Consequence />} />
+            <Route path="/consequence" element={<Consequence />} />
             <Route path="/play/run/:runId" element={<Run />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/profile" element={<Profile />} />
