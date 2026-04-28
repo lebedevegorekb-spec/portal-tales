@@ -18,7 +18,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (user) navigate("/play", { replace: true });
+    if (user) navigate("/catalog", { replace: true });
   }, [user, navigate]);
 
   const handleSignUp = async () => {
@@ -27,7 +27,7 @@ const Login = () => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: `${window.location.origin}/play` },
+      options: { emailRedirectTo: `${window.location.origin}/catalog` },
     });
     setLoading(false);
     if (error) return toast.error(error.message);
@@ -40,7 +40,7 @@ const Login = () => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) return toast.error(error.message);
-    navigate("/play");
+    navigate("/catalog");
   };
 
   return (

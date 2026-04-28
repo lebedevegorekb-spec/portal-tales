@@ -17,7 +17,7 @@ export const SiteHeader = () => {
           <span className="hidden sm:inline-block font-mono text-[10px] uppercase tracking-[0.22em] text-portal/70 ml-1 px-1.5 py-0.5 border border-portal/30 rounded-sm">v0.1</span>
         </Link>
         <nav className="flex items-center gap-1">
-          <Link to="/play" className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground hover:text-portal px-3 py-2 transition-colors">
+          <Link to="/catalog" className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground hover:text-portal px-3 py-2 transition-colors">
             Сценарии
           </Link>
           <Link to="/pricing" className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground hover:text-portal px-3 py-2 transition-colors">
