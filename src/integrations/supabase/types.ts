@@ -168,6 +168,83 @@ export type Database = {
         }
         Relationships: []
       }
+      room_players: {
+        Row: {
+          display_name: string
+          id: string
+          is_host: boolean
+          joined_at: string
+          ready: boolean
+          room_id: string
+          user_id: string | null
+        }
+        Insert: {
+          display_name: string
+          id?: string
+          is_host?: boolean
+          joined_at?: string
+          ready?: boolean
+          room_id: string
+          user_id?: string | null
+        }
+        Update: {
+          display_name?: string
+          id?: string
+          is_host?: boolean
+          joined_at?: string
+          ready?: boolean
+          room_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_players_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rooms: {
+        Row: {
+          code: string
+          created_at: string
+          host_user_id: string
+          id: string
+          max_players: number
+          min_players: number
+          run_id: string | null
+          scenario_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          host_user_id: string
+          id?: string
+          max_players?: number
+          min_players?: number
+          run_id?: string | null
+          scenario_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          host_user_id?: string
+          id?: string
+          max_players?: number
+          min_players?: number
+          run_id?: string | null
+          scenario_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       runs: {
         Row: {
           created_at: string

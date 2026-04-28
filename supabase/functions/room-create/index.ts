@@ -1,0 +1,66 @@
+// deno-lint-ignore-file no-explicit-any
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { corsHeaders } from "../_shared/cors.ts";
+
+const json = (b: any, s = 200) =>
+  new Response(JSON.stringify(b), {
+    status: s,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+
+const genCode = () => String(Math.floor(100000 + Math.random() * 900000));
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+
+    const body = await req.json().catch(() => ({}));
+    const scenarioId: string | undefined = body?.scenario_id;
+    const hostUserId: string | undefined = body?.host_user_id;
+    const hostName: string = (body?.host_name as string) || "Хост";
+    const minPlayers: number = Math.min(8, Math.max(2, Number(body?.min_players) || 4));
+
+    if (!scenarioId) return json({ error: "scenario_id required" }, 400);
+    if (!hostUserId) return json({ error: "host_user_id required" }, 400);
+
+    // try a few codes in case of collision
+    let room: any = null;
+    let lastErr: any = null;
+    for (let i = 0; i < 5; i++) {
+      const code = genCode();
+      const { data, error } = await supabase
+        .from("rooms")
+        .insert({
+          code,
+          host_user_id: hostUserId,
+          scenario_id: scenarioId,
+          status: "waiting",
+          min_players: minPlayers,
+        })
+        .select("*")
+        .single();
+      if (!error) {
+        room = data;
+        break;
+      }
+      lastErr = error;
+    }
+    if (!room) return json({ error: lastErr?.message || "Failed to create room" }, 500);
+
+    await supabase.from("room_players").insert({
+      room_id: room.id,
+      user_id: hostUserId,
+      display_name: hostName,
+      is_host: true,
+      ready: true,
+    });
+
+    return json({ room });
+  } catch (e: any) {
+    return json({ error: e?.message || "Internal error" }, 500);
+  }
+});
