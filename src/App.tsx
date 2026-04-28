@@ -45,6 +45,8 @@ const App = () => (
             <Route path="/final" element={<Final />} />
             <Route path="/offer/:runId" element={<Offer />} />
             <Route path="/offer" element={<Offer />} />
+            <Route path="/payment/:scenarioId" element={<Payment />} />
+            <Route path="/payment" element={<Payment />} />
             <Route path="/play/run/:runId" element={<Run />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/profile" element={<Profile />} />
