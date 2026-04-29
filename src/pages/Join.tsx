@@ -7,43 +7,85 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CheckCircle2, Loader2, QrCode, AlertTriangle, ArrowRight } from "lucide-react";
 
-type Status = "idle" | "connecting" | "connected" | "error";
+type Status = "idle" | "checking" | "connecting" | "connected" | "error";
 type ErrorKind = "not_found" | "full" | "generic";
 
 const ERROR_COPY: Record<ErrorKind, { title: string; hint: string }> = {
-  not_found: {
-    title: "Комната не найдена",
-    hint: "Проверь код на экране ТВ — возможно, опечатка.",
-  },
-  full: {
-    title: "Комната заполнена",
-    hint: "Все слоты заняты. Попроси хоста создать новую игру.",
-  },
-  generic: {
-    title: "Не удалось подключиться",
-    hint: "Что-то пошло не так. Попробуй ещё раз.",
-  },
+  not_found: { title: "Комната не найдена",      hint: "Проверь код на экране ТВ — возможно, опечатка." },
+  full:      { title: "Комната заполнена",        hint: "Все слоты заняты. Попроси хоста создать новую игру." },
+  generic:   { title: "Не удалось подключиться", hint: "Что-то пошло не так. Попробуй ещё раз." },
 };
+
+function getPlayerId(userId?: string | null): string | null {
+  if (userId) return userId;
+  return localStorage.getItem("guest_player_id");
+}
 
 const Join = () => {
   const { code: codeParam } = useParams<{ code?: string }>();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [code, setCode] = useState(codeParam ?? "");
-  const [name, setName] = useState("");
-  const [status, setStatus] = useState<Status>("idle");
-  const [errorKind, setErrorKind] = useState<ErrorKind>("generic");
 
-  useEffect(() => {
-    if (!authLoading && !user) navigate("/login");
-  }, [authLoading, user, navigate]);
+  const [code,      setCode]      = useState(codeParam ?? "");
+  const [name,      setName]      = useState("");
+  const [status,    setStatus]    = useState<Status>("idle");
+  const [errorKind, setErrorKind] = useState<ErrorKind>("generic");
 
   useEffect(() => {
     if (codeParam) setCode(codeParam.replace(/\D/g, "").slice(0, 6));
   }, [codeParam]);
 
+  // Автопроверка — уже в игре?
+  useEffect(() => {
+    if (!codeParam || authLoading) return;
+    const playerId = getPlayerId(user?.id);
+    if (!playerId) return;
+
+    const checkExisting = async () => {
+      setStatus("checking");
+      try {
+        // Ищем комнату по коду
+        const { data: room } = await supabase
+          .from("rooms")
+          .select("id, status, run_id")
+          .eq("code", codeParam)
+          .maybeSingle();
+
+        if (!room) { setStatus("idle"); return; }
+
+        // Проверяем — есть ли игрок в этой комнате
+        const { data: rp } = await supabase
+          .from("room_players")
+          .select("id, character_id")
+          .eq("room_id", room.id)
+          .eq("user_id", playerId)
+          .maybeSingle();
+
+        if (!rp) { setStatus("idle"); return; }
+
+        // Игрок уже в комнате — редирект на правильный экран
+        if (room.status === "started" && room.run_id) {
+          // Если персонаж назначен но ещё не смотрел
+          if (rp.character_id) {
+            navigate(`/character?run=${room.run_id}&room=${room.id}`);
+          } else {
+            navigate(`/vote?run=${room.run_id}&room=${room.id}`);
+          }
+        } else {
+          // Игра ещё не началась — в лобби ожидания
+          navigate(`/waiting?room=${room.id}`);
+        }
+      } catch {
+        setStatus("idle");
+      }
+    };
+
+    checkExisting();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [codeParam, authLoading]);
+
   const canSubmit = useMemo(
-    () => code.trim().length === 6 && name.trim().length >= 1 && status !== "connecting",
+    () => code.trim().length === 6 && name.trim().length >= 1 && status !== "connecting" && status !== "checking",
     [code, name, status],
   );
 
@@ -57,29 +99,64 @@ const Join = () => {
   const join = async () => {
     if (!canSubmit) return;
     setStatus("connecting");
+
+if (!user?.id && !localStorage.getItem("guest_player_id")) {
+  const id = `guest_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  localStorage.setItem("guest_player_id", id);
+}
     const { data, error } = await supabase.functions.invoke("room-join", {
       body: {
-        code: code.trim(),
+        code:         code.trim(),
         display_name: name.trim(),
-        user_id: user?.id ?? null,
+        user_id: user?.id ?? localStorage.getItem("guest_player_id") ?? null,
       },
     });
+
     if (error || data?.error) {
       setErrorKind(classifyError(data?.error || error?.message));
       setStatus("error");
       return;
     }
+
+    // Сохраняем guest_player_id если нет авторизации
+    if (!user?.id) {
+      const existing = localStorage.getItem("guest_player_id");
+      if (!existing) {
+        const id = `guest_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+        localStorage.setItem("guest_player_id", id);
+      }
+    }
+
     setStatus("connected");
-    setTimeout(() => navigate(`/waiting?room=${data.room.id}`), 700);
+
+    // Редирект в зависимости от статуса комнаты
+    setTimeout(() => {
+      if (data.room.status === "started" && data.room.run_id) {
+        navigate(`/character?run=${data.room.run_id}&room=${data.room.id}`);
+      } else {
+        navigate(`/waiting?room=${data.room.id}`);
+      }
+    }, 700);
   };
 
-  if (authLoading) return null;
+  if (authLoading || status === "checking") {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <SiteHeader />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3 text-muted-foreground">
+            <Loader2 className="size-8 animate-spin text-portal" />
+            <span className="text-sm font-mono">Проверяем статус игры…</span>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SiteHeader />
       <main className="flex-1 container py-6 max-w-md">
-        {/* Header */}
         <div className="mb-6">
           <h1 className="font-display font-bold text-3xl text-balance">Подключиться к игре</h1>
           <p className="text-muted-foreground text-sm mt-1.5">
@@ -87,18 +164,18 @@ const Join = () => {
           </p>
         </div>
 
-        {/* SUCCESS STATE */}
+        {/* SUCCESS */}
         {status === "connected" && (
           <div className="glass-card rounded-2xl p-8 text-center space-y-3 border-acid/40 animate-in fade-in zoom-in-95 duration-300">
             <div className="mx-auto size-16 rounded-full bg-acid/15 flex items-center justify-center">
               <CheckCircle2 className="size-9 text-acid" />
             </div>
             <h2 className="text-xl font-display font-bold">Подключено!</h2>
-            <p className="text-sm text-muted-foreground">Заходим в лобби…</p>
+            <p className="text-sm text-muted-foreground">Заходим в игру…</p>
           </div>
         )}
 
-        {/* IDLE / CONNECTING / ERROR */}
+        {/* FORM */}
         {status !== "connected" && (
           <div className="space-y-4">
             <div className="glass-card rounded-2xl p-5 space-y-5">
@@ -121,10 +198,7 @@ const Join = () => {
                 </label>
                 <Input
                   value={code}
-                  onChange={(e) => {
-                    setCode(e.target.value.replace(/\D/g, "").slice(0, 6));
-                    if (status === "error") setStatus("idle");
-                  }}
+                  onChange={(e) => { setCode(e.target.value.replace(/\D/g, "").slice(0, 6)); if (status === "error") setStatus("idle"); }}
                   placeholder="000000"
                   inputMode="numeric"
                   autoComplete="one-time-code"
@@ -133,7 +207,6 @@ const Join = () => {
                 />
               </div>
 
-              {/* ERROR */}
               {status === "error" && (
                 <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-3.5 flex gap-3 animate-in fade-in slide-in-from-top-1 duration-200">
                   <AlertTriangle className="size-5 text-destructive shrink-0 mt-0.5" />
@@ -150,25 +223,16 @@ const Join = () => {
                 size="lg"
                 className="w-full bg-portal hover:bg-portal/90 text-portal-foreground shadow-[var(--shadow-portal)] h-14 text-base font-display font-semibold"
               >
-                {status === "connecting" ? (
-                  <>
-                    <Loader2 className="size-5 animate-spin" /> Подключаемся…
-                  </>
-                ) : (
-                  <>
-                    Присоединиться <ArrowRight className="size-5" />
-                  </>
-                )}
+                {status === "connecting"
+                  ? <><Loader2 className="size-5 animate-spin" /> Подключаемся…</>
+                  : <>Присоединиться <ArrowRight className="size-5" /></>
+                }
               </Button>
             </div>
 
-            {/* QR hint */}
             <button
               type="button"
               className="w-full glass-card rounded-2xl p-4 flex items-center gap-3 text-left hover:border-portal/40 transition-colors"
-              onClick={() => {
-                // QR-сканер пока заглушка
-              }}
             >
               <div className="size-11 rounded-xl bg-portal/10 border border-portal/30 flex items-center justify-center text-portal">
                 <QrCode className="size-5" />

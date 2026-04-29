@@ -135,7 +135,7 @@ const Secret = () => {
     const q = new URLSearchParams();
     if (runId)  q.set("run",  runId);
     if (roomId) q.set("room", roomId);
-    navigate(`/waiting?${q.toString()}`);
+    navigate(`/vote?${q.toString()}`)
   };
 
   // ── Loading ───────────────────────────────────────────────────────────────
