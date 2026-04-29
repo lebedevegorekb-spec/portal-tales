@@ -83,7 +83,7 @@ const Lobby = () => {
   const isHost     = !!user && !!room && room.host_user_id === user.id;
   const playerCount = players.length;
   const minReached  = playerCount >= (room?.min_players ?? 4);
-  const canStart    = isHost && true; // TEST MODE
+const canStart    = isHost && minReached;
 
   const start = async () => {
     if (!room || !canStart || !user) return;
