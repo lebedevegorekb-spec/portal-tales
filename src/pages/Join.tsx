@@ -70,7 +70,7 @@ const Join = () => {
       return;
     }
     setStatus("connected");
-    setTimeout(() => navigate(`/lobby/${data.room.id}`), 700);
+    setTimeout(() => navigate(`/waiting?room=${data.room.id}`), 700);
   };
 
   if (authLoading) return null;
