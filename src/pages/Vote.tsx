@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Check, Lock } from "lucide-react";
 import { toast } from "sonner";
 
-type SceneOption = { id: string; text: string };
+type SceneOption = { id: string; text: string; consequences?: Record<string, number> };
 type Scene = { scene_id: string; scene_summary: string; goal_hint: string; options?: SceneOption[] };
 
 function getPlayerId(userId?: string | null): string {
@@ -39,17 +39,15 @@ const Vote = () => {
   const [voting,       setVoting]       = useState(false);
   const [advancing,    setAdvancing]    = useState(false);
 
-  const advancedRef = useRef(false); // guard против двойного вызова
+  const advancedRef = useRef(false);
 
   const playerId = getPlayerId(user?.id);
   const votes    = useRealtimeVotes(runId || "", scene?.scene_id || "");
 
-  // Подсчёт голосов
   const voteCounts: Record<string, number> = {};
   votes.forEach((v) => { voteCounts[v.option_id] = (voteCounts[v.option_id] || 0) + 1; });
   const totalVotes = votes.length;
 
-  // Загрузка сцены
   useEffect(() => {
     if (!runId) return;
     const load = async () => {
@@ -77,7 +75,6 @@ const Vote = () => {
         if (!found) throw new Error("Сцена не найдена");
         setScene(found);
 
-        // Кол-во игроков
         if (roomId) {
           const { count } = await supabase
             .from("room_players")
@@ -86,7 +83,6 @@ const Vote = () => {
           setTotalPlayers(count ?? 0);
         }
 
-        // Уже голосовал?
         const { data: existingVote } = await supabase
           .from("votes")
           .select("option_id")
@@ -109,14 +105,11 @@ const Vote = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runId, roomId]);
 
-  // Автопереключение сцены когда все проголосовали
   useEffect(() => {
     if (!runId || !scene || totalPlayers === 0) return;
     if (totalVotes < totalPlayers) return;
     if (advancedRef.current || advancing) return;
 
-    // Только первый клиент (хост) переключает — остальные ждут Realtime
-    // Используем простой race: первый кто поставит advancing выиграл
     advancedRef.current = true;
     setAdvancing(true);
 
@@ -129,15 +122,36 @@ const Vote = () => {
           if (count > maxCount) { maxCount = count; winnerId = id; }
         });
 
+        // Берём consequences из победившего варианта
+        const winningOption = scene.options?.find((o) => o.id === winnerId);
+        const consequences  = winningOption?.consequences ?? {};
+
+        // Применяем consequences к state_json
+        if (Object.keys(consequences).length > 0) {
+          const { data: run } = await supabase
+            .from("runs")
+            .select("state_json")
+            .eq("id", runId)
+            .single();
+
+          const currentState: Record<string, number> = (run?.state_json as any) ?? {};
+
+          const newState: Record<string, number> = { ...currentState };
+          for (const [key, delta] of Object.entries(consequences)) {
+            const prev = newState[key] ?? 0;
+            newState[key] = Math.min(100, Math.max(0, prev + delta));
+          }
+
+          await supabase.from("runs").update({ state_json: newState }).eq("id", runId);
+        }
+
         // Следующая сцена по индексу
         const currentIdx = allScenes.findIndex((s) => s.scene_id === scene.scene_id);
         const nextScene  = allScenes[currentIdx + 1];
 
         if (!nextScene) {
-          // Финал
           await supabase.from("runs").update({ status: "finished", finished_at: new Date().toISOString() }).eq("id", runId);
         } else {
-          // Переключаем сцену
           await supabase.from("runs").update({ current_scene_id: nextScene.scene_id }).eq("id", runId);
         }
       } catch (err) {
@@ -147,12 +161,10 @@ const Vote = () => {
       }
     };
 
-    // Задержка 2 сек чтобы все увидели результат
     setTimeout(advance, 2000);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [totalVotes, totalPlayers]);
 
-  // Realtime — смена сцены
   useEffect(() => {
     if (!runId) return;
     const ch = supabase
@@ -166,13 +178,11 @@ const Vote = () => {
             navigate(`/final/${runId}`);
             return;
           }
-          // Смена сцены — перезагружаем Vote
           if (next.current_scene_id !== scene?.scene_id) {
             advancedRef.current = false;
             setAdvancing(false);
             setVoted(false);
             setVotedId(null);
-            // Обновляем сцену
             const found = allScenes.find((s) => s.scene_id === next.current_scene_id);
             if (found) setScene(found);
           }
