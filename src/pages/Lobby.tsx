@@ -41,10 +41,10 @@ const Lobby = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  const [room, setRoom] = useState<Room | null>(null);
+  const [room, setRoom]       = useState<Room | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
-  const [copied, setCopied] = useState<"code" | "link" | null>(null);
+  const [copied, setCopied]   = useState<"code" | "link" | null>(null);
   const [starting, setStarting] = useState(false);
 
   const joinUrl = useMemo(() => {
@@ -112,15 +112,14 @@ const Lobby = () => {
         (payload) => {
           const next = payload.new as Room;
           setRoom(next);
+          // Party-game: при старте → Scene (TV экран)
           if (next.status === "started" && next.run_id) {
-            navigate(`/intro/${next.run_id}`);
+            navigate(`/scene/${next.run_id}`);
           }
         },
       )
       .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [roomId, navigate]);
 
   const copy = async (value: string, kind: "code" | "link") => {
@@ -135,27 +134,48 @@ const Lobby = () => {
 
   const isHost = !!user && !!room && room.host_user_id === user.id;
   const playerCount = players.length;
-  // TEST MODE: разрешаем хосту стартовать с любым числом игроков. Потом убрать.
-  const TEST_BYPASS_MIN_PLAYERS = true;
   const minReached = playerCount >= (room?.min_players ?? 4);
-  const canStart = isHost && (TEST_BYPASS_MIN_PLAYERS || minReached);
+  // TEST MODE: разрешаем старт с любым числом игроков
+  const canStart = isHost && true;
 
   const start = async () => {
-    if (!room || !canStart) return;
+    if (!room || !canStart || !user) return;
     setStarting(true);
-    const { data, error } = await supabase.functions.invoke("run-start", {
-      body: { scenario_id: room.scenario_id },
-    });
-    if (error || data?.error) {
+
+    // 1. Создаём run для party-game (привязан к room)
+    const { data: run, error: runErr } = await supabase
+      .from("runs")
+      .insert({
+        user_id: user.id,
+        scenario_id: room.scenario_id,
+        status: "active",
+        current_scene_id: "start",
+        state_json: { players: {}, flags: {}, resources: {} },
+      })
+      .select("id")
+      .single();
+
+    if (runErr || !run) {
       setStarting(false);
-      toast.error(data?.error || error?.message || "Не удалось запустить");
+      toast.error(runErr?.message || "Не удалось создать игру");
       return;
     }
-    await supabase
+
+    // 2. Обновляем комнату — статус started + run_id
+    const { error: updateErr } = await supabase
       .from("rooms")
-      .update({ status: "started", run_id: data.run_id })
+      .update({ status: "started", run_id: run.id })
       .eq("id", room.id);
-    navigate(`/intro/${data.run_id}`);
+
+    if (updateErr) {
+      setStarting(false);
+      toast.error("Не удалось запустить комнату");
+      return;
+    }
+
+    // Realtime подхватит изменение и сделает navigate
+    // Но на всякий случай делаем и здесь
+    navigate(`/scene/${run.id}`);
   };
 
   if (authLoading || !user || loading || !room) {
@@ -259,7 +279,7 @@ const Lobby = () => {
                 <Users className="h-4 w-4 text-portal" /> Игроки
               </div>
               <div className="font-display font-bold text-xl tabular-nums">
-                <span className={canStart ? "text-portal" : "text-foreground"}>
+                <span className={minReached ? "text-portal" : "text-foreground"}>
                   {playerCount}
                 </span>
                 <span className="text-muted-foreground">/{room.min_players}</span>
@@ -325,7 +345,7 @@ const Lobby = () => {
             )}
 
             <p className="text-[11px] font-mono text-muted-foreground/80 text-center mt-3">
-              {room.status === "waiting" ? "Статус: ожидание" : `Статус: ${room.status}`}
+              Статус: {room.status === "waiting" ? "ожидание" : room.status}
             </p>
           </aside>
         </div>
@@ -335,3 +355,4 @@ const Lobby = () => {
 };
 
 export default Lobby;
+

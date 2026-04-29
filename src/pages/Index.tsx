@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
@@ -19,7 +19,7 @@ const Index = () => {
     supabase
       .from("scenarios")
       .select("id,title,description")
-      .eq("is_active", true)
+      
       .order("id")
       .then(({ data }) => setScenarios(data ?? []));
   }, []);

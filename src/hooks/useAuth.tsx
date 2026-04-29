@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+﻿import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session, User } from "@supabase/supabase-js";
 
@@ -18,7 +18,7 @@ const Ctx = createContext<AuthCtx>({
 
 // ⚠️ Временный режим тестирования: пропускает логин и подсовывает фейкового юзера.
 // Чтобы вернуть нормальную авторизацию — поставь false.
-const BYPASS_AUTH = true;
+const BYPASS_AUTH = false;
 
 const FAKE_USER = {
   id: "00000000-0000-0000-0000-000000000001",
