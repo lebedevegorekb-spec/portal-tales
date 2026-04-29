@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -46,16 +46,17 @@ const SecretAction = () => {
   const runId  = params.get("run");
   const roomId = params.get("room");
   const sceneId = params.get("scene");
-  const playerId = getPlayerId(user?.id);
-
+  const playerId = useMemo(() => getPlayerId(user?.id), [user?.id]);
+console.log("playerId:", playerId, "roomId:", roomId);
   const [privateAction, setPrivateAction] = useState<PrivateAction | null>(null);
   const [playerRoleId, setPlayerRoleId] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>("loading");
   const [chosen, setChosen] = useState<PrivateOption | null>(null);
 
-  useEffect(() => {
+useEffect(() => {
     if (!runId || !sceneId) return;
+    if (!playerId || playerId === "") return;
 
     const load = async () => {
       try {
@@ -110,10 +111,14 @@ const SecretAction = () => {
 
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/secret-action`,
+        `https://cdhzfeeueilgecmfgawy.supabase.co/functions/v1/secret-action`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+  "Content-Type": "application/json",
+  "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkaHpmZWV1ZWlsZ2VjbWZnYXd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczOTEwNzEsImV4cCI6MjA5Mjk2NzA3MX0.ROklLakq8rC7Y0ioZYC3armIz1lhVs82kt29KD39Re0",
+  "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkaHpmZWV1ZWlsZ2VjbWZnYXd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczOTEwNzEsImV4cCI6MjA5Mjk2NzA3MX0.ROklLakq8rC7Y0ioZYC3armIz1lhVs82kt29KD39Re0",
+},
           body: JSON.stringify({
             run_id: runId,
             player_id: playerId,
