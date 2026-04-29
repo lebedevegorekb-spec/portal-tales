@@ -77,7 +77,7 @@ const Waiting = () => {
         (payload) => {
           const next = payload.new as any;
           if (next.status === "started" && next.run_id) {
-            navigate(`/scene/${next.run_id}`);
+            navigate(`/character?run=${next.run_id}&room=${roomId}`)
           }
         },
       )
