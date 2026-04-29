@@ -1,11 +1,11 @@
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtimeVotes } from "@/hooks/useRealtimeVotes";
 import { useAuth } from "@/hooks/useAuth";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
-import { Loader2, Check, Lock } from "lucide-react";
+import { Loader2, Check, Lock, Timer } from "lucide-react";
 import { toast } from "sonner";
 
 type SceneOption = { id: string; text: string; consequences?: Record<string, number> };
@@ -20,6 +20,8 @@ function getPlayerId(userId?: string | null): string {
   }
   return id;
 }
+
+const TIMER_SECONDS = 60;
 
 const Vote = () => {
   const [params] = useSearchParams();
@@ -38,8 +40,10 @@ const Vote = () => {
   const [votedId,      setVotedId]      = useState<string | null>(null);
   const [voting,       setVoting]       = useState(false);
   const [advancing,    setAdvancing]    = useState(false);
+  const [timeLeft,     setTimeLeft]     = useState(TIMER_SECONDS);
 
   const advancedRef = useRef(false);
+  const timerRef    = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const playerId = getPlayerId(user?.id);
   const votes    = useRealtimeVotes(runId || "", scene?.scene_id || "");
@@ -47,6 +51,51 @@ const Vote = () => {
   const voteCounts: Record<string, number> = {};
   votes.forEach((v) => { voteCounts[v.option_id] = (voteCounts[v.option_id] || 0) + 1; });
   const totalVotes = votes.length;
+
+  const advance = useCallback(async (currentScene: Scene, scenes: Scene[], counts: Record<string, number>) => {
+    try {
+      let winnerId = "";
+      let maxCount = 0;
+      Object.entries(counts).forEach(([id, count]) => {
+        if (count > maxCount) { maxCount = count; winnerId = id; }
+      });
+
+      if (!winnerId && currentScene.options?.length) {
+        winnerId = currentScene.options[Math.floor(Math.random() * currentScene.options.length)].id;
+      }
+
+      const winningOption = currentScene.options?.find((o) => o.id === winnerId);
+      const consequences  = winningOption?.consequences ?? {};
+
+      if (Object.keys(consequences).length > 0) {
+        const { data: run } = await supabase
+          .from("runs")
+          .select("state_json")
+          .eq("id", runId)
+          .single();
+
+        const currentState: Record<string, number> = (run?.state_json as any) ?? {};
+        const newState: Record<string, number> = { ...currentState };
+        for (const [key, delta] of Object.entries(consequences)) {
+          newState[key] = Math.min(100, Math.max(0, (newState[key] ?? 0) + delta));
+        }
+        await supabase.from("runs").update({ state_json: newState }).eq("id", runId);
+      }
+
+      const currentIdx = scenes.findIndex((s) => s.scene_id === currentScene.scene_id);
+      const nextScene  = scenes[currentIdx + 1];
+
+      if (!nextScene) {
+        await supabase.from("runs").update({ status: "finished", finished_at: new Date().toISOString() }).eq("id", runId);
+      } else {
+        await supabase.from("runs").update({ current_scene_id: nextScene.scene_id }).eq("id", runId);
+      }
+    } catch (err) {
+      console.error("advance error", err);
+      advancedRef.current = false;
+      setAdvancing(false);
+    }
+  }, [runId]);
 
   useEffect(() => {
     if (!runId) return;
@@ -105,6 +154,32 @@ const Vote = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runId, roomId]);
 
+  // Таймер
+  useEffect(() => {
+    if (!scene || loading) return;
+    setTimeLeft(TIMER_SECONDS);
+    if (timerRef.current) clearInterval(timerRef.current);
+
+    timerRef.current = setInterval(() => {
+      setTimeLeft((t) => {
+        if (t <= 1) { clearInterval(timerRef.current!); return 0; }
+        return t - 1;
+      });
+    }, 1000);
+
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [scene?.scene_id, loading]);
+
+  // Таймер истёк
+  useEffect(() => {
+    if (timeLeft !== 0 || advancedRef.current || advancing || !scene || allScenes.length === 0) return;
+    advancedRef.current = true;
+    setAdvancing(true);
+    advance(scene, allScenes, voteCounts);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeLeft]);
+
+  // Все проголосовали
   useEffect(() => {
     if (!runId || !scene || totalPlayers === 0) return;
     if (totalVotes < totalPlayers) return;
@@ -112,59 +187,12 @@ const Vote = () => {
 
     advancedRef.current = true;
     setAdvancing(true);
-
-    const advance = async () => {
-      try {
-        // Определяем победивший вариант
-        let winnerId = "";
-        let maxCount = 0;
-        Object.entries(voteCounts).forEach(([id, count]) => {
-          if (count > maxCount) { maxCount = count; winnerId = id; }
-        });
-
-        // Берём consequences из победившего варианта
-        const winningOption = scene.options?.find((o) => o.id === winnerId);
-        const consequences  = winningOption?.consequences ?? {};
-
-        // Применяем consequences к state_json
-        if (Object.keys(consequences).length > 0) {
-          const { data: run } = await supabase
-            .from("runs")
-            .select("state_json")
-            .eq("id", runId)
-            .single();
-
-          const currentState: Record<string, number> = (run?.state_json as any) ?? {};
-
-          const newState: Record<string, number> = { ...currentState };
-          for (const [key, delta] of Object.entries(consequences)) {
-            const prev = newState[key] ?? 0;
-            newState[key] = Math.min(100, Math.max(0, prev + delta));
-          }
-
-          await supabase.from("runs").update({ state_json: newState }).eq("id", runId);
-        }
-
-        // Следующая сцена по индексу
-        const currentIdx = allScenes.findIndex((s) => s.scene_id === scene.scene_id);
-        const nextScene  = allScenes[currentIdx + 1];
-
-        if (!nextScene) {
-          await supabase.from("runs").update({ status: "finished", finished_at: new Date().toISOString() }).eq("id", runId);
-        } else {
-          await supabase.from("runs").update({ current_scene_id: nextScene.scene_id }).eq("id", runId);
-        }
-      } catch (err) {
-        console.error("advance error", err);
-        advancedRef.current = false;
-        setAdvancing(false);
-      }
-    };
-
-    setTimeout(advance, 2000);
+    if (timerRef.current) clearInterval(timerRef.current);
+    setTimeout(() => advance(scene, allScenes, voteCounts), 2000);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [totalVotes, totalPlayers]);
 
+  // Realtime
   useEffect(() => {
     if (!runId) return;
     const ch = supabase
@@ -174,10 +202,7 @@ const Vote = () => {
         { event: "UPDATE", schema: "public", table: "runs", filter: `id=eq.${runId}` },
         (payload) => {
           const next = payload.new as any;
-          if (next.status === "finished") {
-            navigate(`/final/${runId}`);
-            return;
-          }
+          if (next.status === "finished") { navigate(`/final/${runId}`); return; }
           if (next.current_scene_id !== scene?.scene_id) {
             advancedRef.current = false;
             setAdvancing(false);
@@ -198,10 +223,7 @@ const Vote = () => {
     setVoting(true);
     try {
       const { error } = await supabase.from("votes").insert({
-        run_id:    runId,
-        player_id: playerId,
-        scene_id:  scene.scene_id,
-        option_id: optionId,
+        run_id: runId, player_id: playerId, scene_id: scene.scene_id, option_id: optionId,
       });
       if (error) throw error;
       setVoted(true);
@@ -236,15 +258,16 @@ const Vote = () => {
     );
   }
 
-  const currentIdx   = allScenes.findIndex((s) => s.scene_id === scene.scene_id);
-  const isLastScene  = currentIdx === allScenes.length - 1;
+  const currentIdx  = allScenes.findIndex((s) => s.scene_id === scene.scene_id);
+  const isLastScene = currentIdx === allScenes.length - 1;
+  const timerPct    = (timeLeft / TIMER_SECONDS) * 100;
+  const timerColor  = timeLeft > 20 ? "bg-portal" : timeLeft > 10 ? "bg-acid" : "bg-destructive";
 
   return (
     <div className="min-h-screen flex flex-col bg-background scanlines">
       <SiteHeader />
       <main className="flex-1 container py-6 max-w-md flex flex-col gap-5">
 
-        {/* HUD */}
         <div className="flex items-center justify-between">
           <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground">
             {scenarioId} · {scene.scene_id}
@@ -254,11 +277,24 @@ const Vote = () => {
           </span>
         </div>
 
-        {/* Сцена */}
+        {!advancing && (
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
+                <Timer className="size-3" /> Осталось
+              </span>
+              <span className={`text-[11px] font-mono font-bold ${timeLeft <= 10 ? "text-destructive" : "text-muted-foreground"}`}>
+                {timeLeft}с
+              </span>
+            </div>
+            <div className="h-1 rounded-full bg-muted/30 overflow-hidden">
+              <div className={`h-full rounded-full transition-all duration-1000 ${timerColor}`} style={{ width: `${timerPct}%` }} />
+            </div>
+          </div>
+        )}
+
         <div className="glass-card rounded-3xl p-6 border border-portal/30 shadow-[var(--shadow-portal)]">
-          <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground mb-3">
-            Текущая сцена
-          </p>
+          <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground mb-3">Текущая сцена</p>
           <p className="text-base leading-relaxed font-display">{scene.scene_summary}</p>
           {scene.goal_hint && (
             <div className="mt-4 rounded-2xl border border-portal/30 bg-portal/10 p-4">
@@ -268,7 +304,6 @@ const Vote = () => {
           )}
         </div>
 
-        {/* Голосование */}
         <div className="space-y-3">
           <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground px-1">
             {voted ? "Твой выбор" : "Выбери вариант"}
@@ -286,17 +321,13 @@ const Vote = () => {
                 disabled={voted || voting || !playerId}
                 size="lg"
                 className={`w-full h-auto min-h-[60px] text-left justify-between px-5 py-4 font-display text-base gap-3 relative overflow-hidden
-                  ${isMyVote
-                    ? "bg-portal/20 border-portal text-portal hover:bg-portal/25"
-                    : voted
-                    ? "bg-muted/20 border-border/50 text-muted-foreground"
+                  ${isMyVote ? "bg-portal/20 border-portal text-portal hover:bg-portal/25"
+                    : voted ? "bg-muted/20 border-border/50 text-muted-foreground"
                     : "bg-background/40 border-border hover:border-portal/50 hover:bg-portal/10"
                   } border`}
                 variant="outline"
               >
-                {voted && (
-                  <div className="absolute inset-y-0 left-0 bg-portal/10 transition-all duration-500" style={{ width: `${pct}%` }} />
-                )}
+                {voted && <div className="absolute inset-y-0 left-0 bg-portal/10 transition-all duration-500" style={{ width: `${pct}%` }} />}
                 <span className="relative">{opt.text}</span>
                 <span className="relative flex items-center gap-2 shrink-0">
                   {voted && pct > 0 && <span className="text-xs font-mono text-muted-foreground">{pct}%</span>}
@@ -308,7 +339,6 @@ const Vote = () => {
           })}
         </div>
 
-        {/* Статус */}
         {advancing && (
           <div className="glass-card rounded-2xl p-4 text-center border border-portal/30">
             <Loader2 className="size-5 animate-spin text-portal mx-auto mb-2" />
@@ -331,3 +361,4 @@ const Vote = () => {
 };
 
 export default Vote;
+
