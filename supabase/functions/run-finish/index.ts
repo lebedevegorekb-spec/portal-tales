@@ -1,4 +1,5 @@
 ﻿import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { requireAuth } from "../_shared/auth.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -15,6 +16,9 @@ function json(data: unknown, status = 200) {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
 
+  const auth = await requireAuth(req);
+  if (auth instanceof Response) return auth;
+
   try {
     const { run_id } = await req.json();
     if (!run_id) return json({ error: "run_id required" }, 400);
@@ -24,7 +28,6 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Получить run + сценарий
     const { data: run } = await supabase
       .from("runs")
       .select("state_json, scenario_id")
@@ -42,7 +45,6 @@ Deno.serve(async (req) => {
     const endings: any[] = (scenario?.scenario_json as any)?.endings ?? [];
     const state: Record<string, number> = (run.state_json as any) ?? {};
 
-    // Найти подходящую концовку по conditions
     let chosen = endings.find((e) => {
       if (!e.conditions) return false;
       return Object.entries(e.conditions).every(([key, val]: [string, any]) => {
@@ -53,10 +55,8 @@ Deno.serve(async (req) => {
       });
     });
 
-    // Fallback — первая концовка или дефолт
     if (!chosen) chosen = endings.find((e) => e.is_default) ?? endings[0] ?? { id: "default", title: "Игра завершена", text: "Хаос победил." };
 
-    // Обновить run
     await supabase
       .from("runs")
       .update({
