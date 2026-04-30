@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+﻿import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -43,34 +43,32 @@ const SecretAction = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const runId  = params.get("run");
-  const roomId = params.get("room");
+  const runId   = params.get("run");
+  const roomId  = params.get("room");
   const sceneId = params.get("scene");
   const playerId = useMemo(() => getPlayerId(user?.id), [user?.id]);
-console.log("playerId:", playerId, "roomId:", roomId);
-  const [privateAction, setPrivateAction] = useState<PrivateAction | null>(null);
-  const [playerRoleId, setPlayerRoleId] = useState<string | null>(null);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [status, setStatus] = useState<Status>("loading");
-  const [chosen, setChosen] = useState<PrivateOption | null>(null);
 
-useEffect(() => {
-    if (!runId || !sceneId) return;
-    if (!playerId || playerId === "") return;
+  const [privateAction, setPrivateAction] = useState<PrivateAction | null>(null);
+  const [playerRoleId, setPlayerRoleId]   = useState<string | null>(null);
+  const [selected, setSelected]           = useState<string | null>(null);
+  const [status, setStatus]               = useState<Status>("loading");
+  const [chosen, setChosen]               = useState<PrivateOption | null>(null);
+
+  useEffect(() => {
+    if (!runId || !sceneId || !playerId) return;
 
     const load = async () => {
       try {
-        // Получаем role_id игрока
         const { data: playerRow } = await supabase
           .from("room_players")
           .select("role_id")
-.eq("user_id", playerId)
-.eq("room_id", roomId)
-.maybeSingle();
+          .eq("user_id", playerId)
+          .eq("room_id", roomId)
+          .maybeSingle();
+
         const pRoleId = playerRow?.role_id ?? roleId ?? null;
         setPlayerRoleId(pRoleId);
 
-        // Получаем scenario_json
         const { data: run } = await supabase
           .from("runs")
           .select("scenario_id")
@@ -84,15 +82,12 @@ useEffect(() => {
           .single();
 
         const scenes = (scenario.scenario_json as any)?.scenes ?? [];
-        const scene = scenes.find((s: any) => s.scene_id === sceneId);
+        const scene  = scenes.find((s: any) => s.scene_id === sceneId);
         const action: PrivateAction | undefined = scene?.private_actions?.find(
           (a: any) => a.role_id === pRoleId
         );
 
-        if (!action) {
-          setStatus("waiting"); // нет действия для этой роли — ждём
-          return;
-        }
+        if (!action) { setStatus("waiting"); return; }
 
         setPrivateAction(action);
         setStatus("idle");
@@ -103,34 +98,22 @@ useEffect(() => {
     };
 
     load();
-  }, [runId, sceneId, playerId, roleId]);
+  }, [runId, sceneId, playerId, roleId, roomId]);
 
   const submit = async () => {
     if (!selected || !privateAction || !runId || !sceneId || status !== "idle") return;
     setStatus("submitting");
-
     try {
-      const res = await fetch(
-        `https://cdhzfeeueilgecmfgawy.supabase.co/functions/v1/secret-action`,
-        {
-          method: "POST",
-          headers: {
-  "Content-Type": "application/json",
-  "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkaHpmZWV1ZWlsZ2VjbWZnYXd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczOTEwNzEsImV4cCI6MjA5Mjk2NzA3MX0.ROklLakq8rC7Y0ioZYC3armIz1lhVs82kt29KD39Re0",
-  "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkaHpmZWV1ZWlsZ2VjbWZnYXd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczOTEwNzEsImV4cCI6MjA5Mjk2NzA3MX0.ROklLakq8rC7Y0ioZYC3armIz1lhVs82kt29KD39Re0",
-},
-          body: JSON.stringify({
-            run_id: runId,
-            player_id: playerId,
-            scene_id: sceneId,
-            action_id: `${sceneId}_${playerRoleId}`,
-            choice_id: selected,
-          }),
-        }
-      );
-
-      if (!res.ok) throw new Error("Ошибка сервера");
-
+      const { error } = await supabase.functions.invoke("secret-action", {
+        body: {
+          run_id:    runId,
+          player_id: playerId,
+          scene_id:  sceneId,
+          action_id: `${sceneId}_${playerRoleId}`,
+          choice_id: selected,
+        },
+      });
+      if (error) throw error;
       const option = privateAction.options.find((o) => o.id === selected) ?? null;
       setChosen(option);
       setStatus("sent");
@@ -145,32 +128,30 @@ useEffect(() => {
     else navigate("/join");
   };
 
-  // Не та роль — просто ждём
-  if (status === "waiting" || status === "no_action") {
-    return (
-      <div className="min-h-screen flex flex-col bg-background scanlines">
-        <SiteHeader />
-        <main className="flex-1 container py-6 max-w-md flex flex-col items-center justify-center gap-4">
-          <EyeOff className="size-10 text-muted-foreground" />
-          <p className="text-sm font-mono text-muted-foreground text-center">
-            Кое-кто делает тайный выбор…
-          </p>
-          <p className="text-xs text-muted-foreground/50">Жди следующей сцены</p>
-        </main>
-      </div>
-    );
-  }
+  if (status === "loading") return (
+    <div className="min-h-screen flex flex-col bg-background scanlines">
+      <SiteHeader />
+      <main className="flex-1 flex items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-portal" />
+      </main>
+    </div>
+  );
 
-  if (status === "loading") {
-    return (
-      <div className="min-h-screen flex flex-col bg-background scanlines">
-        <SiteHeader />
-        <main className="flex-1 flex items-center justify-center">
-          <Loader2 className="size-8 animate-spin text-portal" />
-        </main>
-      </div>
-    );
-  }
+  if (status === "waiting" || status === "no_action") return (
+    <div className="min-h-screen flex flex-col bg-background scanlines">
+      <SiteHeader />
+      <main className="flex-1 container py-6 max-w-md flex flex-col items-center justify-center gap-4">
+        <EyeOff className="size-10 text-muted-foreground" />
+        <p className="text-sm font-mono text-muted-foreground text-center">
+          Кое-кто делает тайный выбор…
+        </p>
+        <p className="text-xs text-muted-foreground/50">Жди следующей сцены</p>
+        <Button onClick={next} variant="ghost" size="sm" className="text-xs font-mono">
+          Перейти к голосованию →
+        </Button>
+      </main>
+    </div>
+  );
 
   return (
     <div className="min-h-screen flex flex-col bg-background scanlines">
@@ -200,9 +181,8 @@ useEffect(() => {
                 const isSelected = selected === opt.id;
                 const tone = TONE_MAP[opt.id] ?? TONE_MAP["no"];
                 const effectStr = Object.entries(opt.effect ?? {})
-                  .map(([k, v]) => `${v > 0 ? "+" : ""}${v} ${k}`)
+                  .map(([k, v]) => `${(v as number) > 0 ? "+" : ""}${v} ${k}`)
                   .join(", ");
-
                 return (
                   <button
                     key={opt.id}
@@ -216,15 +196,9 @@ useEffect(() => {
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="font-display font-semibold text-base">{opt.text}</div>
-                        {effectStr && (
-                          <div className="text-xs text-muted-foreground mt-0.5">{effectStr}</div>
-                        )}
+                        {effectStr && <div className="text-xs text-muted-foreground mt-0.5">{effectStr}</div>}
                       </div>
-                      <div
-                        className={`size-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
-                          isSelected ? "bg-portal border-portal" : "border-border"
-                        }`}
-                      >
+                      <div className={`size-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${isSelected ? "bg-portal border-portal" : "border-border"}`}>
                         {isSelected && <Check className="size-3.5 text-portal-foreground" />}
                       </div>
                     </div>
@@ -237,9 +211,7 @@ useEffect(() => {
               <EyeOff className="size-4 text-muted-foreground shrink-0 mt-0.5" />
               <div className="text-xs">
                 <div className="font-semibold">Никто не узнает</div>
-                <div className="text-muted-foreground mt-0.5">
-                  Действие отправляется анонимно. На TV появится только результат.
-                </div>
+                <div className="text-muted-foreground mt-0.5">Действие отправляется анонимно. На TV появится только результат.</div>
               </div>
             </div>
 
@@ -249,11 +221,9 @@ useEffect(() => {
               size="lg"
               className="mt-5 w-full bg-portal hover:bg-portal/90 text-portal-foreground shadow-[var(--shadow-portal)] h-14 text-base font-display font-semibold disabled:opacity-40"
             >
-              {status === "submitting" ? (
-                <><Loader2 className="size-5 animate-spin" /> Отправляем…</>
-              ) : (
-                <>Подтвердить выбор <ArrowRight className="size-5" /></>
-              )}
+              {status === "submitting"
+                ? <><Loader2 className="size-5 animate-spin" /> Отправляем…</>
+                : <>Подтвердить выбор <ArrowRight className="size-5" /></>}
             </Button>
           </>
         ) : (
@@ -268,30 +238,21 @@ useEffect(() => {
                   Результат проявится в ходе следующей сцены. Никто не узнает, что выбрал именно ты.
                 </p>
               </div>
-
               {chosen && (
                 <div className="rounded-2xl border border-border bg-background/40 p-4 text-left">
                   <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground">Твой выбор</div>
                   <div className="mt-1 font-display font-semibold text-base">{chosen.text}</div>
                 </div>
               )}
-
               <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-3 flex gap-2.5">
                 <ShieldAlert className="size-4 text-destructive shrink-0 mt-0.5" />
                 <div className="text-xs text-left">
                   <div className="font-semibold text-destructive">Закрой экран</div>
-                  <div className="text-muted-foreground mt-0.5">
-                    Не позволяй соседу увидеть, что ты выбрал.
-                  </div>
+                  <div className="text-muted-foreground mt-0.5">Не позволяй соседу увидеть, что ты выбрал.</div>
                 </div>
               </div>
             </div>
-
-            <Button
-              onClick={next}
-              size="lg"
-              className="mt-6 w-full bg-portal hover:bg-portal/90 text-portal-foreground shadow-[var(--shadow-portal)] h-14 text-base font-display font-semibold"
-            >
+            <Button onClick={next} size="lg" className="mt-6 w-full bg-portal hover:bg-portal/90 text-portal-foreground shadow-[var(--shadow-portal)] h-14 text-base font-display font-semibold">
               Продолжить <ArrowRight className="size-5" />
             </Button>
           </div>
