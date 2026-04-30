@@ -6,7 +6,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 
 const PRICE_RUB = 250;
-const YUKASSA_SHOP_ID = "YOUR_SHOP_ID"; // заменить
+const YUKASSA_SHOP_ID = "1318837"; // заменить
 
 export default function Payment() {
   const { scenarioId } = useParams<{ scenarioId: string }>();
@@ -111,3 +111,4 @@ export default function Payment() {
     </div>
   );
 }
+
