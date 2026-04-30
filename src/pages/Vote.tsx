@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+﻿import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtimeVotes } from "@/hooks/useRealtimeVotes";
@@ -83,7 +83,8 @@ const Vote = () => {
       }
 
       const currentIdx = scenes.findIndex((s) => s.scene_id === currentScene.scene_id);
-      const nextScene  = scenes[currentIdx + 1];
+      const nextSceneId = winningOption?.next_scene_id;
+      const nextScene = nextSceneId ? scenes.find((s) => s.scene_id === nextSceneId) : scenes[currentIdx + 1];
 
       if (!nextScene) {
         await supabase.from("runs").update({ status: "finished", finished_at: new Date().toISOString() }).eq("id", runId);
@@ -106,7 +107,7 @@ const Vote = () => {
           .select("current_scene_id, scenario_id")
           .eq("id", runId)
           .single();
-        if (!run) throw new Error("Игра не найдена");
+        if (!run) throw new Error("Ð˜Ð³Ñ€Ð° Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½Ð°");
 
         setScenarioId(run.scenario_id);
 
@@ -115,13 +116,13 @@ const Vote = () => {
           .select("scenario_json")
           .eq("id", run.scenario_id)
           .single();
-        if (!scenario) throw new Error("Сценарий не найден");
+        if (!scenario) throw new Error("Ð¡Ñ†ÐµÐ½Ð°Ñ€Ð¸Ð¹ Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½");
 
         const scenes: Scene[] = (scenario.scenario_json as any)?.scenes ?? [];
         setAllScenes(scenes);
 
         const found = scenes.find((s) => s.scene_id === run.current_scene_id) ?? scenes[0];
-        if (!found) throw new Error("Сцена не найдена");
+        if (!found) throw new Error("Ð¡Ñ†ÐµÐ½Ð° Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½Ð°");
         setScene(found);
 
         if (roomId) {
@@ -145,7 +146,7 @@ const Vote = () => {
           setVotedId(existingVote.option_id);
         }
       } catch (err: any) {
-        toast.error(err?.message ?? "Ошибка загрузки");
+        toast.error(err?.message ?? "ÐžÑˆÐ¸Ð±ÐºÐ° Ð·Ð°Ð³Ñ€ÑƒÐ·ÐºÐ¸");
       } finally {
         setLoading(false);
       }
@@ -154,7 +155,7 @@ const Vote = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runId, roomId]);
 
-  // Таймер
+  // Ð¢Ð°Ð¹Ð¼ÐµÑ€
   useEffect(() => {
     if (!scene || loading) return;
     setTimeLeft(TIMER_SECONDS);
@@ -170,7 +171,7 @@ const Vote = () => {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [scene?.scene_id, loading]);
 
-  // Таймер истёк
+  // Ð¢Ð°Ð¹Ð¼ÐµÑ€ Ð¸ÑÑ‚Ñ‘Ðº
   useEffect(() => {
     if (timeLeft !== 0 || advancedRef.current || advancing || !scene || allScenes.length === 0) return;
     advancedRef.current = true;
@@ -179,7 +180,7 @@ const Vote = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeLeft]);
 
-  // Все проголосовали
+  // Ð’ÑÐµ Ð¿Ñ€Ð¾Ð³Ð¾Ð»Ð¾ÑÐ¾Ð²Ð°Ð»Ð¸
   useEffect(() => {
     if (!runId || !scene || totalPlayers === 0) return;
     if (totalVotes < totalPlayers) return;
@@ -228,9 +229,9 @@ const Vote = () => {
       if (error) throw error;
       setVoted(true);
       setVotedId(optionId);
-      toast.success("Голос принят!");
+      toast.success("Ð“Ð¾Ð»Ð¾Ñ Ð¿Ñ€Ð¸Ð½ÑÑ‚!");
     } catch (err: any) {
-      toast.error(err?.message ?? "Ошибка голосования");
+      toast.error(err?.message ?? "ÐžÑˆÐ¸Ð±ÐºÐ° Ð³Ð¾Ð»Ð¾ÑÐ¾Ð²Ð°Ð½Ð¸Ñ");
     } finally {
       setVoting(false);
     }
@@ -252,7 +253,7 @@ const Vote = () => {
       <div className="min-h-screen flex flex-col bg-background scanlines">
         <SiteHeader />
         <main className="flex-1 flex items-center justify-center">
-          <p className="text-destructive font-mono text-sm">Сцена не найдена</p>
+          <p className="text-destructive font-mono text-sm">Ð¡Ñ†ÐµÐ½Ð° Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½Ð°</p>
         </main>
       </div>
     );
@@ -270,10 +271,10 @@ const Vote = () => {
 
         <div className="flex items-center justify-between">
           <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground">
-            {scenarioId} · {scene.scene_id}
+            {scenarioId} Â· {scene.scene_id}
           </span>
           <span className="text-[10px] font-mono text-muted-foreground">
-            {totalVotes}/{totalPlayers} проголосовали
+            {totalVotes}/{totalPlayers} Ð¿Ñ€Ð¾Ð³Ð¾Ð»Ð¾ÑÐ¾Ð²Ð°Ð»Ð¸
           </span>
         </div>
 
@@ -281,10 +282,10 @@ const Vote = () => {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-                <Timer className="size-3" /> Осталось
+                <Timer className="size-3" /> ÐžÑÑ‚Ð°Ð»Ð¾ÑÑŒ
               </span>
               <span className={`text-[11px] font-mono font-bold ${timeLeft <= 10 ? "text-destructive" : "text-muted-foreground"}`}>
-                {timeLeft}с
+                {timeLeft}Ñ
               </span>
             </div>
             <div className="h-1 rounded-full bg-muted/30 overflow-hidden">
@@ -294,11 +295,11 @@ const Vote = () => {
         )}
 
         <div className="glass-card rounded-3xl p-6 border border-portal/30 shadow-[var(--shadow-portal)]">
-          <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground mb-3">Текущая сцена</p>
+          <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground mb-3">Ð¢ÐµÐºÑƒÑ‰Ð°Ñ ÑÑ†ÐµÐ½Ð°</p>
           <p className="text-base leading-relaxed font-display">{scene.scene_summary}</p>
           {scene.goal_hint && (
             <div className="mt-4 rounded-2xl border border-portal/30 bg-portal/10 p-4">
-              <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground mb-1">Подсказка</p>
+              <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground mb-1">ÐŸÐ¾Ð´ÑÐºÐ°Ð·ÐºÐ°</p>
               <p className="text-sm text-portal">{scene.goal_hint}</p>
             </div>
           )}
@@ -306,7 +307,7 @@ const Vote = () => {
 
         <div className="space-y-3">
           <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground px-1">
-            {voted ? "Твой выбор" : "Выбери вариант"}
+            {voted ? "Ð¢Ð²Ð¾Ð¹ Ð²Ñ‹Ð±Ð¾Ñ€" : "Ð’Ñ‹Ð±ÐµÑ€Ð¸ Ð²Ð°Ñ€Ð¸Ð°Ð½Ñ‚"}
           </p>
 
           {scene.options?.map((opt) => {
@@ -343,15 +344,15 @@ const Vote = () => {
           <div className="glass-card rounded-2xl p-4 text-center border border-portal/30">
             <Loader2 className="size-5 animate-spin text-portal mx-auto mb-2" />
             <p className="text-sm font-mono text-portal">
-              {isLastScene ? "Завершаем игру…" : "Переключаем сцену…"}
+              {isLastScene ? "Ð—Ð°Ð²ÐµÑ€ÑˆÐ°ÐµÐ¼ Ð¸Ð³Ñ€Ñƒâ€¦" : "ÐŸÐµÑ€ÐµÐºÐ»ÑŽÑ‡Ð°ÐµÐ¼ ÑÑ†ÐµÐ½Ñƒâ€¦"}
             </p>
           </div>
         )}
 
         {voted && !advancing && (
           <div className="glass-card rounded-2xl p-4 text-center border border-acid/30 bg-acid/5">
-            <p className="text-sm font-mono text-acid">✓ Голос принят — ждём остальных</p>
-            <p className="text-xs text-muted-foreground mt-1">{totalVotes}/{totalPlayers} проголосовали</p>
+            <p className="text-sm font-mono text-acid">âœ“ Ð“Ð¾Ð»Ð¾Ñ Ð¿Ñ€Ð¸Ð½ÑÑ‚ â€” Ð¶Ð´Ñ‘Ð¼ Ð¾ÑÑ‚Ð°Ð»ÑŒÐ½Ñ‹Ñ…</p>
+            <p className="text-xs text-muted-foreground mt-1">{totalVotes}/{totalPlayers} Ð¿Ñ€Ð¾Ð³Ð¾Ð»Ð¾ÑÐ¾Ð²Ð°Ð»Ð¸</p>
           </div>
         )}
 
@@ -361,4 +362,5 @@ const Vote = () => {
 };
 
 export default Vote;
+
 
