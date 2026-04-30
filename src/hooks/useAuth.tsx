@@ -10,63 +10,43 @@ type AuthCtx = {
 };
 
 const Ctx = createContext<AuthCtx>({
-  user: null,
-  session: null,
-  loading: true,
-  signOut: async () => {},
+  user: null, session: null, loading: true, signOut: async () => {},
 });
 
-// ⚠️ Временный режим тестирования: пропускает логин и подсовывает фейкового юзера.
-// Чтобы вернуть нормальную авторизацию — поставь false.
-const BYPASS_AUTH = false;
-
-const FAKE_USER = {
-  id: "00000000-0000-0000-0000-000000000001",
-  email: "tester@portal.local",
-  app_metadata: {},
-  user_metadata: { display_name: "Тестер" },
-  aud: "authenticated",
-  created_at: new Date().toISOString(),
-} as unknown as User;
-
-const FAKE_SESSION = {
-  access_token: "dev",
-  refresh_token: "dev",
-  expires_in: 3600,
-  expires_at: Math.floor(Date.now() / 1000) + 3600,
-  token_type: "bearer",
-  user: FAKE_USER,
-} as unknown as Session;
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [session, setSession] = useState<Session | null>(BYPASS_AUTH ? FAKE_SESSION : null);
-  const [loading, setLoading] = useState(!BYPASS_AUTH);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (BYPASS_AUTH) return;
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(s);
       setLoading(false);
     });
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setLoading(false);
+
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (data.session) {
+        setSession(data.session);
+        setLoading(false);
+      } else {
+        // Автоматический анонимный вход
+        const { data: anon } = await supabase.auth.signInAnonymously();
+        setSession(anon.session);
+        setLoading(false);
+      }
     });
+
     return () => sub.subscription.unsubscribe();
   }, []);
 
   return (
-    <Ctx.Provider
-      value={{
-        user: session?.user ?? null,
-        session,
-        loading,
-        signOut: async () => {
-          if (BYPASS_AUTH) return;
-          await supabase.auth.signOut();
-        },
-      }}
-    >
+    <Ctx.Provider value={{
+      user: session?.user ?? null,
+      session,
+      loading,
+      signOut: async () => {
+        await supabase.auth.signOut();
+      },
+    }}>
       {children}
     </Ctx.Provider>
   );
