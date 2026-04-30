@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Check, Lock, Timer } from "lucide-react";
 import { toast } from "sonner";
 
-type SceneOption = { id: string; text: string; consequences?: Record<string, number> };
+type SceneOption = { id: string; text: string; consequences?: Record<string, number>; next_scene_id?: string | null };
 type Scene = { scene_id: string; scene_summary: string; goal_hint: string; options?: SceneOption[] };
 
 function getPlayerId(userId?: string | null): string {
@@ -25,8 +25,8 @@ const TIMER_SECONDS = 60;
 
 const Vote = () => {
   const [params] = useSearchParams();
-  const navigate  = useNavigate();
-  const { user }  = useAuth();
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const runId  = params.get("run");
   const roomId = params.get("room");
@@ -41,6 +41,7 @@ const Vote = () => {
   const [voting,       setVoting]       = useState(false);
   const [advancing,    setAdvancing]    = useState(false);
   const [timeLeft,     setTimeLeft]     = useState(TIMER_SECONDS);
+  const [sceneStarted, setSceneStarted] = useState<number>(Date.now());
 
   const advancedRef = useRef(false);
   const timerRef    = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -82,14 +83,14 @@ const Vote = () => {
         await supabase.from("runs").update({ state_json: newState }).eq("id", runId);
       }
 
-      const currentIdx = scenes.findIndex((s) => s.scene_id === currentScene.scene_id);
       const nextSceneId = winningOption?.next_scene_id;
-      const nextScene = nextSceneId ? scenes.find((s) => s.scene_id === nextSceneId) : scenes[currentIdx + 1];
+      const currentIdx  = scenes.findIndex((s) => s.scene_id === currentScene.scene_id);
+      const nextScene   = nextSceneId ? scenes.find((s) => s.scene_id === nextSceneId) : scenes[currentIdx + 1];
 
       if (!nextScene) {
         await supabase.from("runs").update({ status: "finished", finished_at: new Date().toISOString() }).eq("id", runId);
       } else {
-        await supabase.from("runs").update({ current_scene_id: nextScene.scene_id }).eq("id", runId);
+        await supabase.from("runs").update({ current_scene_id: nextScene.scene_id, updated_at: new Date().toISOString() }).eq("id", runId);
       }
     } catch (err) {
       console.error("advance error", err);
@@ -104,25 +105,29 @@ const Vote = () => {
       try {
         const { data: run } = await supabase
           .from("runs")
-          .select("current_scene_id, scenario_id")
+          .select("current_scene_id, scenario_id, updated_at")
           .eq("id", runId)
           .single();
-        if (!run) throw new Error("Ð˜Ð³Ñ€Ð° Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½Ð°");
+        if (!run) throw new Error("Игра не найдена");
 
         setScenarioId(run.scenario_id);
+
+        // Синхронизированный таймер — считаем от updated_at в БД
+        const serverTime = new Date(run.updated_at).getTime();
+        setSceneStarted(serverTime);
 
         const { data: scenario } = await supabase
           .from("scenarios")
           .select("scenario_json")
           .eq("id", run.scenario_id)
           .single();
-        if (!scenario) throw new Error("Ð¡Ñ†ÐµÐ½Ð°Ñ€Ð¸Ð¹ Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½");
+        if (!scenario) throw new Error("Сценарий не найден");
 
         const scenes: Scene[] = (scenario.scenario_json as any)?.scenes ?? [];
         setAllScenes(scenes);
 
         const found = scenes.find((s) => s.scene_id === run.current_scene_id) ?? scenes[0];
-        if (!found) throw new Error("Ð¡Ñ†ÐµÐ½Ð° Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½Ð°");
+        if (!found) throw new Error("Сцена не найдена");
         setScene(found);
 
         if (roomId) {
@@ -146,51 +151,47 @@ const Vote = () => {
           setVotedId(existingVote.option_id);
         }
       } catch (err: any) {
-        toast.error(err?.message ?? "ÐžÑˆÐ¸Ð±ÐºÐ° Ð·Ð°Ð³Ñ€ÑƒÐ·ÐºÐ¸");
+        toast.error(err?.message ?? "Ошибка загрузки");
       } finally {
         setLoading(false);
       }
     };
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runId, roomId]);
 
-  // Ð¢Ð°Ð¹Ð¼ÐµÑ€
+  // Синхронизированный таймер
   useEffect(() => {
     if (!scene || loading) return;
-    setTimeLeft(TIMER_SECONDS);
     if (timerRef.current) clearInterval(timerRef.current);
 
-    timerRef.current = setInterval(() => {
-      setTimeLeft((t) => {
-        if (t <= 1) { clearInterval(timerRef.current!); return 0; }
-        return t - 1;
-      });
-    }, 1000);
-
+    const tick = () => {
+      const elapsed = Math.floor((Date.now() - sceneStarted) / 1000);
+      const left = Math.max(0, TIMER_SECONDS - elapsed);
+      setTimeLeft(left);
+      if (left === 0 && timerRef.current) clearInterval(timerRef.current);
+    };
+    tick();
+    timerRef.current = setInterval(tick, 1000);
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [scene?.scene_id, loading]);
+  }, [scene?.scene_id, sceneStarted, loading]);
 
-  // Ð¢Ð°Ð¹Ð¼ÐµÑ€ Ð¸ÑÑ‚Ñ‘Ðº
+  // Таймер истёк
   useEffect(() => {
     if (timeLeft !== 0 || advancedRef.current || advancing || !scene || allScenes.length === 0) return;
     advancedRef.current = true;
     setAdvancing(true);
     advance(scene, allScenes, voteCounts);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeLeft]);
 
-  // Ð’ÑÐµ Ð¿Ñ€Ð¾Ð³Ð¾Ð»Ð¾ÑÐ¾Ð²Ð°Ð»Ð¸
+  // Все проголосовали
   useEffect(() => {
     if (!runId || !scene || totalPlayers === 0) return;
     if (totalVotes < totalPlayers) return;
     if (advancedRef.current || advancing) return;
-
     advancedRef.current = true;
     setAdvancing(true);
     if (timerRef.current) clearInterval(timerRef.current);
     setTimeout(() => advance(scene, allScenes, voteCounts), 2000);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [totalVotes, totalPlayers]);
 
   // Realtime
@@ -209,6 +210,9 @@ const Vote = () => {
             setAdvancing(false);
             setVoted(false);
             setVotedId(null);
+            // Синхронизируем таймер по updated_at из БД
+            const serverTime = new Date(next.updated_at).getTime();
+            setSceneStarted(serverTime);
             const found = allScenes.find((s) => s.scene_id === next.current_scene_id);
             if (found) setScene(found);
           }
@@ -216,7 +220,6 @@ const Vote = () => {
       )
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runId, scene?.scene_id, allScenes]);
 
   const handleVote = async (optionId: string) => {
@@ -229,9 +232,9 @@ const Vote = () => {
       if (error) throw error;
       setVoted(true);
       setVotedId(optionId);
-      toast.success("Ð“Ð¾Ð»Ð¾Ñ Ð¿Ñ€Ð¸Ð½ÑÑ‚!");
+      toast.success("Голос принят!");
     } catch (err: any) {
-      toast.error(err?.message ?? "ÐžÑˆÐ¸Ð±ÐºÐ° Ð³Ð¾Ð»Ð¾ÑÐ¾Ð²Ð°Ð½Ð¸Ñ");
+      toast.error(err?.message ?? "Ошибка голосования");
     } finally {
       setVoting(false);
     }
@@ -253,7 +256,7 @@ const Vote = () => {
       <div className="min-h-screen flex flex-col bg-background scanlines">
         <SiteHeader />
         <main className="flex-1 flex items-center justify-center">
-          <p className="text-destructive font-mono text-sm">Ð¡Ñ†ÐµÐ½Ð° Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½Ð°</p>
+          <p className="text-destructive font-mono text-sm">Сцена не найдена</p>
         </main>
       </div>
     );
@@ -271,10 +274,10 @@ const Vote = () => {
 
         <div className="flex items-center justify-between">
           <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground">
-            {scenarioId} Â· {scene.scene_id}
+            {scenarioId} · {scene.scene_id}
           </span>
           <span className="text-[10px] font-mono text-muted-foreground">
-            {totalVotes}/{totalPlayers} Ð¿Ñ€Ð¾Ð³Ð¾Ð»Ð¾ÑÐ¾Ð²Ð°Ð»Ð¸
+            {totalVotes}/{totalPlayers} проголосовали
           </span>
         </div>
 
@@ -282,10 +285,10 @@ const Vote = () => {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-                <Timer className="size-3" /> ÐžÑÑ‚Ð°Ð»Ð¾ÑÑŒ
+                <Timer className="size-3" /> Осталось
               </span>
               <span className={`text-[11px] font-mono font-bold ${timeLeft <= 10 ? "text-destructive" : "text-muted-foreground"}`}>
-                {timeLeft}Ñ
+                {timeLeft}с
               </span>
             </div>
             <div className="h-1 rounded-full bg-muted/30 overflow-hidden">
@@ -295,11 +298,11 @@ const Vote = () => {
         )}
 
         <div className="glass-card rounded-3xl p-6 border border-portal/30 shadow-[var(--shadow-portal)]">
-          <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground mb-3">Ð¢ÐµÐºÑƒÑ‰Ð°Ñ ÑÑ†ÐµÐ½Ð°</p>
+          <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground mb-3">Текущая сцена</p>
           <p className="text-base leading-relaxed font-display">{scene.scene_summary}</p>
           {scene.goal_hint && (
             <div className="mt-4 rounded-2xl border border-portal/30 bg-portal/10 p-4">
-              <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground mb-1">ÐŸÐ¾Ð´ÑÐºÐ°Ð·ÐºÐ°</p>
+              <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground mb-1">Подсказка</p>
               <p className="text-sm text-portal">{scene.goal_hint}</p>
             </div>
           )}
@@ -307,7 +310,7 @@ const Vote = () => {
 
         <div className="space-y-3">
           <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground px-1">
-            {voted ? "Ð¢Ð²Ð¾Ð¹ Ð²Ñ‹Ð±Ð¾Ñ€" : "Ð’Ñ‹Ð±ÐµÑ€Ð¸ Ð²Ð°Ñ€Ð¸Ð°Ð½Ñ‚"}
+            {voted ? "Твой выбор" : "Выбери вариант"}
           </p>
 
           {scene.options?.map((opt) => {
@@ -344,15 +347,15 @@ const Vote = () => {
           <div className="glass-card rounded-2xl p-4 text-center border border-portal/30">
             <Loader2 className="size-5 animate-spin text-portal mx-auto mb-2" />
             <p className="text-sm font-mono text-portal">
-              {isLastScene ? "Ð—Ð°Ð²ÐµÑ€ÑˆÐ°ÐµÐ¼ Ð¸Ð³Ñ€Ñƒâ€¦" : "ÐŸÐµÑ€ÐµÐºÐ»ÑŽÑ‡Ð°ÐµÐ¼ ÑÑ†ÐµÐ½Ñƒâ€¦"}
+              {isLastScene ? "Завершаем игру…" : "Переключаем сцену…"}
             </p>
           </div>
         )}
 
         {voted && !advancing && (
           <div className="glass-card rounded-2xl p-4 text-center border border-acid/30 bg-acid/5">
-            <p className="text-sm font-mono text-acid">âœ“ Ð“Ð¾Ð»Ð¾Ñ Ð¿Ñ€Ð¸Ð½ÑÑ‚ â€” Ð¶Ð´Ñ‘Ð¼ Ð¾ÑÑ‚Ð°Ð»ÑŒÐ½Ñ‹Ñ…</p>
-            <p className="text-xs text-muted-foreground mt-1">{totalVotes}/{totalPlayers} Ð¿Ñ€Ð¾Ð³Ð¾Ð»Ð¾ÑÐ¾Ð²Ð°Ð»Ð¸</p>
+            <p className="text-sm font-mono text-acid">✓ Голос принят — ждём остальных</p>
+            <p className="text-xs text-muted-foreground mt-1">{totalVotes}/{totalPlayers} проголосовали</p>
           </div>
         )}
 
@@ -362,5 +365,3 @@ const Vote = () => {
 };
 
 export default Vote;
-
-
