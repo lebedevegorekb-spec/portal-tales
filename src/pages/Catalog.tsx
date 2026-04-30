@@ -188,7 +188,7 @@ const Catalog = () => {
                         {busy === s.id ? "..." : "Создать комнату"}
                       </Button>
                     ) : (
-                      <Link to="/pricing" className="w-full">
+                      <Link to={`/payment/${s.id}`} className="w-full">
                         <Button variant="outline" className="w-full">
                           <Lock className="h-4 w-4" />
                           Купить за ₽{s.meta.priceRub}
@@ -207,3 +207,4 @@ const Catalog = () => {
 };
 
 export default Catalog;
+
