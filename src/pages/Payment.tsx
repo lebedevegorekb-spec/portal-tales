@@ -54,15 +54,25 @@ export default function Payment() {
     setError(null);
     try {
       // Создать purchase в БД
-      const { data: purchase, error: pErr } = await supabase
+      // Создать purchase
+      const { error: pErr } = await supabase
         .from("purchases")
         .insert({
           user_id: user.id,
           scenario_id: scenarioId,
           amount_rub: PRICE_RUB,
           status: "pending",
-        })
-        .select()
+        });
+
+      // Получить созданный purchase
+      const { data: purchase } = await supabase
+        .from("purchases")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("scenario_id", scenarioId)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(1)
         .single();
 
       if (pErr || !purchase) throw new Error("Не удалось создать платёж");
@@ -111,4 +121,5 @@ export default function Payment() {
     </div>
   );
 }
+
 
