@@ -6,7 +6,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 
 const PRICE_RUB = 250;
-const YUKASSA_SHOP_ID = "1318837"; // заменить
+const YUKASSA_SHOP_ID = "1318837";
 
 export default function Payment() {
   const { scenarioId } = useParams<{ scenarioId: string }>();
@@ -17,14 +17,10 @@ export default function Payment() {
   const [purchaseId, setPurchaseId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Polling после возврата с ЮKassa
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const pid = params.get("purchase_id");
-    if (pid) {
-      setPurchaseId(pid);
-      setPolling(true);
-    }
+    if (pid) { setPurchaseId(pid); setPolling(true); }
   }, []);
 
   useEffect(() => {
@@ -36,12 +32,9 @@ export default function Payment() {
         .eq("id", purchaseId)
         .maybeSingle();
       if (data?.status === "succeeded") {
-        clearInterval(interval);
-        setPolling(false);
-        navigate("/catalog");
+        clearInterval(interval); setPolling(false); navigate("/catalog");
       } else if (data?.status === "failed") {
-        clearInterval(interval);
-        setPolling(false);
+        clearInterval(interval); setPolling(false);
         setError("Платёж не прошёл. Попробуй снова.");
       }
     }, 3000);
@@ -53,9 +46,8 @@ export default function Payment() {
     setLoading(true);
     setError(null);
     try {
-      // Создать purchase в БД
-      // Создать purchase
-      const { error: pErr } = await supabase
+      // Шаг 1: insert без select
+      const { error: insertErr } = await supabase
         .from("purchases")
         .insert({
           user_id: user.id,
@@ -64,8 +56,10 @@ export default function Payment() {
           status: "pending",
         });
 
-      // Получить созданный purchase
-      const { data: purchase } = await supabase
+      if (insertErr) throw new Error(insertErr.message);
+
+      // Шаг 2: получить только что созданный purchase
+      const { data: purchase, error: selectErr } = await supabase
         .from("purchases")
         .select("id")
         .eq("user_id", user.id)
@@ -73,11 +67,10 @@ export default function Payment() {
         .eq("status", "pending")
         .order("created_at", { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
-      if (pErr || !purchase) throw new Error("Не удалось создать платёж");
+      if (selectErr || !purchase) throw new Error("Не удалось получить платёж");
 
-      // Редирект на ЮKassa
       const returnUrl = `${window.location.origin}/payment/${scenarioId}?purchase_id=${purchase.id}`;
       const yukassaUrl = `https://yoomoney.ru/checkout/payments/v2/contract?shopId=${YUKASSA_SHOP_ID}&purchaseId=${purchase.id}&amount=${PRICE_RUB}&returnUrl=${encodeURIComponent(returnUrl)}`;
       window.location.href = yukassaUrl;
@@ -103,23 +96,15 @@ export default function Payment() {
               <p className="text-xs text-muted-foreground">Это займёт несколько секунд</p>
             </div>
           ) : (
-            <Button
-              onClick={handlePay}
-              disabled={loading || !user}
-              className="w-full bg-portal hover:bg-portal/80"
-            >
+            <Button onClick={handlePay} disabled={loading || !user} className="w-full bg-portal hover:bg-portal/80">
               {loading ? "Переход к оплате..." : "Оплатить через ЮKassa"}
             </Button>
           )}
 
-          {!user && (
-            <p className="text-xs text-destructive">Войди в аккаунт чтобы купить</p>
-          )}
+          {!user && <p className="text-xs text-destructive">Войди в аккаунт чтобы купить</p>}
           {error && <p className="text-xs text-destructive">{error}</p>}
         </div>
       </main>
     </div>
   );
 }
-
-
