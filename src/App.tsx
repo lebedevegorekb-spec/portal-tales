@@ -24,10 +24,10 @@ import Offer from "./pages/Offer.tsx";
 import Payment from "./pages/Payment.tsx";
 import Pricing from "./pages/Pricing.tsx";
 import Profile from "./pages/Profile.tsx";
+import AdminScenarios from "./pages/admin/Scenarios.tsx";
+import AdminScenarioEdit from "./pages/admin/ScenarioEdit.tsx";
 import NotFound from "./pages/NotFound.tsx";
-
 const queryClient = new QueryClient();
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -67,6 +67,8 @@ const App = () => (
               <Route path="/reconnect" element={<Reconnect />} />
               <Route path="/payment/:scenarioId" element={<Payment />} />
               <Route path="/payment" element={<Payment />} />
+              <Route path="/admin/scenarios" element={<AdminScenarios />} />
+              <Route path="/admin/scenarios/:scenarioId" element={<AdminScenarioEdit />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
@@ -75,5 +77,4 @@ const App = () => (
     </TooltipProvider>
   </QueryClientProvider>
 );
-
 export default App;
