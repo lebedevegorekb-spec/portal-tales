@@ -6,7 +6,6 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 
 const PRICE_RUB = 250;
-const YUKASSA_SHOP_ID = "1318837";
 
 export default function Payment() {
   const { scenarioId } = useParams<{ scenarioId: string }>();
@@ -32,9 +31,12 @@ export default function Payment() {
         .eq("id", purchaseId)
         .maybeSingle();
       if (data?.status === "succeeded") {
-        clearInterval(interval); setPolling(false); navigate("/catalog");
+        clearInterval(interval);
+        setPolling(false);
+        navigate("/catalog");
       } else if (data?.status === "failed") {
-        clearInterval(interval); setPolling(false);
+        clearInterval(interval);
+        setPolling(false);
         setError("Платёж не прошёл. Попробуй снова.");
       }
     }, 3000);
@@ -46,34 +48,17 @@ export default function Payment() {
     setLoading(true);
     setError(null);
     try {
-      // Шаг 1: insert без select
-      const { error: insertErr } = await supabase
-        .from("purchases")
-        .insert({
-          user_id: user.id,
-          scenario_id: scenarioId,
-          amount_rub: PRICE_RUB,
-          status: "pending",
-        });
+      const returnUrl = `${window.location.origin}/payment/${scenarioId}`;
 
-      if (insertErr) throw new Error(insertErr.message);
+      const { data, error: fnError } = await supabase.functions.invoke("payment-create", {
+        body: { scenario_id: scenarioId, return_url: returnUrl },
+      });
 
-      // Шаг 2: получить только что созданный purchase
-      const { data: purchase, error: selectErr } = await supabase
-        .from("purchases")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("scenario_id", scenarioId)
-        .eq("status", "pending")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      if (fnError) throw new Error(fnError.message);
+      if (data?.error) throw new Error(data.error);
+      if (!data?.confirmation_url) throw new Error("Нет ссылки на оплату");
 
-      if (selectErr || !purchase) throw new Error("Не удалось получить платёж");
-
-      const returnUrl = `${window.location.origin}/payment/${scenarioId}?purchase_id=${purchase.id}`;
-      const yukassaUrl = `https://yoomoney.ru/checkout/payments/v2/contract?shopId=${YUKASSA_SHOP_ID}&purchaseId=${purchase.id}&amount=${PRICE_RUB}&returnUrl=${encodeURIComponent(returnUrl)}`;
-      window.location.href = yukassaUrl;
+      window.location.href = data.confirmation_url;
     } catch (e: any) {
       setError(e.message);
       setLoading(false);
@@ -96,7 +81,11 @@ export default function Payment() {
               <p className="text-xs text-muted-foreground">Это займёт несколько секунд</p>
             </div>
           ) : (
-            <Button onClick={handlePay} disabled={loading || !user} className="w-full bg-portal hover:bg-portal/80">
+            <Button
+              onClick={handlePay}
+              disabled={loading || !user}
+              className="w-full bg-portal hover:bg-portal/80"
+            >
               {loading ? "Переход к оплате..." : "Оплатить через ЮKassa"}
             </Button>
           )}
