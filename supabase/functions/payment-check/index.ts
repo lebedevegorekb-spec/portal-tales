@@ -15,25 +15,24 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const supabase = createClient(
+    const serviceClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    const authHeader = req.headers.get("Authorization");
-    const { data: { user } } = await createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader ?? "" } } }
-    ).auth.getUser();
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const token = authHeader.replace("Bearer ", "");
 
-    if (!user) return json({ error: "Unauthorized" }, 401);
+    if (!token) return json({ error: "Unauthorized" }, 401);
 
-    const { purchase_id } = await req.json();
+    const { data: { user }, error: authError } = await serviceClient.auth.getUser(token);
+    if (authError || !user) return json({ error: "Unauthorized" }, 401);
+
+    const body = await req.json();
+    const { purchase_id } = body;
     if (!purchase_id) return json({ error: "Missing purchase_id" }, 400);
 
-    // Получить purchase
-    const { data: purchase } = await supabase
+    const { data: purchase } = await serviceClient
       .from("purchases")
       .select("*")
       .eq("id", purchase_id)
@@ -43,68 +42,57 @@ Deno.serve(async (req) => {
     if (!purchase) return json({ error: "Purchase not found" }, 404);
     if (purchase.status === "succeeded") return json({ status: "succeeded" });
 
-    // Проверить статус напрямую в ЮKassa
-    if (purchase.payment_id) {
-      const shopId = Deno.env.get("YOOKASSA_SHOP_ID")!;
-      const secretKey = Deno.env.get("YOOKASSA_SECRET_KEY")!;
+    if (!purchase.payment_id) return json({ status: purchase.status });
 
-      const ykRes = await fetch(`https://api.yookassa.ru/v3/payments/${purchase.payment_id}`, {
-        headers: {
-          "Authorization": "Basic " + btoa(`${shopId}:${secretKey}`),
-        },
-      });
+    const shopId = Deno.env.get("YOOKASSA_SHOP_ID")!;
+    const secretKey = Deno.env.get("YOOKASSA_SECRET_KEY")!;
 
-      const ykPayment = await ykRes.json();
+    const ykRes = await fetch(`https://api.yookassa.ru/v3/payments/${purchase.payment_id}`, {
+      headers: {
+        "Authorization": "Basic " + btoa(`${shopId}:${secretKey}`),
+      },
+    });
 
-      if (ykPayment.status === "succeeded") {
-        // Обновить purchase
-        const { data: userData } = await supabase.auth.admin.getUserById(user.id);
-        const userEmail = userData?.user?.email ?? null;
+    const ykPayment = await ykRes.json();
+    console.log("YK payment status:", ykPayment.status, "purchase_id:", purchase_id);
 
-        await supabase
-          .from("purchases")
-          .update({
-            status: "succeeded",
-            paid_at: new Date().toISOString(),
-            user_email: userEmail,
-          })
-          .eq("id", purchase_id);
+    if (ykPayment.status === "succeeded") {
+      const { data: userData } = await serviceClient.auth.admin.getUserById(user.id);
+      const userEmail = userData?.user?.email ?? null;
 
-        // Проверить нет ли уже entitlement
-        const { data: existing } = await supabase
-          .from("entitlements")
-          .select("id")
-          .eq("user_id", user.id)
-          .eq("scope", purchase.scenario_id)
-          .maybeSingle();
+      await serviceClient
+        .from("purchases")
+        .update({ status: "succeeded", paid_at: new Date().toISOString(), user_email: userEmail })
+        .eq("id", purchase_id);
 
-        if (!existing) {
-          await supabase
-            .from("entitlements")
-            .insert({
-              user_id: user.id,
-              scope: purchase.scenario_id,
-              active: true,
-              source: "purchase",
-            });
-        }
+      const { data: existing } = await serviceClient
+        .from("entitlements")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("scope", purchase.scenario_id)
+        .maybeSingle();
 
-        return json({ status: "succeeded" });
+      if (!existing) {
+        await serviceClient.from("entitlements").insert({
+          user_id: user.id,
+          scope: purchase.scenario_id,
+          active: true,
+          source: "purchase",
+        });
       }
 
-      if (ykPayment.status === "canceled") {
-        await supabase
-          .from("purchases")
-          .update({ status: "failed" })
-          .eq("id", purchase_id);
-        return json({ status: "failed" });
-      }
-
-      return json({ status: ykPayment.status });
+      return json({ status: "succeeded" });
     }
 
-    return json({ status: purchase.status });
+    if (ykPayment.status === "canceled") {
+      await serviceClient.from("purchases").update({ status: "failed" }).eq("id", purchase_id);
+      return json({ status: "failed" });
+    }
+
+    return json({ status: ykPayment.status ?? "pending" });
+
   } catch (e) {
+    console.error("payment-check error:", String(e));
     return json({ error: String(e) }, 500);
   }
 });

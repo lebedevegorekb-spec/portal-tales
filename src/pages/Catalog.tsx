@@ -41,6 +41,7 @@ const Catalog = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
+  const [entitlements, setEntitlements] = useState<Set<string>>(new Set());
   const [loadingScenarios, setLoadingScenarios] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -50,6 +51,8 @@ const Catalog = () => {
 
   useEffect(() => {
     if (!user) return;
+
+    // Загрузить сценарии
     supabase
       .from("scenarios")
       .select("id, title, description, price_rub, scenario_json")
@@ -58,7 +61,27 @@ const Catalog = () => {
         if (data) setScenarios(data as Scenario[]);
         setLoadingScenarios(false);
       });
+
+    // Загрузить entitlements пользователя
+    supabase
+      .from("entitlements")
+      .select("scope")
+      .eq("user_id", user.id)
+      .eq("active", true)
+      .then(({ data }) => {
+        if (data) {
+          const scopes = new Set(data.map((e) => e.scope));
+          setEntitlements(scopes);
+        }
+      });
   }, [user]);
+
+  const hasAccess = (scenarioId: string, priceRub: number) => {
+    if (priceRub === 0) return true;
+    if (entitlements.has(scenarioId)) return true;
+    if (entitlements.has("all")) return true;
+    return false;
+  };
 
   const startRun = async (id: string) => {
     if (!user) return;
@@ -112,6 +135,7 @@ const Catalog = () => {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {cards.map((s) => {
               const free = s.price_rub === 0;
+              const unlocked = hasAccess(s.id, s.price_rub);
               return (
                 <article
                   key={s.id}
@@ -128,7 +152,7 @@ const Catalog = () => {
                       {s.id}
                     </div>
                     <div className="absolute top-3 right-3">
-                      {free ? (
+                      {unlocked ? (
                         <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-portal bg-background/70 backdrop-blur-sm px-2 py-1 rounded-sm border border-portal/40">
                           Доступен
                         </span>
@@ -141,6 +165,8 @@ const Catalog = () => {
                     <div className="absolute bottom-3 right-3 text-xs font-display font-bold bg-background/80 backdrop-blur-sm px-2.5 py-1 rounded-sm border border-portal/30">
                       {free ? (
                         <span className="text-portal neon-text">БЕСПЛАТНО</span>
+                      ) : unlocked ? (
+                        <span className="text-portal">КУПЛЕН</span>
                       ) : (
                         <span>₽{s.price_rub}</span>
                       )}
@@ -170,7 +196,7 @@ const Catalog = () => {
                     </div>
 
                     <div className="mt-5 flex-1 flex items-end">
-                      {free ? (
+                      {unlocked ? (
                         <Button
                           onClick={() => startRun(s.id)}
                           disabled={busy === s.id}
