@@ -24,13 +24,13 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const scenarioId: string | undefined = body?.scenario_id;
-    const hostName: string = (body?.host_name as string) || "Хост";
     const minPlayers: number = Math.min(8, Math.max(2, Number(body?.min_players) || 4));
 
     if (!scenarioId) return json({ error: "scenario_id required" }, 400);
 
     let room: any = null;
     let lastErr: any = null;
+
     for (let i = 0; i < 5; i++) {
       const code = genCode();
       const { data, error } = await supabase
@@ -50,13 +50,8 @@ Deno.serve(async (req) => {
 
     if (!room) return json({ error: lastErr?.message || "Failed to create room" }, 500);
 
-    await supabase.from("room_players").insert({
-      room_id: room.id,
-      user_id: auth.userId,
-      display_name: hostName,
-      is_host: true,
-      ready: true,
-    });
+    // Хост НЕ добавляется в room_players автоматически
+    // Он может присоединиться как игрок через /join или начать игру без участия
 
     return json({ room });
   } catch (e: any) {
