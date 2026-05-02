@@ -5,8 +5,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 
-const PRICE_RUB = 250;
-
 export default function Payment() {
   const { scenarioId } = useParams<{ scenarioId: string }>();
   const { user } = useAuth();
@@ -14,14 +12,34 @@ export default function Payment() {
   const [loading, setLoading] = useState(false);
   const [polling, setPolling] = useState(false);
   const [purchaseId, setPurchaseId] = useState<string | null>(null);
+  const [priceRub, setPriceRub] = useState<number | null>(null);
+  const [scenarioTitle, setScenarioTitle] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
+  // Загрузить цену из БД
+  useEffect(() => {
+    if (!scenarioId) return;
+    supabase
+      .from("scenarios")
+      .select("price_rub, title")
+      .eq("id", scenarioId)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          setPriceRub(data.price_rub ?? 250);
+          setScenarioTitle(data.title ?? "");
+        }
+      });
+  }, [scenarioId]);
+
+  // Проверить purchase_id в URL (возврат с ЮKassa)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const pid = params.get("purchase_id");
     if (pid) { setPurchaseId(pid); setPolling(true); }
   }, []);
 
+  // Поллинг статуса платежа
   useEffect(() => {
     if (!polling || !purchaseId) return;
     const interval = setInterval(async () => {
@@ -49,15 +67,12 @@ export default function Payment() {
     setError(null);
     try {
       const returnUrl = `${window.location.origin}/payment/${scenarioId}`;
-
       const { data, error: fnError } = await supabase.functions.invoke("payment-create", {
         body: { scenario_id: scenarioId, return_url: returnUrl },
       });
-
       if (fnError) throw new Error(fnError.message);
       if (data?.error) throw new Error(data.error);
       if (!data?.confirmation_url) throw new Error("Нет ссылки на оплату");
-
       window.location.href = data.confirmation_url;
     } catch (e: any) {
       setError(e.message);
@@ -72,8 +87,12 @@ export default function Payment() {
         <div className="glass-card rounded-2xl p-8 max-w-sm w-full text-center space-y-6">
           <div className="text-4xl">🔓</div>
           <h1 className="font-display text-2xl font-bold">Открыть сценарий</h1>
-          <p className="text-muted-foreground text-sm">Сценарий {scenarioId}</p>
-          <div className="text-3xl font-bold text-portal">{PRICE_RUB} ₽</div>
+          {scenarioTitle && (
+            <p className="text-muted-foreground text-sm">{scenarioTitle}</p>
+          )}
+          <div className="text-3xl font-bold text-portal">
+            {priceRub !== null ? `${priceRub} ₽` : "..."}
+          </div>
 
           {polling ? (
             <div className="space-y-2">
@@ -83,10 +102,10 @@ export default function Payment() {
           ) : (
             <Button
               onClick={handlePay}
-              disabled={loading || !user}
+              disabled={loading || !user || priceRub === null}
               className="w-full bg-portal hover:bg-portal/80"
             >
-              {loading ? "Переход к оплате..." : "Оплатить через ЮKassa"}
+              {loading ? "Переход к оплате..." : `Оплатить ${priceRub ? priceRub + " ₽" : ""} через ЮKassa`}
             </Button>
           )}
 

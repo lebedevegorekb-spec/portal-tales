@@ -37,13 +37,28 @@ serve(async (req) => {
       });
     }
 
+    // Получить цену из БД
+    const { data: scenario, error: scenarioErr } = await supabase
+      .from("scenarios")
+      .select("price_rub, title")
+      .eq("id", scenario_id)
+      .single();
+
+    if (scenarioErr || !scenario) {
+      return new Response(JSON.stringify({ error: "Scenario not found" }), {
+        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const priceRub = scenario.price_rub ?? 250;
+
     // Создать запись purchase
     const { data: purchase, error: purchaseErr } = await supabase
       .from("purchases")
       .insert({
         user_id: user.id,
         scenario_id,
-        amount_rub: 250,
+        amount_rub: priceRub,
         status: "pending",
       })
       .select("id")
@@ -57,24 +72,22 @@ serve(async (req) => {
 
     const shopId = Deno.env.get("YOOKASSA_SHOP_ID")!;
     const secretKey = Deno.env.get("YOOKASSA_SECRET_KEY")!;
-    const idempotenceKey = purchase.id;
 
-    // Вызов API ЮKassa
     const ykResponse = await fetch("https://api.yookassa.ru/v3/payments", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Idempotence-Key": idempotenceKey,
+        "Idempotence-Key": purchase.id,
         "Authorization": "Basic " + btoa(`${shopId}:${secretKey}`),
       },
       body: JSON.stringify({
-        amount: { value: "250.00", currency: "RUB" },
+        amount: { value: priceRub.toFixed(2), currency: "RUB" },
         confirmation: {
           type: "redirect",
           return_url: `${return_url}?purchase_id=${purchase.id}`,
         },
         capture: true,
-        description: `Сценарий ${scenario_id}`,
+        description: scenario.title,
         metadata: { purchase_id: purchase.id, scenario_id },
       }),
     });
@@ -87,7 +100,6 @@ serve(async (req) => {
       });
     }
 
-    // Сохранить payment_id
     await supabase
       .from("purchases")
       .update({ payment_id: payment.id })
@@ -96,6 +108,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       confirmation_url: payment.confirmation.confirmation_url,
       purchase_id: purchase.id,
+      price_rub: priceRub,
     }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
