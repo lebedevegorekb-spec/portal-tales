@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -16,7 +16,7 @@ type Player = {
   display_name: string; is_host: boolean; ready: boolean; joined_at: string;
 };
 
-// Перемешать массив случайно
+// ÐŸÐµÑ€ÐµÐ¼ÐµÑˆÐ°Ñ‚ÑŒ Ð¼Ð°ÑÑÐ¸Ð² ÑÐ»ÑƒÑ‡Ð°Ð¹Ð½Ð¾
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -47,7 +47,7 @@ const Lobby = () => {
   const loadRoom = async () => {
     if (!roomId) return;
     const { data: r, error } = await supabase.from("rooms").select("*").eq("id", roomId).maybeSingle();
-    if (error || !r) { toast.error("Комната не найдена"); navigate("/catalog"); return; }
+    if (error || !r) { toast.error("ÐšÐ¾Ð¼Ð½Ð°Ñ‚Ð° Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½Ð°"); navigate("/catalog"); return; }
     setRoom(r as Room);
     const { data: ps } = await supabase.from("room_players").select("*").eq("room_id", roomId).order("joined_at", { ascending: true });
     setPlayers((ps as Player[]) ?? []);
@@ -77,7 +77,7 @@ const Lobby = () => {
 
   const copy = async (value: string, kind: "code" | "link") => {
     try { await navigator.clipboard.writeText(value); setCopied(kind); setTimeout(() => setCopied(null), 1600); }
-    catch { toast.error("Не удалось скопировать"); }
+    catch { toast.error("ÐÐµ ÑƒÐ´Ð°Ð»Ð¾ÑÑŒ ÑÐºÐ¾Ð¿Ð¸Ñ€Ð¾Ð²Ð°Ñ‚ÑŒ"); }
   };
 
   const isHost     = !!user && !!room && room.host_user_id === user.id;
@@ -90,7 +90,7 @@ const canStart    = isHost && minReached;
     setStarting(true);
 
     try {
-      // 1. Грузим scenario_json для назначения персонажей и ролей
+      // 1. Ð“Ñ€ÑƒÐ·Ð¸Ð¼ scenario_json Ð´Ð»Ñ Ð½Ð°Ð·Ð½Ð°Ñ‡ÐµÐ½Ð¸Ñ Ð¿ÐµÑ€ÑÐ¾Ð½Ð°Ð¶ÐµÐ¹ Ð¸ Ñ€Ð¾Ð»ÐµÐ¹
       const { data: scenario } = await supabase
         .from("scenarios")
         .select("scenario_json")
@@ -100,7 +100,7 @@ const canStart    = isHost && minReached;
       const characters: any[] = (scenario?.scenario_json as any)?.characters ?? [];
       const roles:      any[] = (scenario?.scenario_json as any)?.roles      ?? [];
 
-      // 2. Перемешиваем и назначаем каждому игроку персонажа и роль
+      // 2. ÐŸÐµÑ€ÐµÐ¼ÐµÑˆÐ¸Ð²Ð°ÐµÐ¼ Ð¸ Ð½Ð°Ð·Ð½Ð°Ñ‡Ð°ÐµÐ¼ ÐºÐ°Ð¶Ð´Ð¾Ð¼Ñƒ Ð¸Ð³Ñ€Ð¾ÐºÑƒ Ð¿ÐµÑ€ÑÐ¾Ð½Ð°Ð¶Ð° Ð¸ Ñ€Ð¾Ð»ÑŒ
       const shuffledChars = shuffle(characters);
       const shuffledRoles = shuffle(roles);
 
@@ -110,7 +110,7 @@ const canStart    = isHost && minReached;
         role_id:      shuffledRoles[i % shuffledRoles.length]?.id  ?? null,
       }));
 
-      // 3. Обновляем room_players с назначениями
+      // 3. ÐžÐ±Ð½Ð¾Ð²Ð»ÑÐµÐ¼ room_players Ñ Ð½Ð°Ð·Ð½Ð°Ñ‡ÐµÐ½Ð¸ÑÐ¼Ð¸
       const results = await Promise.all(
   playerAssignments.map(({ id, character_id, role_id }) =>
     supabase.from("room_players").update({ character_id, role_id }).eq("id", id)
@@ -119,7 +119,7 @@ const canStart    = isHost && minReached;
 console.log("assignments:", JSON.stringify(playerAssignments));
 console.log("errors:", results.map(r => r.error?.message));
 
-      // 4. Создаём run
+      // 4. Ð¡Ð¾Ð·Ð´Ð°Ñ‘Ð¼ run
       const { data: run, error: runErr } = await supabase
         .from("runs")
         .insert({
@@ -132,14 +132,14 @@ console.log("errors:", results.map(r => r.error?.message));
         .select("id")
         .single();
 
-      if (runErr || !run) throw new Error(runErr?.message || "Не удалось создать игру");
+      if (runErr || !run) throw new Error(runErr?.message || "ÐÐµ ÑƒÐ´Ð°Ð»Ð¾ÑÑŒ ÑÐ¾Ð·Ð´Ð°Ñ‚ÑŒ Ð¸Ð³Ñ€Ñƒ");
 
-      // 5. Обновляем комнату
+      // 5. ÐžÐ±Ð½Ð¾Ð²Ð»ÑÐµÐ¼ ÐºÐ¾Ð¼Ð½Ð°Ñ‚Ñƒ
       await supabase.from("rooms").update({ status: "started", run_id: run.id }).eq("id", room.id);
 
       navigate(`/character?run=${run.id}&room=${room.id}`);
     } catch (err: any) {
-      toast.error(err?.message || "Ошибка запуска");
+      toast.error(err?.message || "ÐžÑˆÐ¸Ð±ÐºÐ° Ð·Ð°Ð¿ÑƒÑÐºÐ°");
       setStarting(false);
     }
   };
@@ -161,22 +161,22 @@ console.log("errors:", results.map(r => r.error?.message));
       <main className="flex-1 container py-8">
         <div className="flex items-center justify-between mb-6 gap-3">
           <Link to="/catalog" className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
-            <ArrowLeft className="h-4 w-4" /> К сценариям
+            <ArrowLeft className="h-4 w-4" /> Ðš ÑÑ†ÐµÐ½Ð°Ñ€Ð¸ÑÐ¼
           </Link>
           <div className="text-right">
-            <div className="text-xs font-mono uppercase tracking-[0.2em] text-portal">{room.scenario_id} · LOBBY</div>
-            <div className="font-display font-semibold">Ожидание игроков</div>
+            <div className="text-xs font-mono uppercase tracking-[0.2em] text-portal">{room.scenario_id} Â· LOBBY</div>
+            <div className="font-display font-semibold">ÐžÐ¶Ð¸Ð´Ð°Ð½Ð¸Ðµ Ð¸Ð³Ñ€Ð¾ÐºÐ¾Ð²</div>
           </div>
         </div>
 
         <div className="grid lg:grid-cols-[1fr_420px] gap-6 items-start">
-          {/* QR + код */}
+          {/* QR + ÐºÐ¾Ð´ */}
           <div className="glass-card scanlines rounded-md p-6 md:p-10 text-center">
             <h1 className="font-display font-bold text-3xl md:text-5xl text-balance">
-              Покажи QR друзьям <span className="text-portal neon-text">или назови код</span>
+              ÐŸÐ¾ÐºÐ°Ð¶Ð¸ QR Ð´Ñ€ÑƒÐ·ÑŒÑÐ¼ <span className="text-portal neon-text">Ð¸Ð»Ð¸ Ð½Ð°Ð·Ð¾Ð²Ð¸ ÐºÐ¾Ð´</span>
             </h1>
             <p className="text-muted-foreground mt-3 text-sm md:text-base">
-              Игроки сканируют QR со своих телефонов или открывают ссылку и вводят код.
+              Ð˜Ð³Ñ€Ð¾ÐºÐ¸ ÑÐºÐ°Ð½Ð¸Ñ€ÑƒÑŽÑ‚ QR ÑÐ¾ ÑÐ²Ð¾Ð¸Ñ… Ñ‚ÐµÐ»ÐµÑ„Ð¾Ð½Ð¾Ð² Ð¸Ð»Ð¸ Ð¾Ñ‚ÐºÑ€Ñ‹Ð²Ð°ÑŽÑ‚ ÑÑÑ‹Ð»ÐºÑƒ Ð¸ Ð²Ð²Ð¾Ð´ÑÑ‚ ÐºÐ¾Ð´.
             </p>
             <div className="mt-8 flex justify-center">
               <div className="rounded-md border border-portal/40 bg-background/80 p-4 shadow-[var(--shadow-portal)]">
@@ -184,7 +184,7 @@ console.log("errors:", results.map(r => r.error?.message));
               </div>
             </div>
             <div className="mt-8">
-              <div className="text-[11px] font-mono uppercase tracking-[0.24em] text-muted-foreground mb-2">Код комнаты</div>
+              <div className="text-[11px] font-mono uppercase tracking-[0.24em] text-muted-foreground mb-2">ÐšÐ¾Ð´ ÐºÐ¾Ð¼Ð½Ð°Ñ‚Ñ‹</div>
               <button onClick={() => copy(room.code, "code")} className="group inline-flex items-center gap-4 rounded-md border border-portal/40 bg-portal/5 px-6 py-4 hover:bg-portal/10 transition-colors">
                 <span className="font-display font-bold text-5xl md:text-6xl tabular-nums tracking-[0.18em] text-portal neon-text">{room.code}</span>
                 <span className="inline-flex h-9 w-9 items-center justify-center rounded-sm border border-portal/40 bg-background/60">
@@ -200,11 +200,11 @@ console.log("errors:", results.map(r => r.error?.message));
             </div>
           </div>
 
-          {/* Игроки + старт */}
+          {/* Ð˜Ð³Ñ€Ð¾ÐºÐ¸ + ÑÑ‚Ð°Ñ€Ñ‚ */}
           <aside className="glass-card rounded-md p-5 md:p-6 lg:sticky lg:top-24">
             <div className="flex items-center justify-between mb-4">
               <div className="inline-flex items-center gap-2 text-sm font-mono uppercase tracking-[0.18em] text-muted-foreground">
-                <Users className="h-4 w-4 text-portal" /> Игроки
+                <Users className="h-4 w-4 text-portal" /> Ð˜Ð³Ñ€Ð¾ÐºÐ¸
               </div>
               <div className="font-display font-bold text-xl tabular-nums">
                 <span className={minReached ? "text-portal" : "text-foreground"}>{playerCount}</span>
@@ -222,15 +222,15 @@ console.log("errors:", results.map(r => r.error?.message));
                     <span className="truncate text-sm">{p.display_name}</span>
                   </span>
                   {p.is_host
-                    ? <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase tracking-[0.18em] text-portal"><Crown className="h-3 w-3" /> хост</span>
-                    : <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-acid">готов</span>
+                    ? <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase tracking-[0.18em] text-portal"><Crown className="h-3 w-3" /> Ñ…Ð¾ÑÑ‚</span>
+                    : <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-acid">Ð³Ð¾Ñ‚Ð¾Ð²</span>
                   }
                 </li>
               ))}
               {Array.from({ length: Math.max(0, room.min_players - players.length) }).map((_, i) => (
                 <li key={`slot-${i}`} className="flex items-center gap-2 rounded-sm border border-dashed border-border/60 px-3 py-2 text-xs font-mono text-muted-foreground">
                   <span className="h-7 w-7 rounded-full border border-dashed border-border/60" />
-                  Ожидание игрока…
+                  ÐžÐ¶Ð¸Ð´Ð°Ð½Ð¸Ðµ Ð¸Ð³Ñ€Ð¾ÐºÐ°â€¦
                 </li>
               ))}
             </ul>
@@ -238,14 +238,14 @@ console.log("errors:", results.map(r => r.error?.message));
             {isHost ? (
               <Button onClick={start} disabled={!canStart || starting} className="w-full bg-portal hover:bg-portal/90 text-primary-foreground shadow-[var(--shadow-portal)]" size="lg">
                 {starting ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-5 w-5" />}
-                {minReached ? "Начать" : `Начать (тест, не хватает ${Math.max(0, room.min_players - playerCount)})`}
+                {minReached ? "ÐÐ°Ñ‡Ð°Ñ‚ÑŒ" : `ÐÐ°Ñ‡Ð°Ñ‚ÑŒ (Ñ‚ÐµÑÑ‚, Ð½Ðµ Ñ…Ð²Ð°Ñ‚Ð°ÐµÑ‚ ${Math.max(0, room.min_players - playerCount)})`}
               </Button>
             ) : (
-              <div className="text-xs font-mono text-center text-muted-foreground">Ждём, пока хост начнёт игру…</div>
+              <div className="text-xs font-mono text-center text-muted-foreground">Ð–Ð´Ñ‘Ð¼, Ð¿Ð¾ÐºÐ° Ñ…Ð¾ÑÑ‚ Ð½Ð°Ñ‡Ð½Ñ‘Ñ‚ Ð¸Ð³Ñ€Ñƒâ€¦</div>
             )}
 
             <p className="text-[11px] font-mono text-muted-foreground/80 text-center mt-3">
-              Статус: {room.status === "waiting" ? "ожидание" : room.status}
+              Ð¡Ñ‚Ð°Ñ‚ÑƒÑ: {room.status === "waiting" ? "Ð¾Ð¶Ð¸Ð´Ð°Ð½Ð¸Ðµ" : room.status}
             </p>
           </aside>
         </div>
@@ -255,3 +255,4 @@ console.log("errors:", results.map(r => r.error?.message));
 };
 
 export default Lobby;
+
