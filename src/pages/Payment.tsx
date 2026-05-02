@@ -16,7 +16,6 @@ export default function Payment() {
   const [scenarioTitle, setScenarioTitle] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
-  // Загрузить цену из БД
   useEffect(() => {
     if (!scenarioId) return;
     supabase
@@ -32,32 +31,49 @@ export default function Payment() {
       });
   }, [scenarioId]);
 
-  // Проверить purchase_id в URL (возврат с ЮKassa)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const pid = params.get("purchase_id");
     if (pid) { setPurchaseId(pid); setPolling(true); }
   }, []);
 
-  // Поллинг статуса платежа
   useEffect(() => {
     if (!polling || !purchaseId) return;
+
+    let attempts = 0;
+    const maxAttempts = 10;
+
     const interval = setInterval(async () => {
-      const { data } = await supabase
-        .from("purchases")
-        .select("status")
-        .eq("id", purchaseId)
-        .maybeSingle();
-      if (data?.status === "succeeded") {
-        clearInterval(interval);
-        setPolling(false);
-        navigate("/catalog");
-      } else if (data?.status === "failed") {
-        clearInterval(interval);
-        setPolling(false);
-        setError("Платёж не прошёл. Попробуй снова.");
+      attempts++;
+      try {
+        const { data, error: fnErr } = await supabase.functions.invoke("payment-check", {
+          body: { purchase_id: purchaseId },
+        });
+
+        if (fnErr) throw new Error(fnErr.message);
+
+        if (data?.status === "succeeded") {
+          clearInterval(interval);
+          setPolling(false);
+          navigate("/catalog");
+        } else if (data?.status === "failed") {
+          clearInterval(interval);
+          setPolling(false);
+          setError("Платёж не прошёл. Попробуй снова.");
+        } else if (attempts >= maxAttempts) {
+          clearInterval(interval);
+          setPolling(false);
+          setError("Не удалось подтвердить платёж. Обратись в поддержку.");
+        }
+      } catch (e: any) {
+        if (attempts >= maxAttempts) {
+          clearInterval(interval);
+          setPolling(false);
+          setError(e.message);
+        }
       }
     }, 3000);
+
     return () => clearInterval(interval);
   }, [polling, purchaseId, navigate]);
 
@@ -97,7 +113,7 @@ export default function Payment() {
           {polling ? (
             <div className="space-y-2">
               <div className="animate-pulse text-portal">Проверяем оплату...</div>
-              <p className="text-xs text-muted-foreground">Это займёт несколько секунд</p>
+              <p className="text-xs text-muted-foreground">Подождите несколько секунд</p>
             </div>
           ) : (
             <Button

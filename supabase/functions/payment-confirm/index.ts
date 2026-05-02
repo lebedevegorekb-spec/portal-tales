@@ -5,7 +5,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-function json(data, status = 200) {
+function json(data: any, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -30,8 +30,8 @@ Deno.serve(async (req) => {
     }
 
     const supabase = createClient(
-      Deno.env.get("SUPABASE_URL"),
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
     const { data: purchase, error: pErr } = await supabase
@@ -41,14 +41,23 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (pErr || !purchase) return json({ error: "Purchase not found" }, 404);
-
     if (purchase.status === "succeeded") return json({ ok: true, idempotent: true });
 
+    // Получить email пользователя
+    const { data: userData } = await supabase.auth.admin.getUserById(purchase.user_id);
+    const userEmail = userData?.user?.email ?? null;
+
+    // Обновить purchase
     await supabase
       .from("purchases")
-      .update({ status: "succeeded", paid_at: new Date().toISOString() })
+      .update({
+        status: "succeeded",
+        paid_at: new Date().toISOString(),
+        user_email: userEmail,
+      })
       .eq("id", purchase.id);
 
+    // Выдать доступ
     await supabase
       .from("entitlements")
       .insert({
