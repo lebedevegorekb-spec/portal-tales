@@ -1,4 +1,5 @@
 ﻿import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import type { MechanicViewProps, QuizRound } from "@/mechanics/types";
 
 export function QuizPlayer({
@@ -8,13 +9,11 @@ export function QuizPlayer({
   isSaboteur,
   onSubmit,
   runId,
-  roomId,
 }: MechanicViewProps<QuizRound>) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [hiddenOptions, setHiddenOptions] = useState<Record<string, string>>({});
   const [hidePhase, setHidePhase] = useState(isSaboteur);
   const [loading, setLoading] = useState(false);
-  const { supabase } = await import("@/integrations/supabase/client");
 
   const alreadySubmitted = submissions.some(
     (s) => s.player_id === playerId && s.payload?.answers !== undefined
@@ -26,7 +25,6 @@ export function QuizPlayer({
 
   const confirmHide = async () => {
     setLoading(true);
-    const { supabase } = await import("@/integrations/supabase/client");
     for (const [questionId, hideOptionId] of Object.entries(hiddenOptions)) {
       await supabase.functions.invoke("saboteur-quiz-action", {
         body: { run_id: runId, round_id: round.id, question_id: questionId, hide_option_id: hideOptionId },
@@ -65,13 +63,9 @@ export function QuizPlayer({
     return (
       <div className="min-h-screen bg-background text-foreground px-4 py-8 pb-24">
         <div className="max-w-md mx-auto">
-          <p className="text-xs uppercase tracking-[0.25em] text-destructive mb-3">
-            ⚠ Только для саботажника
-          </p>
+          <p className="text-xs uppercase tracking-[0.25em] text-destructive mb-3">⚠ Только для саботажника</p>
           <h1 className="text-3xl font-display mb-2">{round.title}</h1>
-          <p className="text-muted-foreground mb-8">
-            Выбери какой вариант скрыть в каждом вопросе. Остальные его не увидят.
-          </p>
+          <p className="text-muted-foreground mb-8">Выбери какой вариант скрыть в каждом вопросе.</p>
           <div className="grid gap-6">
             {round.questions.map((q, i) => (
               <div key={q.id} className="glass-card p-5">
