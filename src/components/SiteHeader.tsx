@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { LogOut, Sparkles } from "lucide-react";
@@ -19,9 +19,6 @@ export const SiteHeader = () => {
         <nav className="flex items-center gap-1">
           <Link to="/catalog" className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground hover:text-portal px-3 py-2 transition-colors">
             Сценарии
-          </Link>
-          <Link to="/pricing" className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground hover:text-portal px-3 py-2 transition-colors">
-            Тарифы
           </Link>
           {user ? (
             <>
