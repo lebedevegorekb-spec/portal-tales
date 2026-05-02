@@ -1,198 +1,219 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useRealtimeVotes } from "@/hooks/useRealtimeVotes";
-import { SiteHeader } from "@/components/SiteHeader";
-import { Loader2, Users, Sparkles } from "lucide-react";
-import { toast } from "sonner";
-
-type SceneOption = { id: string; text: string };
-type Scene = { scene_id: string; scene_summary: string; goal_hint: string; options?: SceneOption[] };
+import { useAuth } from "@/hooks/useAuth";
+import { useGameState } from "@/hooks/useGameState";
+import { useRoundSubmissions } from "@/hooks/useRoundSubmissions";
+import { useRoundSubmit } from "@/hooks/useRoundSubmit";
+import { useRoundAdvance } from "@/hooks/useRoundAdvance";
+import { RoundRouter } from "@/components/RoundRouter";
+import { PauseButton } from "@/components/PauseButton";
+import { Loader2, Pause } from "lucide-react";
+import type { PartyGameConfig, RoundConfig } from "@/mechanics/types";
 
 const Scene = () => {
   const { runId } = useParams<{ runId: string }>();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [scene,        setScene]        = useState<Scene | null>(null);
-  const [scenarioId,   setScenarioId]   = useState("");
-  const [totalPlayers, setTotalPlayers] = useState(0);
-  const [loading,      setLoading]      = useState(true);
+  const [roomId, setRoomId] = useState<string | null>(null);
+  const [roomStatus, setRoomStatus] = useState<string>("playing");
+  const [playerId, setPlayerId] = useState<string | null>(null);
+  const [isHost, setIsHost] = useState(false);
+  const [partyConfig, setPartyConfig] = useState<PartyGameConfig | null>(null);
+  const [playerCount, setPlayerCount] = useState(4);
+  const [loading, setLoading] = useState(true);
 
-  const votes = useRealtimeVotes(runId || "", scene?.scene_id || "");
+  const gameState = useGameState(runId ?? null);
+  const { advance, loading: advancing } = useRoundAdvance();
+  const { submit } = useRoundSubmit();
 
-  // Подсчёт голосов по опциям
-  const voteCounts: Record<string, number> = {};
-  votes.forEach((v) => {
-    voteCounts[v.option_id] = (voteCounts[v.option_id] || 0) + 1;
-  });
-  const totalVotes = votes.length;
+  const currentRound: RoundConfig | null = partyConfig && gameState
+    ? partyConfig.rounds[gameState.current_round_index] ?? null
+    : null;
 
+  const submissions = useRoundSubmissions(
+    runId ?? null,
+    currentRound?.id ?? null
+  );
+
+  // Загрузить данные комнаты и сценария
   useEffect(() => {
-    if (!runId) return;
+    if (!runId || !user) return;
+
     const load = async () => {
-      try {
-        // 1. Грузим run
-        const { data: run, error: runErr } = await supabase
-          .from("runs")
-          .select("current_scene_id, scenario_id, state_json")
-          .eq("id", runId)
-          .single();
-        if (runErr || !run) throw new Error("Игра не найдена");
+      // Получить run
+      const { data: run } = await supabase
+        .from("runs")
+        .select("scenario_id")
+        .eq("id", runId)
+        .single();
 
-        setScenarioId(run.scenario_id);
+      if (!run) { navigate("/catalog"); return; }
 
-        // 2. Грузим scenario_json
-        const { data: scenario, error: sErr } = await supabase
-          .from("scenarios")
-          .select("scenario_json")
-          .eq("id", run.scenario_id)
-          .single();
-        if (sErr || !scenario) throw new Error("Сценарий не найден");
+      // Получить комнату
+      const { data: room } = await supabase
+        .from("rooms")
+        .select("id, host_user_id, status, min_players")
+        .eq("run_id", runId)
+        .maybeSingle();
 
-        const scenes: Scene[] = (scenario.scenario_json as any)?.scenes ?? [];
-        const found = scenes.find((s) => s.scene_id === run.current_scene_id) ?? scenes[0];
-        if (!found) throw new Error("Сцена не найдена");
+      if (room) {
+        setRoomId(room.id);
+        setRoomStatus(room.status);
+        setIsHost(room.host_user_id === user.id);
 
-        setScene(found);
+        // Получить кол-во игроков
+        const { count } = await supabase
+          .from("room_players")
+          .select("id", { count: "exact" })
+          .eq("room_id", room.id);
+        setPlayerCount(count ?? room.min_players ?? 4);
 
-        // 3. Кол-во игроков из room
-        const { data: room } = await supabase
-          .from("rooms")
+        // Получить player_id текущего пользователя
+        const { data: playerRow } = await supabase
+          .from("room_players")
           .select("id")
-          .eq("run_id", runId)
+          .eq("room_id", room.id)
+          .eq("user_id", user.id)
           .maybeSingle();
-
-        if (room) {
-          const { count } = await supabase
-            .from("room_players")
-            .select("id", { count: "exact", head: true })
-            .eq("room_id", room.id);
-          setTotalPlayers(count ?? 0);
-        }
-      } catch (err: any) {
-        toast.error(err?.message ?? "Ошибка загрузки сцены");
-      } finally {
-        setLoading(false);
+        if (playerRow) setPlayerId(playerRow.id);
       }
-    };
-    load();
-  }, [runId]);
 
-  // Realtime: следим за обновлением runs (смена сцены)
+      // Получить scenario_json
+      const { data: scenario } = await supabase
+        .from("scenarios")
+        .select("scenario_json")
+        .eq("id", run.scenario_id)
+        .single();
+
+      if (scenario?.scenario_json?.party_game) {
+        setPartyConfig(scenario.scenario_json.party_game as PartyGameConfig);
+      }
+
+      setLoading(false);
+    };
+
+    load();
+  }, [runId, user, navigate]);
+
+  // Realtime подписка на статус комнаты
   useEffect(() => {
-    if (!runId) return;
-    const ch = supabase
-      .channel(`run:${runId}`)
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "runs", filter: `id=eq.${runId}` },
-        (payload) => {
-          const next = payload.new as any;
-          if (next.status === "finished") navigate(`/final/${runId}`);
-        },
-      )
+    if (!roomId) return;
+    const channel = supabase
+      .channel(`room_status:${roomId}`)
+      .on("postgres_changes", {
+        event: "UPDATE", schema: "public", table: "rooms", filter: `id=eq.${roomId}`
+      }, (payload) => {
+        setRoomStatus((payload.new as any).status);
+      })
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
-  }, [runId, navigate]);
+    return () => { supabase.removeChannel(channel); };
+  }, [roomId]);
+
+  // Переход на финал
+  useEffect(() => {
+    if (gameState?.phase === "final" && runId) {
+      navigate(`/final/${runId}`);
+    }
+  }, [gameState?.phase, runId, navigate]);
+
+  const handleSubmit = async (payload: Record<string, any>) => {
+    if (!runId || !roomId || !playerId || !currentRound) return;
+    await submit({
+      runId,
+      roomId,
+      playerId,
+      roundId: currentRound.id,
+      mechanic: currentRound.mechanic,
+      payload,
+    });
+  };
+
+  const handleAdvance = async () => {
+    if (!runId || !roomId) return;
+    await advance(runId, roomId);
+  };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col bg-background scanlines">
-        <SiteHeader />
-        <main className="flex-1 flex items-center justify-center">
-          <Loader2 className="size-10 animate-spin text-portal" />
-        </main>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-portal" />
       </div>
     );
   }
 
-  if (!scene) {
+  // Пауза
+  if (roomStatus === "paused") {
     return (
-      <div className="min-h-screen flex flex-col bg-background scanlines">
-        <SiteHeader />
-        <main className="flex-1 flex items-center justify-center">
-          <p className="text-destructive font-mono">Сцена не найдена</p>
-        </main>
+      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center gap-6">
+        <Pause className="w-16 h-16 text-portal animate-pulse" />
+        <h1 className="font-display text-4xl">Игра на паузе</h1>
+        <p className="text-muted-foreground">Ожидайте, хост скоро продолжит...</p>
+        {isHost && roomId && (
+          <PauseButton roomId={roomId} status={roomStatus} />
+        )}
+      </div>
+    );
+  }
+
+  if (!partyConfig || !gameState || !currentRound) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Загрузка раунда...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background scanlines">
-      <SiteHeader />
-      <main className="flex-1 container py-10 max-w-5xl">
-
-        {/* HUD */}
-        <div className="flex items-center justify-between mb-8">
-          <span className="hud-chip">
-            <Sparkles className="h-3 w-3" />
-            {scenarioId} · {scene.scene_id}
-          </span>
-          <div className="inline-flex items-center gap-2 text-sm font-mono text-muted-foreground">
-            <Users className="h-4 w-4 text-portal" />
-            {totalVotes}/{totalPlayers} проголосовали
-          </div>
+    <div className="min-h-screen bg-background text-foreground relative">
+      {/* Кнопка паузы для хоста — всегда видна */}
+      {isHost && roomId && (
+        <div className="fixed top-4 right-4 z-50">
+          <PauseButton roomId={roomId} status={roomStatus} />
         </div>
+      )}
 
-        {/* Сцена */}
-        <div className="glass-card rounded-3xl p-8 md:p-14 mb-8 border border-portal/30 shadow-[var(--shadow-portal)]">
-          <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-muted-foreground mb-4">
-            Текущая сцена
-          </p>
-          <p className="text-xl md:text-3xl leading-relaxed text-balance font-display">
-            {scene.scene_summary}
-          </p>
-          {scene.goal_hint && (
-            <div className="mt-8 rounded-2xl border border-portal/30 bg-portal/10 p-5">
-              <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground mb-1">
-                Подсказка
-              </p>
-              <p className="text-base text-portal">{scene.goal_hint}</p>
-            </div>
-          )}
+      {/* Прогресс раундов */}
+      <div className="fixed top-4 left-4 z-50 flex items-center gap-2">
+        <span className="text-xs uppercase tracking-widest text-muted-foreground font-mono">
+          Раунд {gameState.current_round_index + 1} / {partyConfig.rounds.length}
+        </span>
+        <div className="flex gap-1">
+          {partyConfig.rounds.map((_, i) => (
+            <div
+              key={i}
+              className={`h-1.5 w-6 rounded-full transition-all ${
+                i < gameState.current_round_index
+                  ? "bg-portal"
+                  : i === gameState.current_round_index
+                  ? "bg-portal animate-pulse"
+                  : "bg-muted"
+              }`}
+            />
+          ))}
         </div>
+      </div>
 
-        {/* Варианты + счётчики голосов */}
-        {scene.options && scene.options.length > 0 && (
-          <div className="space-y-4">
-            <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-muted-foreground">
-              Варианты выбора
-            </p>
-            {scene.options.map((opt) => {
-              const count = voteCounts[opt.id] ?? 0;
-              const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
-              return (
-                <div
-                  key={opt.id}
-                  className="glass-card rounded-2xl border border-border p-5 relative overflow-hidden"
-                >
-                  {/* Прогресс-бар */}
-                  <div
-                    className="absolute inset-y-0 left-0 bg-portal/15 transition-all duration-500"
-                    style={{ width: `${pct}%` }}
-                  />
-                  <div className="relative flex items-center justify-between gap-4">
-                    <span className="text-base md:text-lg font-display">{opt.text}</span>
-                    <span className="text-sm font-mono text-portal shrink-0">
-                      {count} {pct > 0 ? `(${pct}%)` : ""}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+      {/* Счёт */}
+      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex gap-4 text-xs font-mono">
+        <span className="text-portal">Команда: {gameState.scores.team}</span>
+        <span className="text-destructive">Хаос: {gameState.scores.saboteur}</span>
+      </div>
 
-        {/* Нет вариантов */}
-        {(!scene.options || scene.options.length === 0) && (
-          <div className="glass-card rounded-2xl p-6 text-center border border-border">
-            <p className="text-muted-foreground font-mono text-sm">
-              Варианты голосования не заданы в сценарии
-            </p>
-          </div>
-        )}
-
-      </main>
+      {/* Раунд */}
+      <RoundRouter
+        round={currentRound}
+        isHost={isHost}
+        runId={runId ?? ""}
+        roomId={roomId ?? ""}
+        playerId={playerId ?? ""}
+        isSaboteur={gameState.saboteur_player_id === playerId}
+        submissions={submissions}
+        playerCount={playerCount}
+        onSubmit={handleSubmit}
+        onAdvance={isHost ? handleAdvance : undefined}
+      />
     </div>
   );
 };
