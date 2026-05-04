@@ -1,3 +1,5 @@
+﻿code = open('src/pages/admin/ScenarioEdit.tsx', 'w', encoding='utf-8', newline='\n')
+code.write("""\
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -305,3 +307,6 @@ export default function AdminScenarioEdit() {
     </div>
   );
 }
+""")
+code.close()
+print("done")
