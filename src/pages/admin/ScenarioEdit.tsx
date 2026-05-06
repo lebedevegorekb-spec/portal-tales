@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Loader2, Save, ChevronDown, ChevronUp } from "lucide-react";
+import { MediaUpload } from "@/components/MediaUpload";
 
 type Round = {
   id: string; mechanic: string; title: string;
@@ -110,7 +111,19 @@ function RoundEditor({ round, index, onChange }: { round: Round; index: number; 
         <div className="px-5 pb-5 grid gap-4 border-t border-border">
           <div className="mt-4 grid gap-4">
             {fields.map((f) => (
-              <TextField key={f} label={FIELD_LABELS[f] ?? f} value={round[f] ?? ""} onChange={(v) => updateField(f, v)} />
+              <div key={f} className="grid gap-1">
+                <TextField label={FIELD_LABELS[f] ?? f} value={round[f] ?? ""} onChange={(v) => updateField(f, v)} />
+                {f.includes("host") || f.includes("morty") ? (
+                  <MediaUpload
+                    scenarioId={round.id}
+                    path={f}
+                    type="audio"
+                    currentUrl={round[f + "_audio"]}
+                    onUploaded={(path) => updateField(f + "_audio", path)}
+                    onRemoved={() => updateField(f + "_audio", "")}
+                  />
+                ) : null}
+              </div>
             ))}
           </div>
           {round.mechanic === "fork" && round.options && (
@@ -260,8 +273,34 @@ export default function AdminScenarioEdit() {
         {tab === "intro" && partyGame && (
           <div className="grid gap-4">
             <TextField label="Ситуация" value={partyGame.intro.situation} onChange={(v) => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, situation: v } })} />
-            <TextField label="Реплика Рика" value={partyGame.intro.host_line} onChange={(v) => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, host_line: v } })} />
-            <TextField label="Реплика Морти" value={partyGame.intro.morty_line} onChange={(v) => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, morty_line: v } })} />
+            <div className="grid gap-1">
+              <TextField label="Реплика Рика" value={partyGame.intro.host_line} onChange={(v) => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, host_line: v } })} />
+              <MediaUpload scenarioId={scenarioId!} path="intro/host_line" type="audio"
+                currentUrl={partyGame.intro.host_line_audio}
+                onUploaded={(p) => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, host_line_audio: p } })}
+                onRemoved={() => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, host_line_audio: "" } })} />
+            </div>
+            <div className="grid gap-1">
+              <TextField label="Реплика Морти" value={partyGame.intro.morty_line} onChange={(v) => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, morty_line: v } })} />
+              <MediaUpload scenarioId={scenarioId!} path="intro/morty_line" type="audio"
+                currentUrl={partyGame.intro.morty_line_audio}
+                onUploaded={(p) => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, morty_line_audio: p } })}
+                onRemoved={() => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, morty_line_audio: "" } })} />
+            </div>
+            <div className="grid gap-1">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">Фоновое изображение</p>
+              <MediaUpload scenarioId={scenarioId!} path="intro/background" type="image"
+                currentUrl={partyGame.intro.background_image}
+                onUploaded={(p) => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, background_image: p } })}
+                onRemoved={() => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, background_image: "" } })} />
+            </div>
+            <div className="grid gap-1">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">Фоновая музыка</p>
+              <MediaUpload scenarioId={scenarioId!} path="intro/music" type="audio"
+                currentUrl={partyGame.intro.background_music}
+                onUploaded={(p) => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, background_music: p } })}
+                onRemoved={() => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, background_music: "" } })} />
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-1">
                 <label className="text-xs uppercase tracking-widest text-muted-foreground">Порог победы команды</label>
@@ -290,8 +329,27 @@ export default function AdminScenarioEdit() {
             {Object.entries(partyGame.endings).map(([key, ending]) => (
               <div key={key} className="glass-card p-5 grid gap-3">
                 <p className="font-display text-base text-portal">{ENDING_LABELS[key] ?? key}</p>
-                <TextField label="Реплика Рика" value={(ending as any).host_line} onChange={(v) => updateEnding(key, "host_line", v)} />
-                <TextField label="Реплика Морти" value={(ending as any).morty_line} onChange={(v) => updateEnding(key, "morty_line", v)} />
+                <div className="grid gap-1">
+                  <TextField label="Реплика Рика" value={(ending as any).host_line} onChange={(v) => updateEnding(key, "host_line", v)} />
+                  <MediaUpload scenarioId={scenarioId!} path={`endings/${key}/host_line`} type="audio"
+                    currentUrl={(ending as any).host_line_audio}
+                    onUploaded={(p) => setPartyGame({ ...partyGame!, endings: { ...partyGame!.endings, [key]: { ...(partyGame!.endings as any)[key], host_line_audio: p } } })}
+                    onRemoved={() => setPartyGame({ ...partyGame!, endings: { ...partyGame!.endings, [key]: { ...(partyGame!.endings as any)[key], host_line_audio: "" } } })} />
+                </div>
+                <div className="grid gap-1">
+                  <TextField label="Реплика Морти" value={(ending as any).morty_line} onChange={(v) => updateEnding(key, "morty_line", v)} />
+                  <MediaUpload scenarioId={scenarioId!} path={`endings/${key}/morty_line`} type="audio"
+                    currentUrl={(ending as any).morty_line_audio}
+                    onUploaded={(p) => setPartyGame({ ...partyGame!, endings: { ...partyGame!.endings, [key]: { ...(partyGame!.endings as any)[key], morty_line_audio: p } } })}
+                    onRemoved={() => setPartyGame({ ...partyGame!, endings: { ...partyGame!.endings, [key]: { ...(partyGame!.endings as any)[key], morty_line_audio: "" } } })} />
+                </div>
+                <div className="grid gap-1">
+                  <p className="text-xs uppercase tracking-widest text-muted-foreground">Фоновое изображение</p>
+                  <MediaUpload scenarioId={scenarioId!} path={`endings/${key}/background`} type="image"
+                    currentUrl={(ending as any).background_image}
+                    onUploaded={(p) => setPartyGame({ ...partyGame!, endings: { ...partyGame!.endings, [key]: { ...(partyGame!.endings as any)[key], background_image: p } } })}
+                    onRemoved={() => setPartyGame({ ...partyGame!, endings: { ...partyGame!.endings, [key]: { ...(partyGame!.endings as any)[key], background_image: "" } } })} />
+                </div>
               </div>
             ))}
           </div>
