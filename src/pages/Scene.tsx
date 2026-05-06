@@ -10,6 +10,9 @@ import { RoundRouter } from "@/components/RoundRouter";
 import { PauseButton } from "@/components/PauseButton";
 import { Loader2, Pause } from "lucide-react";
 import type { PartyGameConfig, RoundConfig } from "@/mechanics/types";
+import { MediaPlayer } from "@/components/MediaPlayer";
+import { ReplicaPlayer } from "@/components/ReplicaPlayer";
+import { BackgroundImage } from "@/components/BackgroundImage";
 
 const Scene = () => {
   const { runId } = useParams<{ runId: string }>();
@@ -23,6 +26,8 @@ const Scene = () => {
   const [partyConfig, setPartyConfig] = useState<PartyGameConfig | null>(null);
   const [playerCount, setPlayerCount] = useState(4);
   const [loading, setLoading] = useState(true);
+  const [replicaQueue, setReplicaQueue] = useState<Array<{speaker:"host"|"morty";text:string;audioPath?:string}>>([]);
+  const [currentReplica, setCurrentReplica] = useState<{speaker:"host"|"morty";text:string;audioPath?:string} | null>(null);
 
   const gameState = useGameState(runId ?? null);
   const { advance, loading: advancing } = useRoundAdvance();
@@ -36,6 +41,20 @@ const Scene = () => {
     runId ?? null,
     currentRound?.id ?? null
   );
+
+  // Показать очередь реплик
+  const showReplicas = (replicas: Array<{speaker:"host"|"morty";text:string;audioPath?:string}>) => {
+    setReplicaQueue(replicas);
+    if (replicas.length > 0) setCurrentReplica(replicas[0]);
+  };
+
+  const onReplicaFinished = () => {
+    setReplicaQueue(prev => {
+      const next = prev.slice(1);
+      setCurrentReplica(next.length > 0 ? next[0] : null);
+      return next;
+    });
+  };
 
   // Загрузить данные комнаты и сценария
   useEffect(() => {
@@ -200,6 +219,17 @@ const Scene = () => {
         <span className="text-portal">Команда: {gameState.scores.team}</span>
         <span className="text-destructive">Хаос: {gameState.scores.saboteur}</span>
       </div>
+
+      <BackgroundImage imagePath={currentRound?.background_image} />
+      <MediaPlayer musicPath={currentRound?.background_music} />
+      {currentReplica && (
+        <ReplicaPlayer
+          speaker={currentReplica.speaker}
+          text={currentReplica.text}
+          audioPath={currentReplica.audioPath}
+          onFinished={onReplicaFinished}
+        />
+      )}
 
       {/* Раунд */}
       <RoundRouter
