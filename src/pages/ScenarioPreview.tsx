@@ -154,14 +154,10 @@ export default function ScenarioPreview() {
               <Users className="w-4 h-4 text-portal/70" /> {p.players_min}–{p.players_max} игроков
             </div>
           )}
-          {p.difficulty && (
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground border border-border px-3 py-1.5 rounded-full">
-              <Star className="w-4 h-4 text-portal/70" /> {DIFFICULTY_LABELS[p.difficulty] ?? p.difficulty}
-            </div>
-          )}
+
           {p.replayable && (
             <div className="flex items-center gap-1.5 text-sm text-portal border border-portal/30 bg-portal/5 px-3 py-1.5 rounded-full">
-              <RotateCcw className="w-4 h-4" /> Переигрываемый
+              <RotateCcw className="w-4 h-4" /> Можно играть больше 1 раза
             </div>
           )}
           {p.age_rating && (
