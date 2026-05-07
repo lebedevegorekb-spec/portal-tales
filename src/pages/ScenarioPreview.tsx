@@ -18,6 +18,7 @@ type PreviewJson = {
   difficulty?: string;
   replayable?: boolean;
   age_rating?: string;
+  cover_image?: string;
 };
 
 type Scenario = {
@@ -95,6 +96,13 @@ export default function ScenarioPreview() {
 
       {/* HERO */}
       <div className={`relative w-full h-80 bg-gradient-to-br ${meta.gradient} overflow-hidden`}>
+        {p.cover_image && (
+          <img
+            src={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/scenario-media/${p.cover_image}`}
+            alt={scenario.title}
+            className="absolute inset-0 w-full h-full object-cover opacity-60"
+          />
+        )}
         <div className="absolute inset-0 portal-orb opacity-20" />
         <div className="absolute inset-0 scanlines opacity-30" />
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">

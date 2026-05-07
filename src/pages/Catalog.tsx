@@ -13,6 +13,7 @@ type Scenario = {
   description: string;
   price_rub: number;
   scenario_json: any;
+  preview_json: any;
 };
 
 type ScenarioMeta = {
@@ -55,7 +56,7 @@ const Catalog = () => {
     // Загрузить сценарии
     supabase
       .from("scenarios")
-      .select("id, title, description, price_rub, scenario_json")
+      .select("id, title, description, price_rub, scenario_json, preview_json")
       .order("id")
       .then(({ data }) => {
         if (data) setScenarios(data as Scenario[]);

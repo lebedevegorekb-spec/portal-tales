@@ -20,6 +20,7 @@ type PreviewJson = {
   difficulty?: string;
   replayable?: boolean;
   age_rating?: string;
+  cover_image?: string;
 };
 
 type Round = {
@@ -331,6 +332,18 @@ export default function AdminScenarioEdit() {
                 onChange={(e) => setPreview({...preview, replayable: e.target.checked})}
                 className="w-4 h-4 accent-portal" />
               <label htmlFor="replayable" className="text-sm text-muted-foreground">Переигрываемый</label>
+            </div>
+            <div className="grid gap-2">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">Обложка сценария</p>
+              <p className="text-xs text-muted-foreground">Используется в карточке каталога и на странице превью</p>
+              <MediaUpload
+                scenarioId={scenarioId!}
+                path="cover"
+                type="image"
+                currentUrl={preview.cover_image}
+                onUploaded={(p) => setPreview({...preview, cover_image: p})}
+                onRemoved={() => setPreview({...preview, cover_image: ""})}
+              />
             </div>
           </div>
         )}
