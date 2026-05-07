@@ -76,7 +76,7 @@ function TextField({ label, value, onChange }: { label: string; value: string; o
       <label className="text-xs uppercase tracking-widest text-muted-foreground">{label}</label>
       {isLong ? (
         <textarea value={value ?? ""} onChange={(e) => onChange(e.target.value)} rows={3}
-          className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground resize-none focus:outline-none focus:border-portal" />
+          className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground resize-y min-h-[80px] focus:outline-none focus:border-portal" />
       ) : (
         <input type="text" value={value ?? ""} onChange={(e) => onChange(e.target.value)}
           className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-portal" />
