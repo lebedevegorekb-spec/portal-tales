@@ -174,7 +174,9 @@ const Catalog = () => {
                   </div>
 
                   <div className="p-5 flex flex-col flex-1">
+                    <Link to={`/scenarios/${s.id}`} className="hover:text-portal transition-colors">
                     <h3 className="font-display font-semibold text-lg leading-tight">{s.title}</h3>
+                  </Link>
                     <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2">{s.description}</p>
 
                     <div className="mt-4 flex flex-wrap items-center gap-3 text-xs font-mono text-muted-foreground">
