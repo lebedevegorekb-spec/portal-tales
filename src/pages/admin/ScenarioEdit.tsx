@@ -8,6 +8,20 @@ import { toast } from "sonner";
 import { Loader2, Save, ChevronDown, ChevronUp } from "lucide-react";
 import { MediaUpload } from "@/components/MediaUpload";
 
+type PreviewJson = {
+  tagline?: string;
+  full_description?: string;
+  warning?: string;
+  host_quote?: string;
+  morty_quote?: string;
+  duration_minutes?: number;
+  players_min?: number;
+  players_max?: number;
+  difficulty?: string;
+  replayable?: boolean;
+  age_rating?: string;
+};
+
 type Round = {
   id: string; mechanic: string; title: string;
   intro_host: string; intro_morty: string;
@@ -187,6 +201,7 @@ export default function AdminScenarioEdit() {
   const [priceRub, setPriceRub] = useState(250);
   const [partyGame, setPartyGame] = useState<PartyGame | null>(null);
   const [scenarioJson, setScenarioJson] = useState<any>(null);
+  const [preview, setPreview] = useState<PreviewJson>({});
   const [saving, setSaving] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [tab, setTab] = useState<"basic"|"intro"|"rounds"|"endings">("basic");
@@ -205,6 +220,7 @@ export default function AdminScenarioEdit() {
       setPriceRub(data.price_rub ?? 250);
       setScenarioJson(data.scenario_json);
       if (data.scenario_json?.party_game) setPartyGame(data.scenario_json.party_game as PartyGame);
+      if ((data as any).preview_json) setPreview((data as any).preview_json as PreviewJson);
       setPageLoading(false);
     });
   }, [user, scenarioId, navigate]);
@@ -214,7 +230,7 @@ export default function AdminScenarioEdit() {
     setSaving(true);
     const newJson = { ...scenarioJson, ...(partyGame ? { party_game: partyGame } : {}) };
     const { error } = await supabase.from("scenarios")
-      .update({ title, description, price_rub: priceRub, scenario_json: newJson })
+      .update({ title, description, price_rub: priceRub, scenario_json: newJson, preview_json: preview } as any)
       .eq("id", scenarioId);
     if (error) toast.error("Ошибка: " + error.message);
     else toast.success("Сохранено!");
@@ -252,7 +268,7 @@ export default function AdminScenarioEdit() {
           </Button>
         </div>
         <div className="flex gap-1 mb-6 border-b border-border">
-          {([["basic","Основное"],["intro","Вступление"],["rounds","Раунды ("+String(partyGame?.rounds?.length ?? 0)+")"],["endings","Концовки"]] as [string,string][]).map(([id,label]) => (
+          {([["basic","Основное"],["preview","Превью"],["intro","Вступление"],["rounds","Раунды ("+String(partyGame?.rounds?.length ?? 0)+")"],["endings","Концовки"]] as [string,string][]).map(([id,label]) => (
             <button key={id} onClick={() => setTab(id as any)}
               className={"px-4 py-2 text-sm font-mono uppercase tracking-wider transition-colors " + (tab === id ? "text-portal border-b-2 border-portal" : "text-muted-foreground hover:text-foreground")}>
               {label}
@@ -270,6 +286,55 @@ export default function AdminScenarioEdit() {
             </div>
           </div>
         )}
+        {tab === "preview" && (
+          <div className="grid gap-4">
+            <TextField label="Тизер (одна фраза)" value={preview.tagline ?? ""} onChange={(v) => setPreview({...preview, tagline: v})} />
+            <TextField label="Полное описание" value={preview.full_description ?? ""} onChange={(v) => setPreview({...preview, full_description: v})} />
+            <TextField label="Реплика Рика (тизер)" value={preview.host_quote ?? ""} onChange={(v) => setPreview({...preview, host_quote: v})} />
+            <TextField label="Реплика Морти (тизер)" value={preview.morty_quote ?? ""} onChange={(v) => setPreview({...preview, morty_quote: v})} />
+            <TextField label="Предупреждение" value={preview.warning ?? ""} onChange={(v) => setPreview({...preview, warning: v})} />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-1">
+                <label className="text-xs uppercase tracking-widest text-muted-foreground">Игроков мин</label>
+                <input type="number" value={preview.players_min ?? 4} onChange={(e) => setPreview({...preview, players_min: Number(e.target.value)})}
+                  className="bg-muted border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-portal" />
+              </div>
+              <div className="grid gap-1">
+                <label className="text-xs uppercase tracking-widest text-muted-foreground">Игроков макс</label>
+                <input type="number" value={preview.players_max ?? 8} onChange={(e) => setPreview({...preview, players_max: Number(e.target.value)})}
+                  className="bg-muted border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-portal" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-1">
+                <label className="text-xs uppercase tracking-widest text-muted-foreground">Длительность (мин)</label>
+                <input type="number" value={preview.duration_minutes ?? 30} onChange={(e) => setPreview({...preview, duration_minutes: Number(e.target.value)})}
+                  className="bg-muted border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-portal" />
+              </div>
+              <div className="grid gap-1">
+                <label className="text-xs uppercase tracking-widest text-muted-foreground">Возраст</label>
+                <input type="text" value={preview.age_rating ?? "16+"} onChange={(e) => setPreview({...preview, age_rating: e.target.value})}
+                  className="bg-muted border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-portal" />
+              </div>
+            </div>
+            <div className="grid gap-1">
+              <label className="text-xs uppercase tracking-widest text-muted-foreground">Сложность</label>
+              <select value={preview.difficulty ?? "medium"} onChange={(e) => setPreview({...preview, difficulty: e.target.value})}
+                className="bg-muted border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-portal">
+                <option value="easy">Лёгкая</option>
+                <option value="medium">Средняя</option>
+                <option value="hard">Сложная</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-3">
+              <input type="checkbox" id="replayable" checked={preview.replayable ?? false}
+                onChange={(e) => setPreview({...preview, replayable: e.target.checked})}
+                className="w-4 h-4 accent-portal" />
+              <label htmlFor="replayable" className="text-sm text-muted-foreground">Переигрываемый</label>
+            </div>
+          </div>
+        )}
+
         {tab === "intro" && partyGame && (
           <div className="grid gap-4">
             <TextField label="Ситуация" value={partyGame.intro.situation} onChange={(v) => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, situation: v } })} />
