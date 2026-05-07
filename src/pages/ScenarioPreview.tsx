@@ -117,6 +117,13 @@ export default function ScenarioPreview() {
 
       <div className="container max-w-3xl mx-auto px-4 py-10 grid gap-8">
 
+        {/* TAGLINE */}
+        {p.tagline && (
+          <p className="text-lg text-muted-foreground font-display italic border-l-2 border-portal pl-4">
+            {p.tagline}
+          </p>
+        )}
+
         {/* ОПИСАНИЕ */}
         {p.full_description && (
           <div className="grid gap-3">
@@ -125,13 +132,6 @@ export default function ScenarioPreview() {
               <p key={i} className="text-muted-foreground leading-relaxed">{para}</p>
             ))}
           </div>
-        )}
-
-        {/* TAGLINE */}
-        {p.tagline && (
-          <p className="text-lg text-muted-foreground font-display italic border-l-2 border-portal pl-4">
-            {p.tagline}
-          </p>
         )}
 
         {/* ПРЕДУПРЕЖДЕНИЕ */}
