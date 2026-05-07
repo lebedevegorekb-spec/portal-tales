@@ -144,11 +144,19 @@ const Catalog = () => {
                 >
                   <div className={`relative aspect-[16/10] overflow-hidden bg-gradient-to-br ${s.meta.gradient}`}>
                     <div className="absolute inset-0 portal-orb opacity-30" />
+                  {s.preview_json?.cover_image ? (
+                    <img
+                      src={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/scenario-media/${s.preview_json.cover_image}`}
+                      alt={s.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : (
                     <div className="absolute inset-0 flex items-center justify-center">
                       <span className="text-7xl drop-shadow-[0_4px_18px_hsl(var(--portal)/0.6)] select-none">
                         {s.meta.emoji}
                       </span>
                     </div>
+                  )}
                     <div className="absolute top-3 left-3 text-[10px] font-mono uppercase tracking-[0.2em] text-portal bg-background/70 backdrop-blur-sm px-2 py-1 rounded-sm border border-portal/30">
                       {s.id}
                     </div>
