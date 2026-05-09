@@ -86,7 +86,7 @@ const Lobby = () => {
   const handleStart = async () => {
     if (!room || !user) return;
     setStarting(true);
-    const { data, error } = await supabase.functions.invoke("run-start", {
+    const { data, error } = await supabase.functions.invoke("party-start", {
       body: { room_id: room.id },
     });
     if (error || data?.error) {
