@@ -35,12 +35,12 @@ type Round = {
 };
 
 type PartyGame = {
-  intro: { host_line: string; morty_line: string; situation: string };
+  intro: { host_line: string; host_line_audio?: string; morty_line: string; morty_line_audio?: string; situation: string; background_image?: string; background_music?: string; [key: string]: any };
   endings: {
-    team_wins: { host_line: string; morty_line: string };
-    saboteur_wins: { host_line: string; morty_line: string };
-    team_found_but_lost: { host_line: string; morty_line: string };
-    team_won_but_missed: { host_line: string; morty_line: string };
+    team_wins: { host_line: string; morty_line: string; host_line_audio?: string; morty_line_audio?: string; background_image?: string; [key: string]: any };
+    saboteur_wins: { host_line: string; morty_line: string; host_line_audio?: string; morty_line_audio?: string; background_image?: string; [key: string]: any };
+    team_found_but_lost: { host_line: string; morty_line: string; host_line_audio?: string; morty_line_audio?: string; background_image?: string; [key: string]: any };
+    team_won_but_missed: { host_line: string; morty_line: string; host_line_audio?: string; morty_line_audio?: string; background_image?: string; [key: string]: any };
   };
   rounds: Round[];
   scoring: { team_win_threshold: number; saboteur_win_threshold: number };
