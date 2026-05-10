@@ -49,7 +49,6 @@ const Catalog = () => {
 
 
   useEffect(() => {
-    if (!user) return;
 
     // Загрузить сценарии
     supabase
