@@ -16,8 +16,7 @@ export function MediaUpload({ scenarioId, path, type, currentUrl, onUploaded, on
   const [error, setError] = useState<string | null>(null);
   const [localUrl, setLocalUrl] = useState<string | undefined>(currentUrl);
   const inputRef = useRef<HTMLInputElement>(null);
-  const ext = type === "audio" ? "mp3" : "jpg";
-  const storagePath = `${scenarioId}/${path}.${ext}`;
+  const [storagePath, setStoragePath] = useState<string>(`${scenarioId}/${path}`);
   const baseUrl = import.meta.env.VITE_SUPABASE_URL;
   const publicUrl = `${baseUrl}/storage/v1/object/public/scenario-media/${storagePath}`;
   const accept = type === "audio" ? "audio/mp3,audio/mpeg,audio/wav" : "image/jpeg,image/png,image/webp";
@@ -28,12 +27,15 @@ export function MediaUpload({ scenarioId, path, type, currentUrl, onUploaded, on
     if (!file) return;
     setUploading(true); setError(null);
     try {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const fullPath = `${scenarioId}/${path}/${safeName}`;
       const { error: uploadError } = await supabase.storage
         .from("scenario-media")
-        .upload(storagePath, file, { upsert: true });
+        .upload(fullPath, file, { upsert: true });
       if (uploadError) throw uploadError;
-      setLocalUrl(storagePath);
-      onUploaded(storagePath);
+      setStoragePath(fullPath);
+      setLocalUrl(fullPath);
+      onUploaded(fullPath);
     } catch (err: any) {
       setError(err.message);
     } finally {
