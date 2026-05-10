@@ -125,7 +125,7 @@ export default function Payment() {
             </Button>
           )}
 
-          {!user && <p className="text-xs text-destructive">Войди в аккаунт чтобы купить</p>}
+          {!user && <a href="/login" className="text-xs text-portal hover:underline">Войди в аккаунт чтобы купить →</a>}
           {error && <p className="text-xs text-destructive">{error}</p>}
         </div>
       </main>
