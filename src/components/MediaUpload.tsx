@@ -14,6 +14,7 @@ interface MediaUploadProps {
 export function MediaUpload({ scenarioId, path, type, currentUrl, onUploaded, onRemoved }: MediaUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [localUrl, setLocalUrl] = useState<string | undefined>(currentUrl);
   const inputRef = useRef<HTMLInputElement>(null);
   const ext = type === "audio" ? "mp3" : "jpg";
   const storagePath = `${scenarioId}/${path}.${ext}`;
@@ -31,6 +32,7 @@ export function MediaUpload({ scenarioId, path, type, currentUrl, onUploaded, on
         .from("scenario-media")
         .upload(storagePath, file, { upsert: true });
       if (uploadError) throw uploadError;
+      setLocalUrl(storagePath);
       onUploaded(storagePath);
     } catch (err: any) {
       setError(err.message);
@@ -42,13 +44,14 @@ export function MediaUpload({ scenarioId, path, type, currentUrl, onUploaded, on
 
   const handleRemove = async () => {
     await supabase.storage.from("scenario-media").remove([storagePath]);
+    setLocalUrl(undefined);
     onRemoved();
   };
 
   return (
     <div className="flex items-center gap-2">
       <input ref={inputRef} type="file" accept={accept} onChange={handleUpload} className="hidden" />
-      {currentUrl ? (
+      {localUrl ? (
         <div className="flex items-center gap-2 flex-1">
           <Icon className="w-4 h-4 text-portal shrink-0" />
           {type === "audio" ? (
