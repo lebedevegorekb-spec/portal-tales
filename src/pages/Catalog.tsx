@@ -46,9 +46,7 @@ const Catalog = () => {
   const [loadingScenarios, setLoadingScenarios] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!loading && !user) navigate("/login");
-  }, [user, loading, navigate]);
+
 
   useEffect(() => {
     if (!user) return;
@@ -111,7 +109,6 @@ const Catalog = () => {
     [scenarios],
   );
 
-  if (loading || !user) return null;
 
   return (
     <div className="min-h-screen flex flex-col">
