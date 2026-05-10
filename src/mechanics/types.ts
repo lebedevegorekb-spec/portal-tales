@@ -33,6 +33,9 @@ export interface ForkOption {
   id: string;
   label: string;
   is_correct: boolean;
+  is_joke?: boolean;
+  joke_host_line?: string;
+  joke_morty_line?: string;
 }
 
 export interface ForkRound extends RoundBase {
