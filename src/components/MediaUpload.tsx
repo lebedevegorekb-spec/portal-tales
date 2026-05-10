@@ -18,7 +18,7 @@ export function MediaUpload({ scenarioId, path, type, currentUrl, onUploaded, on
   const inputRef = useRef<HTMLInputElement>(null);
   const [storagePath, setStoragePath] = useState<string>(`${scenarioId}/${path}`);
   const baseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const publicUrl = `${baseUrl}/storage/v1/object/public/scenario-media/${storagePath}`;
+  const publicUrl = `${baseUrl}/storage/v1/object/public/scenario-media/${localUrl ?? storagePath}`;
   const accept = type === "audio" ? "audio/mp3,audio/mpeg,audio/wav" : "image/jpeg,image/png,image/webp";
   const Icon = type === "audio" ? Music : Image;
 
