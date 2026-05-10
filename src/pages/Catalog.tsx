@@ -60,18 +60,6 @@ const Catalog = () => {
         setLoadingScenarios(false);
       });
 
-    // Загрузить entitlements пользователя
-    supabase
-      .from("entitlements")
-      .select("scope")
-      .eq("user_id", user.id)
-      .eq("active", true)
-      .then(({ data }) => {
-        if (data) {
-          const scopes = new Set(data.map((e) => e.scope));
-          setEntitlements(scopes);
-        }
-      });
   }, [user]);
 
   const hasAccess = (scenarioId: string, priceRub: number) => {
