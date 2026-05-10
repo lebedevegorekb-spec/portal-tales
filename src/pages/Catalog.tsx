@@ -82,7 +82,7 @@ const Catalog = () => {
   };
 
   const startRun = async (id: string) => {
-    if (!user) return;
+    if (!user) { navigate("/login"); return; }
     setBusy(id);
     const { data, error } = await supabase.functions.invoke("room-create", {
       body: {

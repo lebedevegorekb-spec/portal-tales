@@ -59,19 +59,17 @@ export default function ScenarioPreview() {
         .single();
       if (!data) { navigate("/catalog"); return; }
       setScenario(data as Scenario);
-      if (user) {
-        const free = (data as any).price_rub === 0;
-        if (free) { setHasAccess(true); }
-        else {
-          const { data: ent } = await supabase
-            .from("entitlements")
-            .select("id")
-            .eq("user_id", user.id)
-            .eq("scope", scenarioId)
-            .eq("active", true)
-            .maybeSingle();
-          setHasAccess(!!ent);
-        }
+      const free = (data as any).price_rub === 0;
+      if (free) { setHasAccess(true); }
+      else if (user) {
+        const { data: ent } = await supabase
+          .from("entitlements")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("scope", scenarioId)
+          .eq("active", true)
+          .maybeSingle();
+        setHasAccess(!!ent);
       }
       setLoading(false);
     };
