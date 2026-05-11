@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+﻿f = open('src/mechanics/Fork/HostView.tsx', 'w', encoding='utf-8', newline='\n')
+f.write("""import { useMemo, useState } from "react";
 import type { MechanicViewProps, ForkRound } from "@/mechanics/types";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -121,3 +122,6 @@ export function ForkHost({ round, submissions, playerCount, onAdvance }: Mechani
     </div>
   );
 }
+""")
+f.close()
+print('done')
