@@ -45,6 +45,7 @@ const Catalog = () => {
   const [entitlements, setEntitlements] = useState<Set<string>>(new Set());
   const [loadingScenarios, setLoadingScenarios] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
 
 
@@ -67,6 +68,34 @@ const Catalog = () => {
     if (entitlements.has(scenarioId)) return true;
     if (entitlements.has("all")) return true;
     return false;
+  };
+
+  const startTest = async (id: string) => {
+    if (!user) return;
+    setBusy(id + "_test");
+    const { data, error } = await supabase.functions.invoke("room-create", {
+      body: {
+        scenario_id: id,
+        host_user_id: user.id,
+        host_name: "ТЕСТ",
+        min_players: 1,
+      },
+    });
+    if (error || data?.error) {
+      toast.error(data?.error || error?.message || "Ошибка");
+      setBusy(null);
+      return;
+    }
+    const roomId = data.room.id;
+    const { data: startData, error: startError } = await supabase.functions.invoke("party-start", {
+      body: { room_id: roomId },
+    });
+    setBusy(null);
+    if (startError || startData?.error) {
+      toast.error(startData?.error || startError?.message || "Ошибка старта");
+      return;
+    }
+    window.location.href = `/scene/${startData.run_id}`;
   };
 
   const startRun = async (id: string) => {
@@ -207,6 +236,14 @@ const Catalog = () => {
                             Купить за ₽{s.price_rub}
                           </Button>
                         </Link>
+                      )}
+                      {isAdmin && (
+                        <Button variant="outline" size="sm"
+                          onClick={() => startTest(s.id)}
+                          disabled={busy === s.id + "_test"}
+                          className="w-full border-yellow-500/40 text-yellow-500 hover:bg-yellow-500/10 mt-1">
+                          {busy === s.id + "_test" ? "..." : "⚡ Тест (1 игрок)"}
+                        </Button>
                       )}
                     </div>
                   </div>
