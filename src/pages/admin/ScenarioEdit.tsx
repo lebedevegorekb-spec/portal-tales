@@ -256,6 +256,16 @@ function RoundEditor({ round, index, onChange }: { round: Round; index: number; 
                   onChange={(e) => updateField("question_time_seconds", Number(e.target.value) as any)}
                   className="w-32 bg-muted border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-portal" />
               </div>
+              <div className="grid gap-3 border-t border-border pt-4">
+                <p className="text-xs uppercase tracking-widest text-muted-foreground">Реплики ведущих</p>
+                <TextField label="Рик — вступление" value={round.intro_host ?? ""} onChange={(v) => updateField("intro_host", v)} />
+                <TextField label="Морти — вступление" value={round.intro_morty ?? ""} onChange={(v) => updateField("intro_morty", v)} />
+                <TextField label="Рик — команда победила" value={round.success_host ?? ""} onChange={(v) => updateField("success_host", v)} />
+                <TextField label="Морти — команда победила" value={round.success_morty ?? ""} onChange={(v) => updateField("success_morty", v)} />
+                <TextField label="Рик — саботажник победил" value={round.fail_host ?? ""} onChange={(v) => updateField("fail_host", v)} />
+                <TextField label="Морти — саботажник победил" value={round.fail_morty ?? ""} onChange={(v) => updateField("fail_morty", v)} />
+              </div>
+
               <div className="grid gap-2">
                 <p className="text-xs uppercase tracking-widest text-muted-foreground">Варианты ответа</p>
                 {(round.options ?? []).map((opt: any, oi: number) => (
