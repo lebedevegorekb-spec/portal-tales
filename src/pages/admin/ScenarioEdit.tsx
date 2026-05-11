@@ -214,6 +214,13 @@ function RoundEditor({ round, index, onChange }: { round: Round; index: number; 
                           onUploaded={(p) => { const opts = [...round.options]; opts[oi] = { ...opts[oi], joke_morty_audio: p }; onChange({ ...round, options: opts }); }}
                           onRemoved={() => { const opts = [...round.options]; opts[oi] = { ...opts[oi], joke_morty_audio: "" }; onChange({ ...round, options: opts }); }} />
                       </div>
+                      <div className="grid gap-1">
+                        <p className="text-xs text-muted-foreground">Картинка при выборе шутки</p>
+                        <MediaUpload scenarioId={round.id} path={`joke_image_${oi}`} type="image"
+                          currentUrl={opt.joke_image}
+                          onUploaded={(p) => { const opts = [...round.options]; opts[oi] = { ...opts[oi], joke_image: p }; onChange({ ...round, options: opts }); }}
+                          onRemoved={() => { const opts = [...round.options]; opts[oi] = { ...opts[oi], joke_image: "" }; onChange({ ...round, options: opts }); }} />
+                      </div>
                     </div>
                   )}
                 </div>
