@@ -5,7 +5,8 @@
   | "pitch"
   | "blitz"
   | "quiz"
-  | "vote_saboteur";
+  | "vote_saboteur"
+  | "situation_deduction";
 
 export interface RoundBase {
   id: string;
@@ -83,6 +84,21 @@ export interface QuizRound extends RoundBase {
   questions: QuizQuestion[];
 }
 
+export interface SituationOption {
+  id: string;
+  label: string;
+}
+
+export interface SituationDeductionRound extends RoundBase {
+  mechanic: "situation_deduction";
+  situation_real: string;
+  situation_fake: string;
+  forbidden_words: string[];
+  question_time_seconds: number;
+  options: SituationOption[];
+  correct_option_id: string;
+}
+
 export interface VoteSaboteurRound extends RoundBase {
   mechanic: "vote_saboteur";
 }
@@ -94,7 +110,8 @@ export type RoundConfig =
   | PitchRound
   | BlitzRound
   | QuizRound
-  | VoteSaboteurRound;
+  | VoteSaboteurRound
+  | SituationDeductionRound;
 
 export interface RoundResult {
   round_id: string;

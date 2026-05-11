@@ -137,6 +137,20 @@ function calcVoteSaboteur(submissions: any[], saboteurPlayerId: string, round: a
   };
 }
 
+function calcSituationDeduction(submissions: any[], saboteurPlayerId: string, round: any) {
+  const saboteurSub = submissions.find(
+    (s) => s.player_id === saboteurPlayerId && s.payload?.type === "final_guess"
+  );
+  const saboteurGuess = saboteurSub?.payload?.option_id;
+  const saboteurWon = saboteurGuess === round.correct_option_id;
+  return {
+    team_scored: !saboteurWon,
+    saboteur_scored: saboteurWon,
+    team_points: saboteurWon ? 0 : round.points.team_success,
+    saboteur_points: saboteurWon ? round.points.saboteur_success : 0,
+  };
+}
+
 const calculators: Record<string, Function> = {
   joke_vote: calcJokeVote,
   fork: calcFork,
@@ -145,6 +159,7 @@ const calculators: Record<string, Function> = {
   blitz: calcBlitz,
   quiz: calcQuiz,
   vote_saboteur: calcVoteSaboteur,
+  situation_deduction: calcSituationDeduction,
 };
 
 serve(async (req) => {

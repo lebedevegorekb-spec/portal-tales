@@ -6,6 +6,7 @@ import { PitchHost, PitchPlayer } from "@/mechanics/Pitch";
 import { BlitzHost, BlitzPlayer } from "@/mechanics/Blitz";
 import { QuizHost, QuizPlayer } from "@/mechanics/Quiz";
 import { VoteSaboteurHost, VoteSaboteurPlayer } from "@/mechanics/VoteSaboteur";
+import { SituationDeductionHost, SituationDeductionPlayer } from "@/mechanics/SituationDeduction";
 
 const HostViews: Record<MechanicType, React.ComponentType<MechanicViewProps<any>>> = {
   joke_vote: JokeVoteHost,
@@ -15,6 +16,7 @@ const HostViews: Record<MechanicType, React.ComponentType<MechanicViewProps<any>
   blitz: BlitzHost,
   quiz: QuizHost,
   vote_saboteur: VoteSaboteurHost,
+  situation_deduction: SituationDeductionHost,
 };
 
 const PlayerViews: Record<MechanicType, React.ComponentType<MechanicViewProps<any>>> = {
@@ -25,6 +27,7 @@ const PlayerViews: Record<MechanicType, React.ComponentType<MechanicViewProps<an
   blitz: BlitzPlayer,
   quiz: QuizPlayer,
   vote_saboteur: VoteSaboteurPlayer,
+  situation_deduction: SituationDeductionPlayer,
 };
 
 interface RoundRouterProps extends MechanicViewProps {
