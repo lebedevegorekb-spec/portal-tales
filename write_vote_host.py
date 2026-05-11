@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+﻿f = open('src/mechanics/VoteSaboteur/HostView.tsx', 'w', encoding='utf-8', newline='\n')
+f.write("""import { useMemo, useState } from "react";
 import type { MechanicViewProps, VoteSaboteurRound } from "@/mechanics/types";
 
 interface Player {
@@ -127,3 +128,6 @@ export function VoteSaboteurHost({ round, submissions, playerCount, onAdvance, p
     </div>
   );
 }
+""")
+f.close()
+print('done')

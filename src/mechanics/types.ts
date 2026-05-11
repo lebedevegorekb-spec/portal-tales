@@ -101,6 +101,10 @@ export interface SituationDeductionRound extends RoundBase {
 
 export interface VoteSaboteurRound extends RoundBase {
   mechanic: "vote_saboteur";
+  tie_host?: string;
+  tie_morty?: string;
+  tie_host_audio?: string;
+  tie_morty_audio?: string;
 }
 
 export type RoundConfig =
