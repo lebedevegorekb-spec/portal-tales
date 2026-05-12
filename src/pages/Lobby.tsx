@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -38,7 +38,7 @@ const Lobby = () => {
   const loadRoom = async () => {
     if (!roomId) return;
     const { data: r, error } = await supabase.from("rooms").select("*").eq("id", roomId).maybeSingle();
-    if (error || !r) { toast.error("??????? ?? ???????"); navigate("/catalog"); return; }
+    if (error || !r) { toast.error("Комната не найдена"); navigate("/catalog"); return; }
     setRoom(r as Room);
     const { data: ps } = await supabase.from("room_players").select("*").eq("room_id", roomId).order("joined_at", { ascending: true });
     setPlayers((ps as Player[]) ?? []);
@@ -70,7 +70,7 @@ const Lobby = () => {
 
   const isHost = room?.host_user_id === user?.id;
   const playerCount = players.length;
-  const minReached = playerCount >= (room?.min_players ?? 3);
+  const minReached = playerCount >= (room?.min_players ?? 4);
   const isPaused = room?.status === "paused";
 
   const copyCode = async () => {
@@ -90,7 +90,7 @@ const Lobby = () => {
       body: { room_id: room.id },
     });
     if (error || data?.error) {
-      toast.error(data?.error || error?.message || "?? ??????? ?????? ????");
+      toast.error(data?.error || error?.message || "Не удалось начать игру");
       setStarting(false);
       return;
     }
@@ -103,7 +103,7 @@ const Lobby = () => {
     const { error } = await supabase.functions.invoke("room-pause", {
       body: { room_id: room.id },
     });
-    if (error) toast.error("?? ??????? ????????? ?????");
+    if (error) toast.error("Не удалось поставить паузу");
     setPausing(false);
   };
 
@@ -120,10 +120,10 @@ const Lobby = () => {
       <SiteHeader />
       <div className="container max-w-5xl mx-auto py-8 px-4 grid md:grid-cols-2 gap-8">
 
-        {/* ????? ??????? � QR ? ??? */}
+        {/* Левая колонка — QR и код */}
         <div className="flex flex-col gap-4">
           <div className="glass-card p-6 flex flex-col items-center gap-4">
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">??????????????</p>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">Присоединиться</p>
             {qrUrl && <img src={qrUrl} alt="QR" className="w-48 h-48 rounded-lg border border-border" />}
             <div className="flex items-center gap-3">
               <span className="font-display text-4xl tracking-widest text-portal">{room?.code}</span>
@@ -133,22 +133,22 @@ const Lobby = () => {
             </div>
             <button onClick={copyLink} className="text-xs text-muted-foreground hover:text-portal transition-colors flex items-center gap-1">
               {copied === "link" ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-              ??????????? ??????
+              Скопировать ссылку
             </button>
           </div>
 
           <div className="glass-card p-4 text-center">
-            <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">????????</p>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Сценарий</p>
             <p className="font-display text-lg">{room?.scenario_id}</p>
           </div>
         </div>
 
-        {/* ?????? ??????? � ?????? ? ?????????? */}
+        {/* Правая колонка — игроки и управление */}
         <div className="flex flex-col gap-4">
           <div className="glass-card p-6 flex-1">
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                <Users className="w-4 h-4" /> ??????
+                <Users className="w-4 h-4" /> Игроки
               </span>
               <span className="font-display text-portal">{playerCount}/{room?.max_players ?? 8}</span>
             </div>
@@ -160,13 +160,13 @@ const Lobby = () => {
                     {p.display_name[0]?.toUpperCase()}
                   </div>
                   <span className="flex-1 text-sm">{p.display_name}</span>
-                  {p.is_host && <span className="text-xs text-portal uppercase tracking-widest">????</span>}
+                  {p.is_host && <span className="text-xs text-portal uppercase tracking-widest">Хост</span>}
                 </div>
               ))}
-              {Array.from({ length: Math.max(0, (room?.min_players ?? 3) - playerCount) }).map((_, i) => (
+              {Array.from({ length: Math.max(0, (room?.min_players ?? 4) - playerCount) }).map((_, i) => (
                 <div key={i} className="flex items-center gap-3 p-3 bg-muted/20 rounded-lg border border-dashed border-border">
                   <div className="w-8 h-8 rounded-full bg-muted/40" />
-                  <span className="text-sm text-muted-foreground">???????? ??????...</span>
+                  <span className="text-sm text-muted-foreground">Ожидание игрока...</span>
                 </div>
               ))}
             </div>
@@ -180,7 +180,7 @@ const Lobby = () => {
                 className="w-full h-14 bg-portal text-portal-foreground font-display text-lg"
               >
                 {starting ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <PlayCircle className="w-5 h-5 mr-2" />}
-                {minReached ? "??????" : `?????? (?? ??????? ${Math.max(0, (room?.min_players ?? 3) - playerCount)})`}
+                {minReached ? "Начать" : `Начать (не хватает ${Math.max(0, (room?.min_players ?? 4) - playerCount)})`}
               </Button>
 
               {room?.status === "playing" && (
@@ -191,12 +191,12 @@ const Lobby = () => {
                   className="w-full h-12"
                 >
                   {pausing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : isPaused ? <Play className="w-4 h-4 mr-2" /> : <Pause className="w-4 h-4 mr-2" />}
-                  {isPaused ? "??????????" : "?????"}
+                  {isPaused ? "Продолжить" : "Пауза"}
                 </Button>
               )}
 
               <p className="text-xs text-center text-muted-foreground">
-                ??????: {room?.status === "paused" ? "?????" : room?.status === "playing" ? "???? ????" : "????????"}
+                Статус: {room?.status === "paused" ? "пауза" : room?.status === "playing" ? "идёт игра" : "ожидание"}
               </p>
             </div>
           )}

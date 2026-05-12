@@ -195,5 +195,3 @@ const Waiting = () => {
 };
 
 export default Waiting;
-
-
