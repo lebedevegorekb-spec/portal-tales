@@ -109,7 +109,7 @@ const Catalog = () => {
           (user.user_metadata as { display_name?: string })?.display_name ||
           user.email?.split("@")[0] ||
           "Хост",
-        min_players: 4,
+        min_players: 3,
       },
     });
     setBusy(null);
@@ -258,3 +258,4 @@ const Catalog = () => {
 };
 
 export default Catalog;
+
