@@ -179,6 +179,7 @@ const Scene = () => {
 
   if (phase === "intro" && isHost && partyConfig?.intro) {
     const intro = partyConfig.intro;
+    console.log("INTRO DATA:", intro);
     return (
       <div className="min-h-screen bg-background text-foreground relative flex flex-col items-center justify-center p-8">
         <BackgroundImage imagePath={intro.background_image?.replace(/^"|"$/g, "")} />
@@ -253,5 +254,6 @@ const Scene = () => {
 };
 
 export default Scene;
+
 
 
