@@ -42,7 +42,6 @@ const Scene = () => {
     currentRound?.id ?? null
   );
 
-  // Показать очередь реплик
   const showReplicas = (replicas: Array<{speaker:"host"|"morty";text:string;audioPath?:string}>) => {
     setReplicaQueue(replicas);
     if (replicas.length > 0) setCurrentReplica(replicas[0]);
@@ -58,10 +57,12 @@ const Scene = () => {
 
   // Загрузить данные комнаты и сценария
   useEffect(() => {
-    if (!runId || !user) return;
+    if (!runId) return;
+
+    // Поддержка гостей
+    const userId = user?.id ?? localStorage.getItem("guest_player_id");
 
     const load = async () => {
-      // Получить run
       const { data: run } = await supabase
         .from("runs")
         .select("scenario_id")
@@ -70,7 +71,6 @@ const Scene = () => {
 
       if (!run) { navigate("/catalog"); return; }
 
-      // Получить комнату
       const { data: room } = await supabase
         .from("rooms")
         .select("id, host_user_id, status, min_players")
@@ -80,26 +80,27 @@ const Scene = () => {
       if (room) {
         setRoomId(room.id);
         setRoomStatus(room.status);
-        setIsHost(room.host_user_id === user.id);
+        // Хостом может быть только авторизованный пользователь
+        setIsHost(!!user?.id && room.host_user_id === user.id);
 
-        // Получить кол-во игроков
         const { count } = await supabase
           .from("room_players")
           .select("id", { count: "exact" })
           .eq("room_id", room.id);
         setPlayerCount(count ?? room.min_players ?? 4);
 
-        // Получить player_id текущего пользователя
-        const { data: playerRow } = await supabase
-          .from("room_players")
-          .select("id")
-          .eq("room_id", room.id)
-          .eq("user_id", user.id)
-          .maybeSingle();
-        if (playerRow) setPlayerId(playerRow.id);
+        // Получить player_id — для гостей тоже
+        if (userId) {
+          const { data: playerRow } = await supabase
+            .from("room_players")
+            .select("id")
+            .eq("room_id", room.id)
+            .eq("user_id", userId)
+            .maybeSingle();
+          if (playerRow) setPlayerId(playerRow.id);
+        }
       }
 
-      // Получить scenario_json
       const { data: scenario } = await supabase
         .from("scenarios")
         .select("scenario_json")
@@ -163,7 +164,6 @@ const Scene = () => {
     );
   }
 
-  // Пауза
   if (roomStatus === "paused") {
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center gap-6">
@@ -187,14 +187,12 @@ const Scene = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground relative">
-      {/* Кнопка паузы для хоста — всегда видна */}
       {isHost && roomId && (
         <div className="fixed top-4 right-4 z-50">
           <PauseButton roomId={roomId} status={roomStatus} />
         </div>
       )}
 
-      {/* Прогресс раундов */}
       <div className="fixed top-4 left-4 z-50 flex items-center gap-2">
         <span className="text-xs uppercase tracking-widest text-muted-foreground font-mono">
           Раунд {gameState.current_round_index + 1} / {partyConfig.rounds.length}
@@ -215,7 +213,6 @@ const Scene = () => {
         </div>
       </div>
 
-      {/* Счёт */}
       <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex gap-4 text-xs font-mono">
         <span className="text-portal">Команда: {gameState.scores.team}</span>
         <span className="text-destructive">Хаос: {gameState.scores.saboteur}</span>
@@ -232,7 +229,6 @@ const Scene = () => {
         />
       )}
 
-      {/* Раунд */}
       <RoundRouter
         round={currentRound}
         isHost={isHost}
