@@ -34,8 +34,9 @@ export function BackgroundImage({ imagePath, overlay = true }: BackgroundImagePr
         className="absolute inset-0 bg-cover bg-center transition-opacity duration-700"
         style={{ opacity: 0 }}
       />
-      {overlay && <div className="absolute inset-0 bg-background/40" />}
+      {overlay && <div className="absolute inset-0 bg-black/30" />}
     </div>
   );
 }
+
 
