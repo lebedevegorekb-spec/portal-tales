@@ -64,15 +64,9 @@ const Join = () => {
         if (!rp) { setStatus("idle"); return; }
 
         // Игрок уже в комнате — редирект на правильный экран
-        if (room.status === "started" && room.run_id) {
-          // Если персонаж назначен но ещё не смотрел
-          if (rp.character_id) {
-            navigate(`/character?run=${room.run_id}&room=${room.id}`);
-          } else {
-            navigate(`/vote?run=${room.run_id}&room=${room.id}`);
-          }
+        if ((room.status === "playing" || room.status === "started") && room.run_id) {
+          navigate(`/scene/${room.run_id}`);
         } else {
-          // Игра ещё не началась — в лобби ожидания
           navigate(`/waiting?room=${room.id}`);
         }
       } catch {

@@ -1,4 +1,5 @@
-// deno-lint-ignore-file no-explicit-any
+﻿f = open('supabase/functions/party-start/index.ts', 'w', encoding='utf-8', newline='\n')
+f.write("""// deno-lint-ignore-file no-explicit-any
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { corsHeaders } from "../_shared/cors.ts";
 
@@ -135,3 +136,6 @@ Deno.serve(async (req) => {
     return json({ error: (e as Error).message }, 500);
   }
 });
+""")
+f.close()
+print('done')

@@ -37,7 +37,7 @@ const Waiting = () => {
         .maybeSingle();
 
       if (room?.run_id) setRunId(room.run_id);
-      if (room?.status === "started" && room?.run_id) {
+      if ((room?.status === "playing" || room?.status === "started") && room?.run_id) {
         navigate(`/scene/${room.run_id}`);
         return;
       }
@@ -75,11 +75,12 @@ const Waiting = () => {
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "rooms", filter: `id=eq.${roomId}` },
         (payload) => {
-          const next = payload.new as any;
-          if (next.status === "started" && next.run_id) {
-            navigate(`/character?run=${next.run_id}&room=${roomId}`)
-          }
-        },
+        const r = payload.new as any;
+        if (r.run_id) setRunId(r.run_id);
+        if ((r.status === "playing" || r.status === "started") && r.run_id) {
+          navigate(`/scene/${r.run_id}`);
+        }
+      },
       )
       .subscribe();
     return () => { supabase.removeChannel(ch); };

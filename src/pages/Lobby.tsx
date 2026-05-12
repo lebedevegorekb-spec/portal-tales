@@ -70,7 +70,7 @@ const Lobby = () => {
 
   const isHost = room?.host_user_id === user?.id;
   const playerCount = players.length;
-  const minReached = playerCount >= (room?.min_players ?? 4);
+  const minReached = playerCount >= (room?.min_players ?? 3);
   const isPaused = room?.status === "paused";
 
   const copyCode = async () => {
@@ -86,8 +86,9 @@ const Lobby = () => {
   const handleStart = async () => {
     if (!room || !user) return;
     setStarting(true);
+    const hostName = (user.user_metadata as any)?.display_name || user.email?.split("@")[0] || "Хост";
     const { data, error } = await supabase.functions.invoke("party-start", {
-      body: { room_id: room.id },
+      body: { room_id: room.id, host_name: hostName },
     });
     if (error || data?.error) {
       toast.error(data?.error || error?.message || "Не удалось начать игру");

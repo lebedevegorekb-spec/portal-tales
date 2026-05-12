@@ -124,7 +124,8 @@ const Scene = () => {
       .on("postgres_changes", {
         event: "UPDATE", schema: "public", table: "rooms", filter: `id=eq.${roomId}`
       }, (payload) => {
-        setRoomStatus((payload.new as any).status);
+        const newRoom = payload.new as any;
+        setRoomStatus(newRoom.status);
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
