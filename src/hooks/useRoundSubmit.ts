@@ -1,6 +1,5 @@
 ﻿import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-
 interface SubmitParams {
   runId: string;
   roomId: string;
@@ -9,17 +8,16 @@ interface SubmitParams {
   mechanic: string;
   payload: Record<string, any>;
 }
-
 export function useRoundSubmit() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const submit = async (params: SubmitParams) => {
     setLoading(true);
     setError(null);
     try {
       const { data: { session } } = await supabase.auth.getSession();
+      const guestUserId = !session ? localStorage.getItem("guest_player_id") : null;
       const res = await supabase.functions.invoke("round-submit", {
         body: {
           run_id: params.runId,
@@ -28,6 +26,7 @@ export function useRoundSubmit() {
           round_id: params.roundId,
           mechanic: params.mechanic,
           payload: params.payload,
+          guest_user_id: guestUserId,
         },
       });
       if (res.error) throw new Error(res.error.message);
@@ -38,8 +37,6 @@ export function useRoundSubmit() {
       setLoading(false);
     }
   };
-
   const reset = () => { setSubmitted(false); setError(null); };
-
   return { submit, loading, submitted, error, reset };
 }
