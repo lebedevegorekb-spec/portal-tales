@@ -181,7 +181,7 @@ const Scene = () => {
     const intro = partyConfig.intro;
 
     return (
-      <div className="min-h-screen bg-background text-foreground relative flex flex-col items-center justify-center p-8">
+      <div className="min-h-screen text-foreground relative flex flex-col items-center justify-center p-8">
         <BackgroundImage imagePath={intro.background_image?.replace(/^"|"$/g, "")} />
         <MediaPlayer musicPath={intro.background_music} />
         {currentReplica && (
@@ -254,6 +254,7 @@ const Scene = () => {
 };
 
 export default Scene;
+
 
 
 
