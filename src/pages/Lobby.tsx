@@ -164,7 +164,7 @@ const Lobby = () => {
                   {p.is_host && <span className="text-xs text-portal uppercase tracking-widest">Хост</span>}
                 </div>
               ))}
-              {Array.from({ length: Math.max(0, (room?.min_players ?? 4) - playerCount) }).map((_, i) => (
+              {Array.from({ length: Math.max(0, (room?.min_players ?? 3) - playerCount) }).map((_, i) => (
                 <div key={i} className="flex items-center gap-3 p-3 bg-muted/20 rounded-lg border border-dashed border-border">
                   <div className="w-8 h-8 rounded-full bg-muted/40" />
                   <span className="text-sm text-muted-foreground">Ожидание игрока...</span>
@@ -181,7 +181,7 @@ const Lobby = () => {
                 className="w-full h-14 bg-portal text-portal-foreground font-display text-lg"
               >
                 {starting ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <PlayCircle className="w-5 h-5 mr-2" />}
-                {minReached ? "Начать" : `Начать (не хватает ${Math.max(0, (room?.min_players ?? 4) - playerCount)})`}
+                {minReached ? "Начать" : `Начать (не хватает ${Math.max(0, (room?.min_players ?? 3) - playerCount)})`}
               </Button>
 
               {room?.status === "playing" && (
