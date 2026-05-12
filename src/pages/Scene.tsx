@@ -14,13 +14,7 @@ import { MediaPlayer } from "@/components/MediaPlayer";
 import { ReplicaPlayer } from "@/components/ReplicaPlayer";
 import { BackgroundImage } from "@/components/BackgroundImage";
 
-type ScenePhase = "loading" | "intro" | "round_intro" | "playing" | "advancing";
-
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-function mediaUrl(path?: string) {
-  if (!path) return undefined;
-  return `${SUPABASE_URL}/storage/v1/object/public/scenario-media/${path}`;
-}
+type ScenePhase = "loading" | "intro" | "playing" | "advancing";
 
 const Scene = () => {
   const { runId } = useParams<{ runId: string }>();
@@ -34,17 +28,13 @@ const Scene = () => {
   const [partyConfig, setPartyConfig] = useState<PartyGameConfig | null>(null);
   const [playerCount, setPlayerCount] = useState(4);
   const [loading, setLoading] = useState(true);
-
-  // Фаза экрана
   const [phase, setPhase] = useState<ScenePhase>("loading");
-  // Очередь реплик
   const [replicaQueue, setReplicaQueue] = useState<Array<{speaker:"host"|"morty";text:string;audioPath?:string}>>([]);
   const [currentReplica, setCurrentReplica] = useState<{speaker:"host"|"morty";text:string;audioPath?:string} | null>(null);
-  // Трекер — для какого раунда уже показали intro
   const [introShownForRound, setIntroShownForRound] = useState<number>(-1);
 
   const gameState = useGameState(runId ?? null);
-  const { advance, loading: advancing } = useRoundAdvance();
+  const { advance } = useRoundAdvance();
   const { submit } = useRoundSubmit();
 
   const currentRound: RoundConfig | null = partyConfig && gameState
@@ -57,84 +47,74 @@ const Scene = () => {
   useEffect(() => {
     if (!runId) return;
     const userId = user?.id ?? localStorage.getItem("guest_player_id");
-
     const load = async () => {
-      const { data: run } = await supabase
-        .from("runs").select("scenario_id").eq("id", runId).single();
+      const { data: run } = await supabase.from("runs").select("scenario_id").eq("id", runId).single();
       if (!run) { navigate("/catalog"); return; }
-
-      const { data: room } = await supabase
-        .from("rooms").select("id, host_user_id, status, min_players")
-        .eq("run_id", runId).maybeSingle();
-
+      const { data: room } = await supabase.from("rooms").select("id, host_user_id, status, min_players").eq("run_id", runId).maybeSingle();
       if (room) {
         setRoomId(room.id);
         setRoomStatus(room.status);
         setIsHost(!!user?.id && room.host_user_id === user.id);
-
-        const { count } = await supabase
-          .from("room_players").select("id", { count: "exact" }).eq("room_id", room.id);
+        const { count } = await supabase.from("room_players").select("id", { count: "exact" }).eq("room_id", room.id);
         setPlayerCount(count ?? room.min_players ?? 4);
-
         if (userId) {
-          const { data: playerRow } = await supabase
-            .from("room_players").select("id")
-            .eq("room_id", room.id).eq("user_id", userId).maybeSingle();
+          const { data: playerRow } = await supabase.from("room_players").select("id").eq("room_id", room.id).eq("user_id", userId).maybeSingle();
           if (playerRow) setPlayerId(playerRow.id);
         }
       }
-
-      const { data: scenario } = await supabase
-        .from("scenarios").select("scenario_json").eq("id", run.scenario_id).single();
-
-      if (scenario?.scenario_json?.party_game) {
-        setPartyConfig(scenario.scenario_json.party_game as PartyGameConfig);
-      }
-
+      const { data: scenario } = await supabase.from("scenarios").select("scenario_json").eq("id", run.scenario_id).single();
+      if (scenario?.scenario_json?.party_game) setPartyConfig(scenario.scenario_json.party_game as PartyGameConfig);
       setLoading(false);
     };
-
     load();
   }, [runId, user, navigate]);
 
-  // После загрузки — показать intro или сразу раунд
+  // Определить начальную фазу
   useEffect(() => {
-    if (loading || !partyConfig || !gameState) return;
-    if (phase !== "loading") return;
-
-    const isFirstRound = gameState.current_round_index === 0;
-    if (isHost && isFirstRound && partyConfig?.intro?.situation) {
+    if (loading || !partyConfig || !gameState || phase !== "loading") return;
+    if (isHost && gameState.current_round_index === 0 && partyConfig?.intro?.situation) {
       setPhase("intro");
     } else {
       setPhase("playing");
     }
   }, [loading, partyConfig, gameState, isHost, phase]);
 
-  // При смене раунда — показать intro реплики
+  // Запустить реплики intro при входе в фазу intro
   useEffect(() => {
-    if (!gameState || !currentRound || !isHost) return;
-    if (phase === "loading" || phase === "intro") return;
+    if (phase !== "intro" || !isHost || !partyConfig?.intro) return;
+    const intro = partyConfig.intro;
+    const queue: Array<{speaker:"host"|"morty";text:string;audioPath?:string}> = [];
+    if (intro.host_line) queue.push({ speaker: "host", text: intro.host_line, audioPath: intro.host_line_audio });
+    if (intro.morty_line) queue.push({ speaker: "morty", text: intro.morty_line, audioPath: intro.morty_line_audio });
+    if (queue.length > 0) { setReplicaQueue(queue); setCurrentReplica(queue[0]); }
+  }, [phase, isHost, partyConfig]);
+
+  // При смене раунда — показать intro реплики раунда
+  useEffect(() => {
+    if (!gameState || !currentRound || !isHost || phase !== "playing") return;
     const idx = gameState.current_round_index;
     if (introShownForRound === idx) return;
-
     setIntroShownForRound(idx);
     const queue: Array<{speaker:"host"|"morty";text:string;audioPath?:string}> = [];
     if (currentRound.intro_host) queue.push({ speaker: "host", text: currentRound.intro_host, audioPath: currentRound.intro_host_audio });
     if (currentRound.intro_morty) queue.push({ speaker: "morty", text: currentRound.intro_morty, audioPath: currentRound.intro_morty_audio });
-
-    if (queue.length > 0) {
-      setReplicaQueue(queue);
-      setCurrentReplica(queue[0]);
-    }
-    setPhase("playing");
+    if (queue.length > 0) { setReplicaQueue(queue); setCurrentReplica(queue[0]); }
   }, [gameState?.current_round_index, currentRound, isHost, introShownForRound, phase]);
 
-  // Для игроков — сразу playing
+  // Realtime статус комнаты
   useEffect(() => {
-    if (!isHost && phase === "loading" && !loading && partyConfig && gameState) {
-      setPhase("playing");
-    }
-  }, [isHost, phase, loading, partyConfig, gameState]);
+    if (!roomId) return;
+    const channel = supabase.channel(`room_status:${roomId}`)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "rooms", filter: `id=eq.${roomId}` },
+        (payload) => { setRoomStatus((payload.new as any).status); })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [roomId]);
+
+  // Финал
+  useEffect(() => {
+    if (gameState?.phase === "final" && runId) navigate(`/final/${runId}`);
+  }, [gameState?.phase, runId, navigate]);
 
   const onReplicaFinished = useCallback(() => {
     setReplicaQueue(prev => {
@@ -144,21 +124,11 @@ const Scene = () => {
     });
   }, []);
 
-  // Realtime статус комнаты
-  useEffect(() => {
-    if (!roomId) return;
-    const channel = supabase.channel(`room_status:${roomId}`)
-      .on("postgres_changes", {
-        event: "UPDATE", schema: "public", table: "rooms", filter: `id=eq.${roomId}`
-      }, (payload) => { setRoomStatus((payload.new as any).status); })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [roomId]);
-
-  // Финал
-  useEffect(() => {
-    if (gameState?.phase === "final" && runId) navigate(`/final/${runId}`);
-  }, [gameState?.phase, runId, navigate]);
+  const handleIntroFinish = () => {
+    setReplicaQueue([]);
+    setCurrentReplica(null);
+    setPhase("playing");
+  };
 
   const handleSubmit = async (payload: Record<string, any>) => {
     if (!runId || !roomId || !playerId || !currentRound) return;
@@ -169,8 +139,6 @@ const Scene = () => {
     if (!runId || !roomId) return;
     setPhase("advancing");
     const result = await advance(runId, roomId);
-
-    // Показать success/fail реплики
     if (result && currentRound && isHost) {
       const won = result.team_scored;
       const queue: Array<{speaker:"host"|"morty";text:string;audioPath?:string}> = [];
@@ -181,25 +149,9 @@ const Scene = () => {
         if (currentRound.fail_host) queue.push({ speaker: "host", text: currentRound.fail_host, audioPath: currentRound.fail_host_audio });
         if (currentRound.fail_morty) queue.push({ speaker: "morty", text: currentRound.fail_morty, audioPath: currentRound.fail_morty_audio });
       }
-      if (queue.length > 0) {
-        setReplicaQueue(queue);
-        setCurrentReplica(queue[0]);
-      }
+      if (queue.length > 0) { setReplicaQueue(queue); setCurrentReplica(queue[0]); }
     }
     setPhase("playing");
-  };
-
-  const handleIntroFinish = () => {
-    const intro = partyConfig?.intro;
-    if (!intro) { setPhase("round_intro"); return; }
-    const queue: Array<{speaker:"host"|"morty";text:string;audioPath?:string}> = [];
-    if (intro.host_line) queue.push({ speaker: "host", text: intro.host_line, audioPath: intro.host_line_audio });
-    if (intro.morty_line) queue.push({ speaker: "morty", text: intro.morty_line, audioPath: intro.morty_line_audio });
-    if (queue.length > 0) {
-      setReplicaQueue(queue);
-      setCurrentReplica(queue[0]);
-    }
-    setPhase("round_intro");
   };
 
   // --- RENDER ---
@@ -223,21 +175,6 @@ const Scene = () => {
     );
   }
 
-  // Запустить реплики вступления при входе в фазу intro
-  useEffect(() => {
-    if (phase !== "intro" || !isHost || !partyConfig?.intro) return;
-    const intro = partyConfig.intro;
-    const queue: Array<{speaker:"host"|"morty";text:string;audioPath?:string}> = [];
-    if (intro.host_line) queue.push({ speaker: "host", text: intro.host_line, audioPath: intro.host_line_audio });
-    if (intro.morty_line) queue.push({ speaker: "morty", text: intro.morty_line, audioPath: intro.morty_line_audio });
-    if (queue.length > 0) {
-      setReplicaQueue(queue);
-      setCurrentReplica(queue[0]);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase]);
-
-  // Экран вступления (только хост)
   if (phase === "intro" && isHost && partyConfig?.intro) {
     const intro = partyConfig.intro;
     return (
@@ -245,21 +182,13 @@ const Scene = () => {
         <BackgroundImage imagePath={intro.background_image} />
         <MediaPlayer musicPath={intro.background_music} />
         {currentReplica && (
-          <ReplicaPlayer
-            speaker={currentReplica.speaker}
-            text={currentReplica.text}
-            audioPath={currentReplica.audioPath}
-            onFinished={onReplicaFinished}
-          />
+          <ReplicaPlayer speaker={currentReplica.speaker} text={currentReplica.text} audioPath={currentReplica.audioPath} onFinished={onReplicaFinished} />
         )}
         <div className="max-w-2xl text-center space-y-6 animate-in fade-in duration-700">
           <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Вступление</p>
           <h1 className="text-4xl font-display">{partyConfig.title ?? "Портал Хаоса"}</h1>
           <p className="text-xl text-muted-foreground leading-relaxed">{intro.situation}</p>
-          <button
-            onClick={handleIntroFinish}
-            className="mt-8 bg-portal text-portal-foreground px-12 py-4 rounded-lg font-display text-xl hover:bg-portal/90 transition-colors"
-          >
+          <button onClick={handleIntroFinish} className="mt-8 bg-portal text-portal-foreground px-12 py-4 rounded-lg font-display text-xl hover:bg-portal/90 transition-colors">
             Начать игру →
           </button>
         </div>
@@ -282,7 +211,6 @@ const Scene = () => {
           <PauseButton roomId={roomId} status={roomStatus} />
         </div>
       )}
-
       <div className="fixed top-4 left-4 z-50 flex items-center gap-2">
         <span className="text-xs uppercase tracking-widest text-muted-foreground font-mono">
           Раунд {gameState.current_round_index + 1} / {partyConfig.rounds.length}
@@ -297,23 +225,15 @@ const Scene = () => {
           ))}
         </div>
       </div>
-
       <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex gap-4 text-xs font-mono">
         <span className="text-portal">Команда: {gameState.scores.team}</span>
         <span className="text-destructive">Хаос: {gameState.scores.saboteur}</span>
       </div>
-
       <BackgroundImage imagePath={currentRound?.background_image} />
       <MediaPlayer musicPath={currentRound?.background_music} />
       {currentReplica && (
-        <ReplicaPlayer
-          speaker={currentReplica.speaker}
-          text={currentReplica.text}
-          audioPath={currentReplica.audioPath}
-          onFinished={onReplicaFinished}
-        />
+        <ReplicaPlayer speaker={currentReplica.speaker} text={currentReplica.text} audioPath={currentReplica.audioPath} onFinished={onReplicaFinished} />
       )}
-
       <RoundRouter
         round={currentRound}
         isHost={isHost}
@@ -331,5 +251,3 @@ const Scene = () => {
 };
 
 export default Scene;
-
-
