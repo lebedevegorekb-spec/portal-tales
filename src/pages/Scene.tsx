@@ -103,10 +103,10 @@ const Scene = () => {
     if (phase !== "loading") return;
 
     const isFirstRound = gameState.current_round_index === 0;
-    if (isHost && isFirstRound && partyConfig.intro) {
+    if (isHost && isFirstRound && partyConfig?.intro?.situation) {
       setPhase("intro");
     } else {
-      setPhase("round_intro");
+      setPhase("playing");
     }
   }, [loading, partyConfig, gameState, isHost, phase]);
 
@@ -316,3 +316,4 @@ const Scene = () => {
 };
 
 export default Scene;
+
