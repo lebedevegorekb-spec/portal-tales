@@ -223,12 +223,27 @@ const Scene = () => {
     );
   }
 
+  // Запустить реплики вступления при входе в фазу intro
+  useEffect(() => {
+    if (phase !== "intro" || !isHost || !partyConfig?.intro) return;
+    const intro = partyConfig.intro;
+    const queue: Array<{speaker:"host"|"morty";text:string;audioPath?:string}> = [];
+    if (intro.host_line) queue.push({ speaker: "host", text: intro.host_line, audioPath: intro.host_line_audio });
+    if (intro.morty_line) queue.push({ speaker: "morty", text: intro.morty_line, audioPath: intro.morty_line_audio });
+    if (queue.length > 0) {
+      setReplicaQueue(queue);
+      setCurrentReplica(queue[0]);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
+
   // Экран вступления (только хост)
   if (phase === "intro" && isHost && partyConfig?.intro) {
     const intro = partyConfig.intro;
     return (
       <div className="min-h-screen bg-background text-foreground relative flex flex-col items-center justify-center p-8">
         <BackgroundImage imagePath={intro.background_image} />
+        <MediaPlayer musicPath={intro.background_music} />
         {currentReplica && (
           <ReplicaPlayer
             speaker={currentReplica.speaker}
@@ -316,4 +331,5 @@ const Scene = () => {
 };
 
 export default Scene;
+
 
