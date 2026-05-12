@@ -19,7 +19,6 @@ export function BackgroundImage({ imagePath, overlay = true }: BackgroundImagePr
 
   useEffect(() => {
     const url = getPublicUrl(imagePath);
-    console.log("BG URL:", url, "current:", current);
     if (url === current) return;
     if (!current) { setCurrent(url); return; }
     setNext(url);
@@ -48,4 +47,5 @@ export function BackgroundImage({ imagePath, overlay = true }: BackgroundImagePr
     </div>
   );
 }
+
 

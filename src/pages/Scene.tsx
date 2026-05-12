@@ -101,7 +101,7 @@ const Scene = () => {
     if (currentRound.intro_host) queue.push({ speaker: "host", text: currentRound.intro_host, audioPath: currentRound.intro_host_audio });
     if (currentRound.intro_morty) queue.push({ speaker: "morty", text: currentRound.intro_morty, audioPath: currentRound.intro_morty_audio });
     if (queue.length > 0) { setReplicaQueue(queue); setCurrentReplica(queue[0]); }
-  }, [gameState?.current_round_index, currentRound, isHost, introShownForRound, phase]);
+  }, [gameState?.current_round_index, isHost, introShownForRound, phase]);
 
   // Realtime статус комнаты
   useEffect(() => {
@@ -179,7 +179,7 @@ const Scene = () => {
 
   if (phase === "intro" && isHost && partyConfig?.intro) {
     const intro = partyConfig.intro;
-    console.log("INTRO DATA:", intro);
+
     return (
       <div className="min-h-screen bg-background text-foreground relative flex flex-col items-center justify-center p-8">
         <BackgroundImage imagePath={intro.background_image?.replace(/^"|"$/g, "")} />
@@ -254,6 +254,8 @@ const Scene = () => {
 };
 
 export default Scene;
+
+
 
 
 
