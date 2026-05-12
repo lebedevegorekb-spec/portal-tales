@@ -56,8 +56,8 @@ const Scene = () => {
         setRoomId(room.id);
         setRoomStatus(room.status);
         setIsHost(!!user?.id && room.host_user_id === user.id);
-        const { count } = await supabase.from("room_players").select("id", { count: "exact" }).eq("room_id", room.id);
-        setPlayerCount(count ?? room.min_players ?? 4);
+        const { count } = await supabase.from("room_players").select("id", { count: "exact" }).eq("room_id", room.id).eq("is_host", false);
+        setPlayerCount(count ?? room.min_players ?? 3);
         if (userId) {
           const { data: playerRow } = await supabase.from("room_players").select("id").eq("room_id", room.id).eq("user_id", userId).maybeSingle();
           if (playerRow) setPlayerId(playerRow.id);
@@ -272,6 +272,7 @@ const Scene = () => {
 };
 
 export default Scene;
+
 
 
 

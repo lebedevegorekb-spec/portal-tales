@@ -256,7 +256,8 @@ serve(async (req) => {
     const { data: players } = await supabase
       .from("room_players")
       .select("id")
-      .eq("room_id", room_id);
+      .eq("room_id", room_id)
+      .eq("is_host", false);
 
     const playerCount = players?.length ?? 1;
     const calc = calculators[currentRound.mechanic];
@@ -315,3 +316,4 @@ serve(async (req) => {
     });
   }
 });
+
