@@ -126,9 +126,17 @@ const Scene = () => {
     });
   }, []);
 
-  const handleIntroFinish = () => {
+  const handleIntroFinish = async () => {
     setReplicaQueue([]);
     setCurrentReplica(null);
+    // Обновить phase в БД чтобы игроки увидели раунд
+    if (runId) {
+      const { data: run } = await supabase.from("runs").select("state_json").eq("id", runId).single();
+      if (run?.state_json) {
+        const newState = { ...run.state_json, party_game: { ...run.state_json.party_game, phase: "round" } };
+        await supabase.from("runs").update({ state_json: newState }).eq("id", runId);
+      }
+    }
     setPhase("playing");
   };
 
@@ -199,6 +207,16 @@ const Scene = () => {
     );
   }
 
+  // Игроки видят ожидание пока хост на intro
+  if (!isHost && gameState?.phase === "intro") {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center gap-4">
+        <Loader2 className="w-10 h-10 animate-spin text-portal" />
+        <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest">Хост запускает игру...</p>
+      </div>
+    );
+  }
+
   if (!partyConfig || !gameState || !currentRound) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -254,6 +272,8 @@ const Scene = () => {
 };
 
 export default Scene;
+
+
 
 
 

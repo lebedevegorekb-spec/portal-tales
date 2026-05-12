@@ -1,4 +1,4 @@
-// deno-lint-ignore-file no-explicit-any
+﻿// deno-lint-ignore-file no-explicit-any
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { corsHeaders } from "../_shared/cors.ts";
 
@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const roomId: string | undefined = body?.room_id;
-    const hostName: string = body?.host_name ?? "Хост";
+    const hostName: string = body?.host_name ?? "Ð¥Ð¾ÑÑ‚";
     const isTest: boolean = body?.is_test ?? false;
 
     if (!roomId) return json({ error: "room_id required" }, 400);
@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
     if (room.host_user_id !== userId) return json({ error: "Only host can start" }, 403);
     if (room.status !== "waiting") return json({ error: "Room already started" }, 400);
 
-    // Получить игроков
+    // ÐŸÐ¾Ð»ÑƒÑ‡Ð¸Ñ‚ÑŒ Ð¸Ð³Ñ€Ð¾ÐºÐ¾Ð²
     let { data: players } = await supabase
       .from("room_players")
       .select("*")
@@ -56,13 +56,13 @@ Deno.serve(async (req) => {
 
     players = players ?? [];
 
-    // Проверить минимум игроков (кроме тестового режима)
+    // ÐŸÑ€Ð¾Ð²ÐµÑ€Ð¸Ñ‚ÑŒ Ð¼Ð¸Ð½Ð¸Ð¼ÑƒÐ¼ Ð¸Ð³Ñ€Ð¾ÐºÐ¾Ð² (ÐºÑ€Ð¾Ð¼Ðµ Ñ‚ÐµÑÑ‚Ð¾Ð²Ð¾Ð³Ð¾ Ñ€ÐµÐ¶Ð¸Ð¼Ð°)
     const minPlayers = isTest ? 1 : (room.min_players ?? 3);
     if (players.length < minPlayers && !isTest) {
-      return json({ error: `Нужно минимум ${minPlayers} игрока` }, 400);
+      return json({ error: `ÐÑƒÐ¶Ð½Ð¾ Ð¼Ð¸Ð½Ð¸Ð¼ÑƒÐ¼ ${minPlayers} Ð¸Ð³Ñ€Ð¾ÐºÐ°` }, 400);
     }
 
-    // Если хост не в players — добавить его
+    // Ð•ÑÐ»Ð¸ Ñ…Ð¾ÑÑ‚ Ð½Ðµ Ð² players â€” Ð´Ð¾Ð±Ð°Ð²Ð¸Ñ‚ÑŒ ÐµÐ³Ð¾
     const hostInPlayers = players.some((p: any) => p.user_id === userId);
     if (!hostInPlayers) {
       const { data: hostPlayer } = await supabase
@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
     const initialState = {
       party_game: {
         current_round_index: 0,
-        phase: "round",
+        phase: "intro",
         scores: { team: 0, saboteur: 0 },
         round_results: [],
         saboteur_player_id: saboteurPlayerId,
@@ -135,3 +135,4 @@ Deno.serve(async (req) => {
     return json({ error: (e as Error).message }, 500);
   }
 });
+
