@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -20,13 +20,13 @@ const Waiting = () => {
   const [elapsed, setElapsed] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Таймер
+  // Ð¢Ð°Ð¹Ð¼ÐµÑ€
   useEffect(() => {
     const t = setInterval(() => setElapsed((s) => s + 1), 1000);
     return () => clearInterval(t);
   }, []);
 
-  // Загрузка комнаты и игроков
+  // Ð—Ð°Ð³Ñ€ÑƒÐ·ÐºÐ° ÐºÐ¾Ð¼Ð½Ð°Ñ‚Ñ‹ Ð¸ Ð¸Ð³Ñ€Ð¾ÐºÐ¾Ð²
   useEffect(() => {
     if (!roomId) return;
     const load = async () => {
@@ -54,7 +54,7 @@ const Waiting = () => {
     load();
   }, [roomId, navigate]);
 
-  // Realtime — игроки и статус комнаты
+  // Realtime â€” Ð¸Ð³Ñ€Ð¾ÐºÐ¸ Ð¸ ÑÑ‚Ð°Ñ‚ÑƒÑ ÐºÐ¾Ð¼Ð½Ð°Ñ‚Ñ‹
   useEffect(() => {
     if (!roomId) return;
     const ch = supabase
@@ -110,10 +110,10 @@ const Waiting = () => {
       <main className="flex-1 container py-6 max-w-md flex flex-col">
 
         <div className="text-[11px] font-mono uppercase tracking-[0.25em] text-muted-foreground mb-2">
-          Ожидание
+          ÐžÐ¶Ð¸Ð´Ð°Ð½Ð¸Ðµ
         </div>
         <h1 className="font-display font-bold text-2xl text-balance mb-5">
-          {allReady ? "Все готовы!" : "Ждём остальных…"}
+          {allReady ? "Ð’ÑÐµ Ð³Ð¾Ñ‚Ð¾Ð²Ñ‹!" : "Ð–Ð´Ñ‘Ð¼ Ð¾ÑÑ‚Ð°Ð»ÑŒÐ½Ñ‹Ñ…â€¦"}
         </h1>
 
         {/* Status card */}
@@ -134,7 +134,7 @@ const Waiting = () => {
           </div>
 
           <div>
-            <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground">Готовы</div>
+            <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground">Ð“Ð¾Ñ‚Ð¾Ð²Ñ‹</div>
             <div className="mt-1 font-display font-bold text-5xl tabular-nums">
               <span className={allReady ? "text-acid" : "text-portal"}>{ready}</span>
               <span className="text-muted-foreground/50"> / {total}</span>
@@ -159,7 +159,7 @@ const Waiting = () => {
         {/* Player list */}
         <div className="mt-6">
           <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground mb-2.5 px-1">
-            Игроки
+            Ð˜Ð³Ñ€Ð¾ÐºÐ¸
           </div>
           <div className="glass-card rounded-2xl divide-y divide-border/60 overflow-hidden">
             {players.map((p) => (
@@ -172,7 +172,7 @@ const Waiting = () => {
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-sm truncate">{p.display_name}</div>
                   <div className="text-[11px] text-muted-foreground">
-                    {p.ready ? "Выбор сделан" : "Ещё думает…"}
+                    {p.ready ? "Ð’Ñ‹Ð±Ð¾Ñ€ ÑÐ´ÐµÐ»Ð°Ð½" : "Ð•Ñ‰Ñ‘ Ð´ÑƒÐ¼Ð°ÐµÑ‚â€¦"}
                   </div>
                 </div>
                 {p.ready
@@ -186,8 +186,8 @@ const Waiting = () => {
 
         <p className="text-[11px] text-muted-foreground text-center mt-6 px-4">
           {allReady
-            ? "Хост переключит сцену с большого экрана."
-            : "Не закрывай экран. Как только все проголосуют — игра продолжится."}
+            ? "Ð¥Ð¾ÑÑ‚ Ð¿ÐµÑ€ÐµÐºÐ»ÑŽÑ‡Ð¸Ñ‚ ÑÑ†ÐµÐ½Ñƒ Ñ Ð±Ð¾Ð»ÑŒÑˆÐ¾Ð³Ð¾ ÑÐºÑ€Ð°Ð½Ð°."
+            : "ÐÐµ Ð·Ð°ÐºÑ€Ñ‹Ð²Ð°Ð¹ ÑÐºÑ€Ð°Ð½. ÐšÐ°Ðº Ñ‚Ð¾Ð»ÑŒÐºÐ¾ Ð²ÑÐµ Ð¿Ñ€Ð¾Ð³Ð¾Ð»Ð¾ÑÑƒÑŽÑ‚ â€” Ð¸Ð³Ñ€Ð° Ð¿Ñ€Ð¾Ð´Ð¾Ð»Ð¶Ð¸Ñ‚ÑÑ."}
         </p>
 
       </main>
@@ -196,3 +196,4 @@ const Waiting = () => {
 };
 
 export default Waiting;
+

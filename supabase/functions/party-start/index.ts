@@ -104,6 +104,7 @@ Deno.serve(async (req) => {
         round_results: [],
         saboteur_player_id: saboteurPlayerId,
         player_roles: playerRoles,
+        player_characters: playerCharacters,
         saboteur_actions: {},
       },
       saboteur_player_id: saboteurPlayerId,
@@ -135,4 +136,5 @@ Deno.serve(async (req) => {
     return json({ error: (e as Error).message }, 500);
   }
 });
+
 
