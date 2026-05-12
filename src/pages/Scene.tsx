@@ -32,6 +32,7 @@ const Scene = () => {
   const [replicaQueue, setReplicaQueue] = useState<Array<{speaker:"host"|"morty";text:string;audioPath?:string}>>([]);
   const [currentReplica, setCurrentReplica] = useState<{speaker:"host"|"morty";text:string;audioPath?:string} | null>(null);
   const [introShownForRound, setIntroShownForRound] = useState<number>(-1);
+  const [introReplicasShown, setIntroReplicasShown] = useState(false);
 
   const gameState = useGameState(runId ?? null);
   const { advance } = useRoundAdvance();
@@ -79,15 +80,16 @@ const Scene = () => {
     }
   }, [loading, partyConfig, gameState, isHost, phase]);
 
-  // Запустить реплики intro при входе в фазу intro
+  // Запустить реплики intro при входе в фазу intro (только 1 раз)
   useEffect(() => {
-    if (phase !== "intro" || !isHost || !partyConfig?.intro) return;
+    if (phase !== "intro" || !isHost || !partyConfig?.intro || introReplicasShown) return;
+    setIntroReplicasShown(true);
     const intro = partyConfig.intro;
     const queue: Array<{speaker:"host"|"morty";text:string;audioPath?:string}> = [];
     if (intro.host_line) queue.push({ speaker: "host", text: intro.host_line, audioPath: intro.host_line_audio });
     if (intro.morty_line) queue.push({ speaker: "morty", text: intro.morty_line, audioPath: intro.morty_line_audio });
     if (queue.length > 0) { setReplicaQueue(queue); setCurrentReplica(queue[0]); }
-  }, [phase, isHost, partyConfig]);
+  }, [phase, isHost, partyConfig, introReplicasShown]);
 
   // При смене раунда — показать intro реплики раунда
   useEffect(() => {
@@ -251,3 +253,4 @@ const Scene = () => {
 };
 
 export default Scene;
+
