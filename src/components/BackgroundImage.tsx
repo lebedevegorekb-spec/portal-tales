@@ -31,12 +31,13 @@ export function BackgroundImage({ imagePath, overlay = true }: BackgroundImagePr
     <div className="fixed inset-0 -z-10 overflow-hidden">
       <div
         ref={divRef}
-        className="absolute inset-0 bg-cover bg-center transition-opacity duration-700"
-        style={{ opacity: 0 }}
+        className="absolute inset-0 transition-opacity duration-700"
+        style={{ opacity: 0, backgroundSize: "cover", backgroundPosition: "center", width: "100%", height: "100%" }}
       />
       {overlay && <div className="absolute inset-0 bg-black/30" />}
     </div>
   );
 }
+
 
 
