@@ -12,12 +12,20 @@ export interface RoundBase {
   id: string;
   mechanic: MechanicType;
   title: string;
-  intro_host: string;
-  intro_morty: string;
-  success_host: string;
-  success_morty: string;
-  fail_host: string;
-  fail_morty: string;
+  intro_host?: string;
+  intro_host_audio?: string;
+  intro_morty?: string;
+  intro_morty_audio?: string;
+  success_host?: string;
+  success_host_audio?: string;
+  success_morty?: string;
+  success_morty_audio?: string;
+  fail_host?: string;
+  fail_host_audio?: string;
+  fail_morty?: string;
+  fail_morty_audio?: string;
+  background_image?: string;
+  background_music?: string;
   points: {
     team_success: number;
     saboteur_success: number;
@@ -140,17 +148,24 @@ export interface PartyGameState {
 }
 
 export interface PartyGameIntro {
-  host_line: string;
-  morty_line: string;
-  situation: string;
+  host_line?: string;
+  host_line_audio?: string;
+  morty_line?: string;
+  morty_line_audio?: string;
+  situation?: string;
+  background_image?: string;
+  background_music?: string;
 }
 
 export interface PartyGameEnding {
-  host_line: string;
-  morty_line: string;
+  host_line?: string;
+  morty_line?: string;
+  host_line_audio?: string;
+  morty_line_audio?: string;
 }
 
 export interface PartyGameConfig {
+  title?: string;
   intro: PartyGameIntro;
   rounds: RoundConfig[];
   scoring: {
@@ -160,8 +175,8 @@ export interface PartyGameConfig {
   endings: {
     team_wins: PartyGameEnding;
     saboteur_wins: PartyGameEnding;
-    team_found_but_lost: PartyGameEnding;
-    team_won_but_missed: PartyGameEnding;
+    team_found_but_lost?: PartyGameEnding;
+    team_won_but_missed?: PartyGameEnding;
   };
 }
 
