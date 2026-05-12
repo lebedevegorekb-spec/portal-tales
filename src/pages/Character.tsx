@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, ArrowRight, Lock, User } from "lucide-react";
 import { toast } from "sonner";
 
-// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type CharacterData = {
   id: string;
@@ -19,14 +19,14 @@ type CharacterData = {
   avatar_url?: string | null;
 };
 
-// â”€â”€â”€ Helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Helper ───────────────────────────────────────────────────────────────────
 
 function getPlayerId(userId?: string | null): string | null {
   if (userId) return userId;
   return localStorage.getItem("guest_player_id");
 }
 
-// â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Component ────────────────────────────────────────────────────────────────
 
 const Character = () => {
   const [searchParams] = useSearchParams();
@@ -41,31 +41,31 @@ const Character = () => {
   const [error,     setError]     = useState<string | null>(null);
   const [revealed,  setRevealed]  = useState(false);
 
-  // â”€â”€ Fetch â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Fetch ─────────────────────────────────────────────────────────────────
   useEffect(() => {
     const fetchCharacter = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        if (!runId) throw new Error("ÐŸÐµÑ€ÐµÐ´Ð°Ð¹ ?run=<run_id> Ð² URL");
+        if (!runId) throw new Error("Передай ?run=<run_id> в URL");
 
         const playerId = getPlayerId(user?.id);
-        if (!playerId) throw new Error("guest_player_id Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½ Ð² localStorage");
+        if (!playerId) throw new Error("guest_player_id не найден в localStorage");
 
-        // 1. Ð“Ñ€ÑƒÐ·Ð¸Ð¼ run + scenario_json Ð·Ð° Ð¾Ð´Ð¸Ð½ Ð·Ð°Ð¿Ñ€Ð¾Ñ
+        // 1. Грузим run + scenario_json за один запрос
         const { data: run, error: runErr } = await supabase
           .from("runs")
           .select("state_json, scenarios(scenario_json)")
           .eq("id", runId)
           .single();
 
-        if (runErr || !run) throw new Error("Ð˜Ð³Ñ€Ð° Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½Ð°");
+        if (runErr || !run) throw new Error("Игра не найдена");
 
         const scenarioJson = (run as any).scenarios?.scenario_json as Record<string, any>;
         const characters: CharacterData[] = scenarioJson?.characters ?? [];
 
-        // 2. Ð˜Ñ‰ÐµÐ¼ character_id: ÑÐ½Ð°Ñ‡Ð°Ð»Ð° Ð² state_json, Ð¿Ð¾Ñ‚Ð¾Ð¼ Ð² room_players
+        // 2. Ищем character_id: сначала в state_json, потом в room_players
         const stateJson   = run.state_json as Record<string, any>;
         let charId: string | undefined = stateJson?.players?.[playerId]?.character_id;
 
@@ -82,15 +82,15 @@ const Character = () => {
           charId = rp?.character_id ?? undefined;
         }
 
-        if (!charId) throw new Error("ÐŸÐµÑ€ÑÐ¾Ð½Ð°Ð¶ ÐµÑ‰Ñ‘ Ð½Ðµ Ð½Ð°Ð·Ð½Ð°Ñ‡ÐµÐ½ â€” Ð´Ð¾Ð¶Ð´Ð¸ÑÑŒ ÑÑ‚Ð°Ñ€Ñ‚Ð° Ð¸Ð³Ñ€Ñ‹");
+        if (!charId) throw new Error("Персонаж ещё не назначен — дождись старта игры");
 
         const found = characters.find((c) => c.id === charId);
-        if (!found) throw new Error(`ÐŸÐµÑ€ÑÐ¾Ð½Ð°Ð¶ "${charId}" Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½ Ð² ÑÑ†ÐµÐ½Ð°Ñ€Ð¸Ð¸`);
+        if (!found) throw new Error(`Персонаж "${charId}" не найден в сценарии`);
 
         setCharacter(found);
         setTimeout(() => setRevealed(true), 80);
       } catch (err: any) {
-        const msg = err?.message ?? "ÐžÑˆÐ¸Ð±ÐºÐ° Ð·Ð°Ð³Ñ€ÑƒÐ·ÐºÐ¸ Ð¿ÐµÑ€ÑÐ¾Ð½Ð°Ð¶Ð°";
+        const msg = err?.message ?? "Ошибка загрузки персонажа";
         setError(msg);
         toast.error(msg);
       } finally {
@@ -102,7 +102,7 @@ const Character = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runId, roomId, user?.id]);
 
-  // â”€â”€ Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Navigation ────────────────────────────────────────────────────────────
   const handleNext = () => {
     const q = new URLSearchParams();
     if (runId)  q.set("run",  runId);
@@ -110,7 +110,7 @@ const Character = () => {
     navigate(`/secret?${q.toString()}`);
   };
 
-  // â”€â”€ Loading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Loading ───────────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-background scanlines">
@@ -118,39 +118,39 @@ const Character = () => {
         <main className="flex-1 flex items-center justify-center">
           <div className="flex flex-col items-center gap-3 text-muted-foreground">
             <Loader2 className="size-8 animate-spin text-portal" />
-            <span className="text-sm font-mono">Ð—Ð°Ð³Ñ€ÑƒÐ¶Ð°ÐµÐ¼ Ð¿ÐµÑ€ÑÐ¾Ð½Ð°Ð¶Ð°â€¦</span>
+            <span className="text-sm font-mono">Загружаем персонажа…</span>
           </div>
         </main>
       </div>
     );
   }
 
-  // â”€â”€ Error â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Error ─────────────────────────────────────────────────────────────────
   if (error || !character) {
     return (
       <div className="min-h-screen flex flex-col bg-background scanlines">
         <SiteHeader />
         <main className="flex-1 flex items-center justify-center px-4">
           <div className="glass-card rounded-3xl p-8 max-w-sm w-full text-center space-y-4 border border-destructive/40">
-            <p className="text-destructive font-mono text-sm">{error ?? "ÐŸÐµÑ€ÑÐ¾Ð½Ð°Ð¶ Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½"}</p>
-            <Button variant="outline" onClick={() => navigate(-1)}>ÐÐ°Ð·Ð°Ð´</Button>
+            <p className="text-destructive font-mono text-sm">{error ?? "Персонаж не найден"}</p>
+            <Button variant="outline" onClick={() => navigate(-1)}>Назад</Button>
           </div>
         </main>
       </div>
     );
   }
 
-  // â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex flex-col bg-background scanlines">
       <SiteHeader />
       <main className="flex-1 container py-6 max-w-md flex flex-col">
 
         <div className="text-[11px] font-mono uppercase tracking-[0.25em] text-muted-foreground mb-2">
-          Ð¢Ð²Ð¾Ñ Ñ€Ð¾Ð»ÑŒ
+          Твоя роль
         </div>
         <h1 className="font-display font-bold text-2xl text-balance mb-5">
-          Ð—Ð°Ð¿Ð¾Ð¼Ð½Ð¸. ÐÐ¸ÐºÐ¾Ð¼Ñƒ Ð½Ðµ Ñ€Ð°ÑÑÐºÐ°Ð·Ñ‹Ð²Ð°Ð¹.
+          Запомни. Никому не рассказывай.
         </h1>
 
         <div
@@ -194,7 +194,7 @@ const Character = () => {
           {character.publicGoal && (
             <div className="rounded-2xl border border-portal/40 bg-portal/15 p-4">
               <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground">
-                Ð˜Ð·Ð²ÐµÑÑ‚Ð½Ð°Ñ Ð²ÑÐµÐ¼ Ñ†ÐµÐ»ÑŒ
+                Известная всем цель
               </div>
               <div className="mt-1 font-display font-semibold text-base text-portal">
                 {character.publicGoal}
@@ -206,7 +206,7 @@ const Character = () => {
           <div className="flex items-center gap-3">
             <div className="h-px flex-1 bg-border" />
             <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground">
-              <Lock className="size-3" /> Ð”Ð°Ð»ÐµÐµ â€” Ñ‚Ð°Ð¹Ð½Ð°Ñ Ñ†ÐµÐ»ÑŒ
+              <Lock className="size-3" /> Далее — тайная цель
             </div>
             <div className="h-px flex-1 bg-border" />
           </div>
@@ -215,7 +215,7 @@ const Character = () => {
         {/* CTA */}
         <div className="mt-6">
           <Button size="lg" className="w-full h-14 text-base font-display gap-2" onClick={handleNext}>
-            Ð£Ð·Ð½Ð°Ñ‚ÑŒ Ñ‚Ð°Ð¹Ð½ÑƒÑŽ Ñ†ÐµÐ»ÑŒ
+            Узнать тайную цель
             <ArrowRight className="size-5" />
           </Button>
         </div>

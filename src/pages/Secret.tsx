@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Eye, EyeOff, Lock, Check } from "lucide-react";
 import { toast } from "sonner";
 
-// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type SecretRoleData = {
   id: string;
@@ -19,7 +19,7 @@ type SecretRoleData = {
 
 type Tone = { text: string; bg: string; border: string; glow: string };
 
-// â”€â”€â”€ Tone map â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Tone map ─────────────────────────────────────────────────────────────────
 
 const TONES: Record<string, Tone> = {
   destructive: {
@@ -46,14 +46,14 @@ function getTone(tone?: string): Tone {
   return TONES[tone ?? "portal"] ?? TONES.portal;
 }
 
-// â”€â”€â”€ Helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Helper ───────────────────────────────────────────────────────────────────
 
 function getPlayerId(userId?: string | null): string | null {
   if (userId) return userId;
   return localStorage.getItem("guest_player_id");
 }
 
-// â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Component ────────────────────────────────────────────────────────────────
 
 const Secret = () => {
   const [searchParams] = useSearchParams();
@@ -69,31 +69,31 @@ const Secret = () => {
   const [revealed,     setRevealed]     = useState(false);
   const [acknowledged, setAcknowledged] = useState(false);
 
-  // â”€â”€ Fetch â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Fetch ─────────────────────────────────────────────────────────────────
   useEffect(() => {
     const fetchRole = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        if (!runId) throw new Error("ÐŸÐµÑ€ÐµÐ´Ð°Ð¹ ?run=<run_id> Ð² URL");
+        if (!runId) throw new Error("Передай ?run=<run_id> в URL");
 
         const playerId = getPlayerId(user?.id);
-        if (!playerId) throw new Error("guest_player_id Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½ Ð² localStorage");
+        if (!playerId) throw new Error("guest_player_id не найден в localStorage");
 
-        // 1. Ð“Ñ€ÑƒÐ·Ð¸Ð¼ run + scenario_json
+        // 1. Грузим run + scenario_json
         const { data: run, error: runErr } = await supabase
           .from("runs")
           .select("state_json, scenarios(scenario_json)")
           .eq("id", runId)
           .single();
 
-        if (runErr || !run) throw new Error("Ð˜Ð³Ñ€Ð° Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½Ð°");
+        if (runErr || !run) throw new Error("Игра не найдена");
 
         const scenarioJson = (run as any).scenarios?.scenario_json as Record<string, any>;
         const roles: SecretRoleData[] = scenarioJson?.roles ?? [];
 
-        // 2. Ð˜Ñ‰ÐµÐ¼ role_id: ÑÐ½Ð°Ñ‡Ð°Ð»Ð° Ð² state_json, Ð¿Ð¾Ñ‚Ð¾Ð¼ Ð² room_players
+        // 2. Ищем role_id: сначала в state_json, потом в room_players
         const stateJson   = run.state_json as Record<string, any>;
         let roleId: string | undefined = stateJson?.players?.[playerId]?.role_id;
 
@@ -110,14 +110,14 @@ const Secret = () => {
           roleId = rp?.role_id ?? undefined;
         }
 
-        if (!roleId) throw new Error("Ð¢Ð°Ð¹Ð½Ð°Ñ Ñ€Ð¾Ð»ÑŒ ÐµÑ‰Ñ‘ Ð½Ðµ Ð½Ð°Ð·Ð½Ð°Ñ‡ÐµÐ½Ð° â€” Ð´Ð¾Ð¶Ð´Ð¸ÑÑŒ ÑÑ‚Ð°Ñ€Ñ‚Ð° Ð¸Ð³Ñ€Ñ‹");
+        if (!roleId) throw new Error("Тайная роль ещё не назначена — дождись старта игры");
 
         const found = roles.find((r) => r.id === roleId);
-        if (!found) throw new Error(`Ð Ð¾Ð»ÑŒ "${roleId}" Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½Ð° Ð² ÑÑ†ÐµÐ½Ð°Ñ€Ð¸Ð¸`);
+        if (!found) throw new Error(`Роль "${roleId}" не найдена в сценарии`);
 
         setRole(found);
       } catch (err: any) {
-        const msg = err?.message ?? "ÐžÑˆÐ¸Ð±ÐºÐ° Ð·Ð°Ð³Ñ€ÑƒÐ·ÐºÐ¸ Ñ‚Ð°Ð¹Ð½Ð¾Ð¹ Ñ€Ð¾Ð»Ð¸";
+        const msg = err?.message ?? "Ошибка загрузки тайной роли";
         setError(msg);
         toast.error(msg);
       } finally {
@@ -129,7 +129,7 @@ const Secret = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runId, roomId, user?.id]);
 
-  // â”€â”€ Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Navigation ────────────────────────────────────────────────────────────
   const [submitting, setSubmitting] = useState(false);
 
   const handleReady = async () => {
@@ -149,7 +149,7 @@ const Secret = () => {
     navigate(`/waiting?${q.toString()}`);
   };
 
-  // â”€â”€ Loading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Loading ───────────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-background scanlines">
@@ -157,22 +157,22 @@ const Secret = () => {
         <main className="flex-1 flex items-center justify-center">
           <div className="flex flex-col items-center gap-3 text-muted-foreground">
             <Loader2 className="size-8 animate-spin text-portal" />
-            <span className="text-sm font-mono">ÐŸÐ¾Ð»ÑƒÑ‡Ð°ÐµÐ¼ Ñ‚Ð²Ð¾ÑŽ Ñ‚Ð°Ð¹Ð½Ñƒâ€¦</span>
+            <span className="text-sm font-mono">Получаем твою тайну…</span>
           </div>
         </main>
       </div>
     );
   }
 
-  // â”€â”€ Error â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Error ─────────────────────────────────────────────────────────────────
   if (error || !role) {
     return (
       <div className="min-h-screen flex flex-col bg-background scanlines">
         <SiteHeader />
         <main className="flex-1 flex items-center justify-center px-4">
           <div className="glass-card rounded-3xl p-8 max-w-sm w-full text-center space-y-4 border border-destructive/40">
-            <p className="text-destructive font-mono text-sm">{error ?? "Ð Ð¾Ð»ÑŒ Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½Ð°"}</p>
-            <Button variant="outline" onClick={() => navigate(-1)}>ÐÐ°Ð·Ð°Ð´</Button>
+            <p className="text-destructive font-mono text-sm">{error ?? "Роль не найдена"}</p>
+            <Button variant="outline" onClick={() => navigate(-1)}>Назад</Button>
           </div>
         </main>
       </div>
@@ -181,34 +181,34 @@ const Secret = () => {
 
   const tone = getTone(role.tone);
 
-  // â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex flex-col bg-background scanlines">
       <SiteHeader />
       <main className="flex-1 container py-6 max-w-md flex flex-col">
 
         <div className="text-[11px] font-mono uppercase tracking-[0.25em] text-muted-foreground mb-2">
-          Ð¢Ð°Ð¹Ð½Ð°Ñ Ñ€Ð¾Ð»ÑŒ
+          Тайная роль
         </div>
         <h1 className="font-display font-bold text-2xl text-balance mb-5">
-          Ð¢Ð¾Ð»ÑŒÐºÐ¾ Ð´Ð»Ñ Ñ‚Ð²Ð¾Ð¸Ñ… Ð³Ð»Ð°Ð·.
+          Только для твоих глаз.
         </h1>
 
-        {/* â”€â”€ Tap-to-reveal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ── Tap-to-reveal ──────────────────────────────────────────────── */}
         {!revealed ? (
           <button
             onClick={() => setRevealed(true)}
             className={`glass-card rounded-3xl p-8 border ${tone.border} ${tone.glow}
               flex flex-col items-center justify-center gap-4 min-h-[260px]
               cursor-pointer select-none active:scale-[0.98] transition-transform`}
-            aria-label="ÐÐ°Ð¶Ð¼Ð¸ Ñ‡Ñ‚Ð¾Ð±Ñ‹ ÑƒÐ²Ð¸Ð´ÐµÑ‚ÑŒ Ñ‚Ð°Ð¹Ð½ÑƒÑŽ Ñ€Ð¾Ð»ÑŒ"
+            aria-label="Нажми чтобы увидеть тайную роль"
           >
             <div className={`size-20 rounded-full ${tone.bg} ${tone.border} border-2 flex items-center justify-center`}>
               <Lock className={`size-10 ${tone.text}`} />
             </div>
             <div className="space-y-1 text-center">
-              <p className="font-display font-bold text-xl">ÐÐ°Ð¶Ð¼Ð¸, Ñ‡Ñ‚Ð¾Ð±Ñ‹ Ð¾Ñ‚ÐºÑ€Ñ‹Ñ‚ÑŒ</p>
-              <p className="text-sm text-muted-foreground">Ð£Ð±ÐµÐ´Ð¸ÑÑŒ, Ñ‡Ñ‚Ð¾ Ð½Ð¸ÐºÑ‚Ð¾ Ð½Ðµ ÑÐ¼Ð¾Ñ‚Ñ€Ð¸Ñ‚</p>
+              <p className="font-display font-bold text-xl">Нажми, чтобы открыть</p>
+              <p className="text-sm text-muted-foreground">Убедись, что никто не смотрит</p>
             </div>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
               <Eye className="size-3" /> tap to reveal
@@ -217,7 +217,7 @@ const Secret = () => {
 
         ) : (
 
-          /* â”€â”€ Revealed card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+          /* ── Revealed card ─────────────────────────────────────────────── */
           <div className={`glass-card rounded-3xl p-6 space-y-5 border ${tone.border} ${tone.glow}
             animate-in fade-in zoom-in-95 duration-300`}
           >
@@ -227,7 +227,7 @@ const Secret = () => {
                 <EyeOff className={`size-10 ${tone.text}`} />
               </div>
               <div className={`text-[11px] font-mono uppercase tracking-[0.25em] ${tone.text}`}>
-                Ð¢Ð°Ð¹Ð½Ð°Ñ Ñ€Ð¾Ð»ÑŒ
+                Тайная роль
               </div>
               <h2 className="font-display font-bold text-3xl">{role.role}</h2>
             </div>
@@ -235,7 +235,7 @@ const Secret = () => {
             {/* Goal */}
             <div className={`rounded-2xl border ${tone.border} ${tone.bg} p-4 space-y-1`}>
               <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground">
-                Ð¢Ð²Ð¾Ñ Ñ‚Ð°Ð¹Ð½Ð°Ñ Ñ†ÐµÐ»ÑŒ
+                Твоя тайная цель
               </div>
               <div className={`font-display font-semibold text-base ${tone.text}`}>
                 {role.goal}
@@ -245,7 +245,7 @@ const Secret = () => {
             {/* Hint */}
             <div className="rounded-2xl border border-border bg-muted/20 p-4 space-y-1">
               <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground">
-                ÐŸÐ¾Ð´ÑÐºÐ°Ð·ÐºÐ°
+                Подсказка
               </div>
               <p className="text-sm text-foreground leading-relaxed">{role.hint}</p>
             </div>
@@ -267,13 +267,13 @@ const Secret = () => {
                 {acknowledged && <Check className={`size-3.5 ${tone.text}`} />}
               </div>
               <span className="text-sm font-medium">
-                Ð¯ Ð¿Ñ€Ð¾Ñ‡Ð¸Ñ‚Ð°Ð»(Ð°) Ð¸ Ð·Ð°Ð¿Ð¾Ð¼Ð½Ð¸Ð»(Ð°) ÑÐ²Ð¾ÑŽ Ñ€Ð¾Ð»ÑŒ
+                Я прочитал(а) и запомнил(а) свою роль
               </span>
             </button>
           </div>
         )}
 
-        {/* CTA â€” Ð¿Ð¾ÑÐ²Ð»ÑÐµÑ‚ÑÑ Ñ‚Ð¾Ð»ÑŒÐºÐ¾ Ð¿Ð¾ÑÐ»Ðµ reveal */}
+        {/* CTA — появляется только после reveal */}
         {revealed && (
           <div className="mt-6">
             <Button
@@ -282,7 +282,7 @@ const Secret = () => {
               disabled={!acknowledged || submitting}
               onClick={handleReady}
             >
-              Ð¯ Ð³Ð¾Ñ‚Ð¾Ð²(Ð°) Ð¸Ð³Ñ€Ð°Ñ‚ÑŒ
+              Я готов(а) играть
               <Check className="size-5" />
             </Button>
           </div>
