@@ -130,12 +130,23 @@ const Secret = () => {
   }, [runId, roomId, user?.id]);
 
   // ── Navigation ────────────────────────────────────────────────────────────
-  const handleReady = () => {
-    if (!acknowledged) return;
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleReady = async () => {
+    if (!acknowledged || !roomId) return;
+    setSubmitting(true);
+    const playerId = getPlayerId(user?.id);
+    if (playerId) {
+      await supabase
+        .from("room_players")
+        .update({ ready: true })
+        .eq("room_id", roomId)
+        .eq("user_id", playerId);
+    }
     const q = new URLSearchParams();
     if (runId)  q.set("run",  runId);
     if (roomId) q.set("room", roomId);
-    navigate(`/vote?${q.toString()}`)
+    navigate(`/waiting?${q.toString()}`);
   };
 
   // ── Loading ───────────────────────────────────────────────────────────────
@@ -268,7 +279,7 @@ const Secret = () => {
             <Button
               size="lg"
               className="w-full h-14 text-base font-display gap-2"
-              disabled={!acknowledged}
+              disabled={!acknowledged || submitting}
               onClick={handleReady}
             >
               Я готов(а) играть
@@ -283,3 +294,5 @@ const Secret = () => {
 };
 
 export default Secret;
+
+
