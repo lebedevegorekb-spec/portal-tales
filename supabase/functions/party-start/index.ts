@@ -96,6 +96,16 @@ Deno.serve(async (req) => {
       playerRoles[pid] = pid === saboteurPlayerId ? "saboteur" : "team";
     });
 
+    // Назначить персонажей случайно
+    const characters: any[] = scenario.scenario_json?.characters ?? [];
+    const shuffledChars = [...characters].sort(() => Math.random() - 0.5);
+    const playerCharacters: Record<string, string> = {};
+    playerIds.forEach((pid: string, i: number) => {
+      if (shuffledChars.length > 0) {
+        playerCharacters[pid] = shuffledChars[i % shuffledChars.length].id;
+      }
+    });
+
     const initialState = {
       party_game: {
         current_round_index: 0,
@@ -106,6 +116,7 @@ Deno.serve(async (req) => {
         player_roles: playerRoles,
         player_characters: playerCharacters,
         saboteur_actions: {},
+        characters_ready: [],
       },
       saboteur_player_id: saboteurPlayerId,
       player_roles: playerRoles,
@@ -136,5 +147,7 @@ Deno.serve(async (req) => {
     return json({ error: (e as Error).message }, 500);
   }
 });
+
+
 
 

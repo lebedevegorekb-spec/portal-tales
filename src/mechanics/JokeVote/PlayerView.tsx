@@ -74,13 +74,17 @@ export function JokeVotePlayer({ round, submissions, playerId, onSubmit }: Mecha
     );
   }
 
-  if (myAnswerSubmission) {
+  if (myAnswerSubmission && !allAnswered) {
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center px-4">
         <div className="max-w-md w-full glass-card p-8 text-center">
           <p className="text-4xl mb-4">✓</p>
-          <h2 className="text-2xl font-display mb-2">Ответ отправлен</h2>
-          <p className="text-muted-foreground">Ждём остальных...</p>
+          <h2 className="text-2xl font-display mb-2">Ответ принят!</h2>
+          <div className="glass-card p-4 rounded-xl mb-4 border border-portal/30">
+            <p className="text-sm text-muted-foreground mb-1">Твой ответ:</p>
+            <p className="text-foreground font-medium">{myAnswerSubmission.payload.answer}</p>
+          </div>
+          <p className="text-muted-foreground text-sm">Ждём остальных... {answerSubmissions.length} / ? ответили</p>
         </div>
       </div>
     );
@@ -112,3 +116,4 @@ export function JokeVotePlayer({ round, submissions, playerId, onSubmit }: Mecha
     </div>
   );
 }
+

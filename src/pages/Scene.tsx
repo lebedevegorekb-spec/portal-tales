@@ -73,8 +73,11 @@ const Scene = () => {
   // Определить начальную фазу
   useEffect(() => {
     if (loading || !partyConfig || !gameState || phase !== "loading") return;
-    if (isHost && gameState.current_round_index === 0 && partyConfig?.intro?.situation) {
+    const uiPhase = (gameState as any)?.ui_phase;
+    if (isHost && uiPhase === "intro" && partyConfig?.intro?.situation) {
       setPhase("intro");
+    } else if (uiPhase === "chars_reveal") {
+      setPhase("chars_reveal");
     } else {
       setPhase("playing");
     }
@@ -118,12 +121,17 @@ const Scene = () => {
     if (gameState?.phase === "final" && runId) navigate(`/final/${runId}`);
   }, [gameState?.phase, runId, navigate]);
 
-  // Игроки: слушаем ui_phase из gameState
+  // Слушаем ui_phase из gameState
   useEffect(() => {
-    if (isHost) return;
     const uiPhase = (gameState as any)?.ui_phase;
-    if (uiPhase === "result") setPhase("result_screen");
-    if (uiPhase === "playing" && phase === "result_screen") setPhase("playing");
+    if (!uiPhase) return;
+    if (uiPhase === "chars_reveal" && phase === "loading") {
+      setPhase(isHost ? "chars_reveal" : "chars_reveal");
+    }
+    if (uiPhase === "playing" && (phase === "chars_reveal" || phase === "result_screen")) {
+      setPhase("playing");
+    }
+    if (uiPhase === "result" && phase === "playing") setPhase("result_screen");
   }, [(gameState as any)?.ui_phase, isHost, phase]);
 
   const onReplicaFinished = useCallback(() => {
@@ -140,15 +148,15 @@ const Scene = () => {
   const handleIntroFinish = async () => {
     setReplicaQueue([]);
     setCurrentReplica(null);
-    // Обновить phase в БД чтобы игроки увидели раунд
+    // Переходим в chars_reveal — игроки идут смотреть роли
     if (runId) {
       const { data: run } = await supabase.from("runs").select("state_json").eq("id", runId).single();
       if (run?.state_json) {
-        const newState = { ...run.state_json, party_game: { ...run.state_json.party_game, phase: "round" } };
+        const newState = { ...run.state_json, party_game: { ...run.state_json.party_game, phase: "round", ui_phase: "chars_reveal" } };
         await supabase.from("runs").update({ state_json: newState }).eq("id", runId);
       }
     }
-    setPhase("playing");
+    setPhase("chars_reveal");
   };
 
   const handleSubmit = async (payload: Record<string, any>) => {
@@ -224,6 +232,19 @@ const Scene = () => {
       <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center gap-4">
         <Loader2 className="w-10 h-10 animate-spin text-portal" />
         <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest">Хост запускает игру...</p>
+      </div>
+    );
+  }
+
+  // Фаза chars_reveal — ждём пока все посмотрят роли
+  if (phase === "chars_reveal") {
+    const charsReady = (gameState as any)?.characters_ready?.length ?? 0;
+    return (
+      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center gap-6">
+        <BackgroundImage imagePath={partyConfig?.intro?.background_image} />
+        <Loader2 className="w-10 h-10 animate-spin text-portal" />
+        <p className="text-2xl font-display">Игроки знакомятся с ролями</p>
+        <p className="text-muted-foreground">{charsReady} / {playerCount} готовы</p>
       </div>
     );
   }
@@ -346,6 +367,9 @@ const Scene = () => {
 };
 
 export default Scene;
+
+
+
 
 
 
