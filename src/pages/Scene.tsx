@@ -14,7 +14,7 @@ import { MediaPlayer } from "@/components/MediaPlayer";
 import { ReplicaPlayer } from "@/components/ReplicaPlayer";
 import { BackgroundImage } from "@/components/BackgroundImage";
 
-type ScenePhase = "loading" | "intro" | "playing" | "advancing" | "result";
+type ScenePhase = "loading" | "intro" | "playing" | "result_replicas" | "result_screen";
 
 const Scene = () => {
   const { runId } = useParams<{ runId: string }>();
@@ -118,19 +118,20 @@ const Scene = () => {
     if (gameState?.phase === "final" && runId) navigate(`/final/${runId}`);
   }, [gameState?.phase, runId, navigate]);
 
-  // Игроки: при смене раунда в БД — переходим к playing
+  // Игроки: слушаем ui_phase из gameState
   useEffect(() => {
-    if (!isHost && phase === "result") {
-      setPhase("playing");
-    }
-  }, [gameState?.current_round_index, isHost]);
+    if (isHost) return;
+    const uiPhase = (gameState as any)?.ui_phase;
+    if (uiPhase === "result") setPhase("result_screen");
+    if (uiPhase === "playing" && phase === "result_screen") setPhase("playing");
+  }, [(gameState as any)?.ui_phase, isHost, phase]);
 
   const onReplicaFinished = useCallback(() => {
     setReplicaQueue(prev => {
       const next = prev.slice(1);
       setCurrentReplica(next.length > 0 ? next[0] : null);
       if (next.length === 0) {
-        setPhase(p => p === "result" ? "playing" : p);
+        setPhase(p => p === "result_replicas" ? "result_screen" : p);
       }
       return next;
     });
@@ -156,11 +157,10 @@ const Scene = () => {
   };
 
   const handleAdvance = async () => {
-    if (!runId || !roomId) return;
-    setPhase("advancing");
+    if (!runId || !roomId || !currentRound) return;
     const result = await advance(runId, roomId);
-    if (result && currentRound && isHost) {
-      const won = result.team_scored;
+    if (isHost) {
+      const won = result?.team_scored;
       const queue: Array<{speaker:"host"|"morty";text:string;audioPath?:string}> = [];
       if (won) {
         if (currentRound.success_host) queue.push({ speaker: "host", text: currentRound.success_host, audioPath: currentRound.success_host_audio });
@@ -169,14 +169,10 @@ const Scene = () => {
         if (currentRound.fail_host) queue.push({ speaker: "host", text: currentRound.fail_host, audioPath: currentRound.fail_host_audio });
         if (currentRound.fail_morty) queue.push({ speaker: "morty", text: currentRound.fail_morty, audioPath: currentRound.fail_morty_audio });
       }
-      if (queue.length > 0) {
-        setReplicaQueue(queue);
-        setCurrentReplica(queue[0]);
-        setPhase("result");
-        return;
-      }
+      setReplicaQueue(queue);
+      setCurrentReplica(queue.length > 0 ? queue[0] : null);
+      setPhase("result_replicas");
     }
-    setPhase("playing");
   };
 
   // --- RENDER ---
@@ -232,26 +228,64 @@ const Scene = () => {
     );
   }
 
-  // Фаза result — реплики отыграли, ждём хоста
-  if (phase === "result" && !currentReplica) {
+  // Фаза result_replicas — реплики играют
+  if (phase === "result_replicas") {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center gap-6">
+      <div className="min-h-screen bg-background text-foreground relative flex flex-col items-center justify-center gap-6">
         <BackgroundImage imagePath={currentRound?.background_image} />
-        {isHost ? (
-          <>
-            <p className="text-muted-foreground text-sm uppercase tracking-widest">Раунд завершён</p>
-            <button
-              onClick={() => setPhase("playing")}
-              className="bg-portal text-portal-foreground px-12 py-4 rounded-lg font-display text-xl hover:bg-portal/90 transition-colors"
-            >
-              Следующий раунд →
-            </button>
-          </>
-        ) : (
-          <>
+        {currentReplica && (
+          <ReplicaPlayer speaker={currentReplica.speaker} text={currentReplica.text} audioPath={currentReplica.audioPath} onFinished={onReplicaFinished} />
+        )}
+        {!currentReplica && isHost && (
+          <button onClick={() => setPhase("result_screen")} className="bg-portal text-portal-foreground px-12 py-4 rounded-lg font-display text-xl">
+            Далее →
+          </button>
+        )}
+        {!isHost && (
+          <div className="flex flex-col items-center gap-3">
             <Loader2 className="w-8 h-8 animate-spin text-portal" />
+            <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest">Итоги раунда...</p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Фаза result_screen — итоги, ждём хоста
+  if (phase === "result_screen") {
+    const lastResult = gameState?.round_results?.[gameState.round_results.length - 1];
+    return (
+      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center gap-6 p-8">
+        <BackgroundImage imagePath={currentRound?.background_image} />
+        <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Итог раунда</p>
+        {lastResult && (
+          <div className={`glass-card p-6 max-w-md w-full text-center border ${lastResult.team_scored ? "border-acid/40" : "border-destructive/40"}`}>
+            <p className={`text-3xl font-display mb-2 ${lastResult.team_scored ? "text-acid" : "text-destructive"}`}>
+              {lastResult.team_scored ? "Команда побеждает!" : "Саботажник побеждает!"}
+            </p>
+          </div>
+        )}
+        <div className="flex gap-8 text-center">
+          <div><p className="text-xs text-muted-foreground uppercase tracking-widest">Команда</p><p className="text-4xl font-display text-portal">{gameState?.scores.team ?? 0}</p></div>
+          <div><p className="text-xs text-muted-foreground uppercase tracking-widest">Хаос</p><p className="text-4xl font-display text-destructive">{gameState?.scores.saboteur ?? 0}</p></div>
+        </div>
+        {isHost ? (
+          <button
+            onClick={async () => {
+              if (!runId || !roomId) return;
+              const { supabase: sb } = await import("@/integrations/supabase/client").then(m => ({ supabase: m.supabase }));
+              await sb.functions.invoke("round-result-ack", { body: { run_id: runId, room_id: roomId } });
+              setPhase("playing");
+            }}
+            className="bg-portal text-portal-foreground px-12 py-4 rounded-lg font-display text-xl hover:bg-portal/90 transition-colors"
+          >
+            Следующий раунд →
+          </button>
+        ) : (
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="w-6 h-6 animate-spin text-portal" />
             <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest">Ждём хоста...</p>
-          </>
+          </div>
         )}
       </div>
     );
@@ -312,6 +346,8 @@ const Scene = () => {
 };
 
 export default Scene;
+
+
 
 
 

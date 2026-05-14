@@ -289,6 +289,7 @@ serve(async (req) => {
         ...state,
         current_round_index: nextIndex,
         phase: isLast ? "final" : "round",
+        ui_phase: isLast ? "final" : "result",
         scores: newScores,
         round_results: newResults,
       },
@@ -316,4 +317,5 @@ serve(async (req) => {
     });
   }
 });
+
 
