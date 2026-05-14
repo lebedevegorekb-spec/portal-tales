@@ -173,7 +173,11 @@ const Scene = () => {
       const won = result?.team_scored;
       const isTie = result?.is_tie ?? false;
       const queue: Array<{speaker:"host"|"morty";text:string;audioPath?:string}> = [];
-      if (isTie && (currentRound as any).tie_host) {
+      if (result?.is_joke) {
+        const jo = result.joke_option;
+        if (jo?.joke_host_line) queue.push({ speaker: "host", text: jo.joke_host_line, audioPath: jo.joke_host_audio });
+        if (jo?.joke_morty_line) queue.push({ speaker: "morty", text: jo.joke_morty_line, audioPath: jo.joke_morty_audio });
+      } else if (isTie && (currentRound as any).tie_host) {
         queue.push({ speaker: "host", text: (currentRound as any).tie_host, audioPath: (currentRound as any).tie_host_audio });
         if ((currentRound as any).tie_morty) queue.push({ speaker: "morty", text: (currentRound as any).tie_morty, audioPath: (currentRound as any).tie_morty_audio });
       } else if (won) {

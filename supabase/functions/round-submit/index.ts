@@ -22,13 +22,11 @@ serve(async (req) => {
 
     if (!run_id || !room_id || !player_id || !round_id || !mechanic) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     let resolvedUserId: string | null = null;
-
     const authHeader = req.headers.get("Authorization");
     if (authHeader) {
       const { data: { user } } = await createClient(
@@ -38,84 +36,67 @@ serve(async (req) => {
       ).auth.getUser();
       if (user) resolvedUserId = user.id;
     }
-
-    if (!resolvedUserId && guest_user_id) {
-      resolvedUserId = guest_user_id;
-    }
+    if (!resolvedUserId && guest_user_id) resolvedUserId = guest_user_id;
 
     if (!resolvedUserId) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const { data: player, error: playerError } = await supabase
-      .from("room_players")
-      .select("id, user_id")
-      .eq("id", player_id)
-      .eq("room_id", room_id)
-      .maybeSingle();
+    const { data: player } = await supabase
+      .from("room_players").select("id, user_id")
+      .eq("id", player_id).eq("room_id", room_id).maybeSingle();
 
-    if (playerError || !player) {
+    if (!player) {
       return new Response(JSON.stringify({ error: "Player not found" }), {
-        status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     if (player.user_id !== resolvedUserId) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    // Проверить дубликат по типу payload
+    const isVote = payload?.vote_for_submission_id !== undefined;
     const { data: existing } = await supabase
-      .from("round_submissions")
-      .select("id")
-      .eq("run_id", run_id)
-      .eq("player_id", player_id)
-      .eq("round_id", round_id)
-      .maybeSingle();
+      .from("round_submissions").select("id, payload")
+      .eq("run_id", run_id).eq("player_id", player_id).eq("round_id", round_id);
 
-    if (existing) {
-      return new Response(JSON.stringify({ error: "Already submitted" }), {
-        status: 409,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (existing && existing.length > 0) {
+      if (isVote && existing.some((s: any) => s.payload?.vote_for_submission_id !== undefined)) {
+        return new Response(JSON.stringify({ error: "Already voted" }), {
+          status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (!isVote && existing.some((s: any) => s.payload?.answer !== undefined)) {
+        return new Response(JSON.stringify({ error: "Already submitted" }), {
+          status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     const { data: submission, error: insertError } = await supabase
       .from("round_submissions")
-      .insert({
-        run_id,
-        room_id,
-        player_id,
-        round_id,
-        mechanic,
-        payload: payload ?? {},
-      })
-      .select()
-      .single();
+      .insert({ run_id, room_id, player_id, round_id, mechanic, payload: payload ?? {} })
+      .select().single();
 
     if (insertError) {
       return new Response(JSON.stringify({ error: insertError.message }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     return new Response(JSON.stringify({ ok: true, submission_id: submission.id }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
 
   } catch (err) {
     return new Response(JSON.stringify({ error: String(err) }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
-

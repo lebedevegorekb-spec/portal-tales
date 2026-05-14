@@ -1,0 +1,8 @@
+﻿f = open('src/mechanics/Fork/HostView.tsx', encoding='utf-8')
+c = f.read()
+f.close()
+c = c.replace('{opt.is_joke && <span className="text-xs text-yellow-500 border border-yellow-500/30 px-1.5 py-0.5 rounded">шутка</span>}', '')
+f = open('src/mechanics/Fork/HostView.tsx', 'w', encoding='utf-8', newline='\n')
+f.write(c)
+f.close()
+print('done')

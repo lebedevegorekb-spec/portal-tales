@@ -1,0 +1,8 @@
+﻿f = open('src/pages/admin/ScenarioEdit.tsx', encoding='utf-8')
+c = f.read()
+f.close()
+c = c.replace('"fail_host","fail_morty"],', '"fail_host","fail_morty","tie_host","tie_morty"],', 1)
+f = open('src/pages/admin/ScenarioEdit.tsx', 'w', encoding='utf-8', newline='\n')
+f.write(c)
+f.close()
+print('done')

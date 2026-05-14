@@ -37,12 +37,16 @@ function calcFork(submissions: any[], saboteurPlayerId: string, round: any) {
   }
   const winnerId = Object.entries(votes).sort((a, b) => b[1] - a[1])[0]?.[0];
   const correctOption = round.options?.find((o: any) => o.is_correct);
+  const jokeOption = round.options?.find((o: any) => o.is_joke);
+  const isJoke = winnerId === jokeOption?.id;
   const teamWon = winnerId === correctOption?.id;
   return {
     team_scored: teamWon,
-    saboteur_scored: !teamWon,
+    saboteur_scored: !teamWon && !isJoke,
     team_points: teamWon ? round.points.team_success : 0,
-    saboteur_points: teamWon ? 0 : round.points.saboteur_success,
+    saboteur_points: teamWon || isJoke ? 0 : round.points.saboteur_success,
+    is_joke: isJoke,
+    joke_option: isJoke ? jokeOption : null,
   };
 }
 

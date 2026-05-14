@@ -27,8 +27,6 @@ export function ForkHost({ round, submissions, playerCount, onAdvance }: Mechani
   }, [votes]);
 
   const handleShowResult = () => {
-    const winner = round.options.find((o: any) => o.id === winnerOptId);
-    if (winner?.is_joke) setJokeOpt(winner);
     setShowResult(true);
   };
 
