@@ -78,6 +78,8 @@ const Scene = () => {
       setPhase("intro");
     } else if (uiPhase === "chars_reveal") {
       setPhase("chars_reveal");
+    } else if (uiPhase === "playing" || uiPhase === "result") {
+      setPhase("playing");
     } else {
       setPhase("playing");
     }
@@ -367,6 +369,7 @@ const Scene = () => {
 };
 
 export default Scene;
+
 
 
 
