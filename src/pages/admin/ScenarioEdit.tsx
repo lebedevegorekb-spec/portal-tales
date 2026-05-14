@@ -8,21 +8,6 @@ import { toast } from "sonner";
 import { Loader2, Save, ChevronDown, ChevronUp } from "lucide-react";
 import { MediaUpload } from "@/components/MediaUpload";
 
-type PreviewJson = {
-  tagline?: string;
-  full_description?: string;
-  warning?: string;
-  host_quote?: string;
-  morty_quote?: string;
-  duration_minutes?: number;
-  players_min?: number;
-  players_max?: number;
-  difficulty?: string;
-  replayable?: boolean;
-  age_rating?: string;
-  cover_image?: string;
-};
-
 type Round = {
   id: string; mechanic: string; title: string;
   intro_host: string; intro_morty: string;
@@ -35,12 +20,12 @@ type Round = {
 };
 
 type PartyGame = {
-  intro: { host_line: string; host_line_audio?: string; morty_line: string; morty_line_audio?: string; situation: string; background_image?: string; background_music?: string; [key: string]: any };
+  intro: { host_line: string; morty_line: string; situation: string };
   endings: {
-    team_wins: { host_line: string; morty_line: string; host_line_audio?: string; morty_line_audio?: string; background_image?: string; [key: string]: any };
-    saboteur_wins: { host_line: string; morty_line: string; host_line_audio?: string; morty_line_audio?: string; background_image?: string; [key: string]: any };
-    team_found_but_lost: { host_line: string; morty_line: string; host_line_audio?: string; morty_line_audio?: string; background_image?: string; [key: string]: any };
-    team_won_but_missed: { host_line: string; morty_line: string; host_line_audio?: string; morty_line_audio?: string; background_image?: string; [key: string]: any };
+    team_wins: { host_line: string; morty_line: string };
+    saboteur_wins: { host_line: string; morty_line: string };
+    team_found_but_lost: { host_line: string; morty_line: string };
+    team_won_but_missed: { host_line: string; morty_line: string };
   };
   rounds: Round[];
   scoring: { team_win_threshold: number; saboteur_win_threshold: number };
@@ -76,7 +61,7 @@ function TextField({ label, value, onChange }: { label: string; value: string; o
       <label className="text-xs uppercase tracking-widest text-muted-foreground">{label}</label>
       {isLong ? (
         <textarea value={value ?? ""} onChange={(e) => onChange(e.target.value)} rows={3}
-          className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground resize-y min-h-[80px] focus:outline-none focus:border-portal" />
+          className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground resize-none focus:outline-none focus:border-portal" />
       ) : (
         <input type="text" value={value ?? ""} onChange={(e) => onChange(e.target.value)}
           className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-portal" />
@@ -142,87 +127,14 @@ function RoundEditor({ round, index, onChange }: { round: Round; index: number; 
             ))}
           </div>
           {round.mechanic === "fork" && round.options && (
-            <div className="grid gap-3">
-              <div className="flex items-center justify-between">
-                <p className="text-xs uppercase tracking-widest text-muted-foreground">???????????????? ????????????</p>
-                {round.options.length < 6 && (
-                  <button onClick={() => {
-                    const ids = ["A","B","C","D","E","F"];
-                    const newOpt = { id: ids[round.options.length], label: "", is_correct: false, is_joke: false };
-                    onChange({ ...round, options: [...round.options, newOpt] });
-                  }} className="text-xs text-portal border border-portal/30 px-2 py-1 rounded hover:bg-portal/10 transition-colors">
-                    + ??????????????
-                  </button>
-                )}
-              </div>
+            <div className="grid gap-2">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">???????????????? ????????????</p>
               {round.options.map((opt: any, oi: number) => (
-                <div key={opt.id} className="glass-card p-3 grid gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-portal font-display w-6 shrink-0">{opt.id}</span>
-                    <input type="text" value={opt.label} onChange={(e) => updateForkOption(oi, e.target.value)}
-                      className="flex-1 bg-muted border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-portal" />
-                    <button onClick={() => {
-                      const opts = round.options.filter((_: any, i: number) => i !== oi);
-                      onChange({ ...round, options: opts });
-                    }} className="text-muted-foreground hover:text-destructive text-xs px-2">???</button>
-                  </div>
-                  <div className="flex items-center gap-4 pl-8">
-                    <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
-                      <input type="checkbox" checked={opt.is_correct ?? false}
-                        onChange={(e) => {
-                          const opts = [...round.options];
-                          opts[oi] = { ...opts[oi], is_correct: e.target.checked };
-                          onChange({ ...round, options: opts });
-                        }} className="accent-portal w-3 h-3" />
-                      ????????????????????
-                    </label>
-                    <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
-                      <input type="checkbox" checked={opt.is_joke ?? false}
-                        onChange={(e) => {
-                          const opts = [...round.options];
-                          opts[oi] = { ...opts[oi], is_joke: e.target.checked };
-                          onChange({ ...round, options: opts });
-                        }} className="accent-yellow-500 w-3 h-3" />
-                      ????????????????
-                    </label>
-                  </div>
-                  {opt.is_joke && (
-                    <div className="pl-8 grid gap-2">
-                      <div className="grid gap-1">
-                        <input type="text" value={opt.joke_host_line ?? ""} placeholder="?????????????? ???????? ?????? ???????????? ??????????"
-                          onChange={(e) => {
-                            const opts = [...round.options];
-                            opts[oi] = { ...opts[oi], joke_host_line: e.target.value };
-                            onChange({ ...round, options: opts });
-                          }}
-                          className="w-full bg-muted border border-yellow-500/30 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-yellow-500" />
-                        <MediaUpload scenarioId={round.id} path={`joke_host_${oi}`} type="audio"
-                          currentUrl={opt.joke_host_audio}
-                          onUploaded={(p) => { const opts = [...round.options]; opts[oi] = { ...opts[oi], joke_host_audio: p }; onChange({ ...round, options: opts }); }}
-                          onRemoved={() => { const opts = [...round.options]; opts[oi] = { ...opts[oi], joke_host_audio: "" }; onChange({ ...round, options: opts }); }} />
-                      </div>
-                      <div className="grid gap-1">
-                        <input type="text" value={opt.joke_morty_line ?? ""} placeholder="?????????????? ?????????? ?????? ???????????? ??????????"
-                          onChange={(e) => {
-                            const opts = [...round.options];
-                            opts[oi] = { ...opts[oi], joke_morty_line: e.target.value };
-                            onChange({ ...round, options: opts });
-                          }}
-                          className="w-full bg-muted border border-yellow-500/30 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-yellow-500" />
-                        <MediaUpload scenarioId={round.id} path={`joke_morty_${oi}`} type="audio"
-                          currentUrl={opt.joke_morty_audio}
-                          onUploaded={(p) => { const opts = [...round.options]; opts[oi] = { ...opts[oi], joke_morty_audio: p }; onChange({ ...round, options: opts }); }}
-                          onRemoved={() => { const opts = [...round.options]; opts[oi] = { ...opts[oi], joke_morty_audio: "" }; onChange({ ...round, options: opts }); }} />
-                      </div>
-                      <div className="grid gap-1">
-                        <p className="text-xs text-muted-foreground">???????????????? ?????? ???????????? ??????????</p>
-                        <MediaUpload scenarioId={round.id} path={`joke_image_${oi}`} type="image"
-                          currentUrl={opt.joke_image}
-                          onUploaded={(p) => { const opts = [...round.options]; opts[oi] = { ...opts[oi], joke_image: p }; onChange({ ...round, options: opts }); }}
-                          onRemoved={() => { const opts = [...round.options]; opts[oi] = { ...opts[oi], joke_image: "" }; onChange({ ...round, options: opts }); }} />
-                      </div>
-                    </div>
-                  )}
+                <div key={opt.id} className="flex items-center gap-2">
+                  <span className="text-portal font-display w-6">{opt.id}</span>
+                  <input type="text" value={opt.label} onChange={(e) => updateForkOption(oi, e.target.value)}
+                    className="flex-1 bg-muted border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-portal" />
+                  {opt.is_correct && <span className="text-xs text-portal">????????????????????</span>}
                 </div>
               ))}
             </div>
@@ -275,7 +187,6 @@ export default function AdminScenarioEdit() {
   const [priceRub, setPriceRub] = useState(250);
   const [partyGame, setPartyGame] = useState<PartyGame | null>(null);
   const [scenarioJson, setScenarioJson] = useState<any>(null);
-  const [preview, setPreview] = useState<PreviewJson>({});
   const [saving, setSaving] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [tab, setTab] = useState<"basic"|"intro"|"rounds"|"endings">("basic");
@@ -294,7 +205,6 @@ export default function AdminScenarioEdit() {
       setPriceRub(data.price_rub ?? 250);
       setScenarioJson(data.scenario_json);
       if (data.scenario_json?.party_game) setPartyGame(data.scenario_json.party_game as PartyGame);
-      if ((data as any).preview_json) setPreview((data as any).preview_json as PreviewJson);
       setPageLoading(false);
     });
   }, [user, scenarioId, navigate]);
@@ -304,7 +214,7 @@ export default function AdminScenarioEdit() {
     setSaving(true);
     const newJson = { ...scenarioJson, ...(partyGame ? { party_game: partyGame } : {}) };
     const { error } = await supabase.from("scenarios")
-      .update({ title, description, price_rub: priceRub, scenario_json: newJson, preview_json: preview } as any)
+      .update({ title, description, price_rub: priceRub, scenario_json: newJson })
       .eq("id", scenarioId);
     if (error) toast.error("????????????: " + error.message);
     else toast.success("??????????????????!");
@@ -342,7 +252,7 @@ export default function AdminScenarioEdit() {
           </Button>
         </div>
         <div className="flex gap-1 mb-6 border-b border-border">
-          {([["basic","????????????????"],["preview","????????????"],["intro","????????????????????"],["rounds","???????????? ("+String(partyGame?.rounds?.length ?? 0)+")"],["endings","????????????????"]] as [string,string][]).map(([id,label]) => (
+          {([["basic","????????????????"],["intro","????????????????????"],["rounds","???????????? ("+String(partyGame?.rounds?.length ?? 0)+")"],["endings","????????????????"]] as [string,string][]).map(([id,label]) => (
             <button key={id} onClick={() => setTab(id as any)}
               className={"px-4 py-2 text-sm font-mono uppercase tracking-wider transition-colors " + (tab === id ? "text-portal border-b-2 border-portal" : "text-muted-foreground hover:text-foreground")}>
               {label}
@@ -360,67 +270,6 @@ export default function AdminScenarioEdit() {
             </div>
           </div>
         )}
-        {tab === "preview" && (
-          <div className="grid gap-4">
-            <TextField label="?????????? (???????? ??????????)" value={preview.tagline ?? ""} onChange={(v) => setPreview({...preview, tagline: v})} />
-            <TextField label="???????????? ????????????????" value={preview.full_description ?? ""} onChange={(v) => setPreview({...preview, full_description: v})} />
-            <TextField label="?????????????? ???????? (??????????)" value={preview.host_quote ?? ""} onChange={(v) => setPreview({...preview, host_quote: v})} />
-            <TextField label="?????????????? ?????????? (??????????)" value={preview.morty_quote ?? ""} onChange={(v) => setPreview({...preview, morty_quote: v})} />
-            <TextField label="????????????????????????????" value={preview.warning ?? ""} onChange={(v) => setPreview({...preview, warning: v})} />
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-1">
-                <label className="text-xs uppercase tracking-widest text-muted-foreground">?????????????? ??????</label>
-                <input type="number" value={preview.players_min ?? 4} onChange={(e) => setPreview({...preview, players_min: Number(e.target.value)})}
-                  className="bg-muted border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-portal" />
-              </div>
-              <div className="grid gap-1">
-                <label className="text-xs uppercase tracking-widest text-muted-foreground">?????????????? ????????</label>
-                <input type="number" value={preview.players_max ?? 8} onChange={(e) => setPreview({...preview, players_max: Number(e.target.value)})}
-                  className="bg-muted border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-portal" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-1">
-                <label className="text-xs uppercase tracking-widest text-muted-foreground">???????????????????????? (??????)</label>
-                <input type="number" value={preview.duration_minutes ?? 30} onChange={(e) => setPreview({...preview, duration_minutes: Number(e.target.value)})}
-                  className="bg-muted border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-portal" />
-              </div>
-              <div className="grid gap-1">
-                <label className="text-xs uppercase tracking-widest text-muted-foreground">??????????????</label>
-                <input type="text" value={preview.age_rating ?? "16+"} onChange={(e) => setPreview({...preview, age_rating: e.target.value})}
-                  className="bg-muted border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-portal" />
-              </div>
-            </div>
-            <div className="grid gap-1">
-              <label className="text-xs uppercase tracking-widest text-muted-foreground">??????????????????</label>
-              <select value={preview.difficulty ?? "medium"} onChange={(e) => setPreview({...preview, difficulty: e.target.value})}
-                className="bg-muted border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-portal">
-                <option value="easy">????????????</option>
-                <option value="medium">??????????????</option>
-                <option value="hard">??????????????</option>
-              </select>
-            </div>
-            <div className="flex items-center gap-3">
-              <input type="checkbox" id="replayable" checked={preview.replayable ?? false}
-                onChange={(e) => setPreview({...preview, replayable: e.target.checked})}
-                className="w-4 h-4 accent-portal" />
-              <label htmlFor="replayable" className="text-sm text-muted-foreground">????????????????????????????</label>
-            </div>
-            <div className="grid gap-2">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground">?????????????? ????????????????</p>
-              <p className="text-xs text-muted-foreground">???????????????????????? ?? ???????????????? ???????????????? ?? ???? ???????????????? ????????????</p>
-              <MediaUpload
-                scenarioId={scenarioId!}
-                path="cover"
-                type="image"
-                currentUrl={preview.cover_image}
-                onUploaded={(p) => setPreview({...preview, cover_image: p})}
-                onRemoved={() => setPreview({...preview, cover_image: ""})}
-              />
-            </div>
-          </div>
-        )}
-
         {tab === "intro" && partyGame && (
           <div className="grid gap-4">
             <TextField label="????????????????" value={partyGame.intro.situation} onChange={(v) => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, situation: v } })} />
