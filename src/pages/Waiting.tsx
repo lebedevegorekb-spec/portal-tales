@@ -85,10 +85,13 @@ const Waiting = () => {
         })
       .on("postgres_changes",
         { event: "UPDATE", schema: "public", table: "rooms", filter: `id=eq.${roomId}` },
-        (payload) => {
+        async (payload) => {
           const r = payload.new as any;
           if ((r.status === "playing" || r.status === "started") && r.run_id) {
-            navigate(`/character?run=${r.run_id}&room=${roomId}`);
+            const { data: runData } = await supabase.from("runs").select("state_json").eq("id", r.run_id).single();
+            const uiPhase = runData?.state_json?.party_game?.ui_phase;
+            if (uiPhase === "playing") navigate(`/scene/${r.run_id}`);
+            else navigate(`/character?run=${r.run_id}&room=${roomId}`);
           }
         })
       .subscribe();
@@ -202,3 +205,5 @@ const Waiting = () => {
 };
 
 export default Waiting;
+
+
