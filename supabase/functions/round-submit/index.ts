@@ -17,31 +17,9 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const body = await req.json();
+    const { run_id, room_id, player_id, round_id, mechanic, payload, guest_user_id } = body;
 
-    // Получить текущего пользователя
-    const { data: { user }, error: userError } = await createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    ).auth.getUser();
-
-    if (userError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const { run_id, room_id, player_id, round_id, mechanic, payload } = await req.json();
-
-    // Валидация обязательных полей
     if (!run_id || !room_id || !player_id || !round_id || !mechanic) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
         status: 400,
@@ -49,7 +27,29 @@ serve(async (req) => {
       });
     }
 
-    // Проверить что player_id принадлежит этому пользователю
+    let resolvedUserId: string | null = null;
+
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader) {
+      const { data: { user } } = await createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_ANON_KEY")!,
+        { global: { headers: { Authorization: authHeader } } }
+      ).auth.getUser();
+      if (user) resolvedUserId = user.id;
+    }
+
+    if (!resolvedUserId && guest_user_id) {
+      resolvedUserId = guest_user_id;
+    }
+
+    if (!resolvedUserId) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { data: player, error: playerError } = await supabase
       .from("room_players")
       .select("id, user_id")
@@ -64,14 +64,13 @@ serve(async (req) => {
       });
     }
 
-    if (player.user_id !== user.id) {
+    if (player.user_id !== resolvedUserId) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Проверить что игрок ещё не сдавал ответ в этом раунде
     const { data: existing } = await supabase
       .from("round_submissions")
       .select("id")
@@ -87,7 +86,6 @@ serve(async (req) => {
       });
     }
 
-    // Сохранить ответ
     const { data: submission, error: insertError } = await supabase
       .from("round_submissions")
       .insert({
@@ -120,3 +118,4 @@ serve(async (req) => {
     });
   }
 });
+
