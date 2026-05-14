@@ -14,7 +14,7 @@ import { MediaPlayer } from "@/components/MediaPlayer";
 import { ReplicaPlayer } from "@/components/ReplicaPlayer";
 import { BackgroundImage } from "@/components/BackgroundImage";
 
-type ScenePhase = "loading" | "intro" | "playing" | "advancing";
+type ScenePhase = "loading" | "intro" | "playing" | "advancing" | "result";
 
 const Scene = () => {
   const { runId } = useParams<{ runId: string }>();
@@ -122,6 +122,9 @@ const Scene = () => {
     setReplicaQueue(prev => {
       const next = prev.slice(1);
       setCurrentReplica(next.length > 0 ? next[0] : null);
+      if (next.length === 0) {
+        setPhase(p => p === "result" ? "playing" : p);
+      }
       return next;
     });
   }, []);
@@ -159,7 +162,12 @@ const Scene = () => {
         if (currentRound.fail_host) queue.push({ speaker: "host", text: currentRound.fail_host, audioPath: currentRound.fail_host_audio });
         if (currentRound.fail_morty) queue.push({ speaker: "morty", text: currentRound.fail_morty, audioPath: currentRound.fail_morty_audio });
       }
-      if (queue.length > 0) { setReplicaQueue(queue); setCurrentReplica(queue[0]); }
+      if (queue.length > 0) {
+        setReplicaQueue(queue);
+        setCurrentReplica(queue[0]);
+        setPhase("result");
+        return;
+      }
     }
     setPhase("playing");
   };
@@ -272,6 +280,8 @@ const Scene = () => {
 };
 
 export default Scene;
+
+
 
 
 
