@@ -43,15 +43,15 @@ const ROUND_TEXT_FIELDS: Record<string, string[]> = {
 
 const FIELD_LABELS: Record<string, string> = {
   title: "Заголовок", prompt: "Вопрос игрокам", situation: "Описание ситуации",
-  hint: "??????????????????", prompt_prefix: "???????????? ??????????",
-  intro_host: "?????? (????????????????????)", intro_morty: "?????????? (????????????????????)",
-  success_host: "?????? (??????????)", success_morty: "?????????? (??????????)",
-  fail_host: "?????? (????????????)", fail_morty: "?????????? (????????????)",
+  hint: "Подсказка", prompt_prefix: "Начало фразы",
+  intro_host: "Рик (вступление)", intro_morty: "Морти (вступление)",
+  success_host: "Рик (успех)", success_morty: "Морти (успех)",
+  fail_host: "Рик (провал)", fail_morty: "Морти (провал)", tie_host: "Рик (ничья)", tie_morty: "Морти (ничья)",
 };
 
 const ENDING_LABELS: Record<string, string> = {
-  team_wins: "?????????????? ????????????????", saboteur_wins: "???????????????????? ??????????????",
-  team_found_but_lost: "??????????, ???? ??????????????????", team_won_but_missed: "????????????????, ???? ???? ??????????",
+  team_wins: "Команда победила", saboteur_wins: "Саботажник победил",
+  team_found_but_lost: "Нашли, но проиграли", team_won_but_missed: "Победили, но не нашли",
 };
 
 function TextField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
@@ -128,20 +128,20 @@ function RoundEditor({ round, index, onChange }: { round: Round; index: number; 
           </div>
           {round.mechanic === "fork" && round.options && (
             <div className="grid gap-2">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground">???????????????? ????????????</p>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">Варианты выбора</p>
               {round.options.map((opt: any, oi: number) => (
                 <div key={opt.id} className="flex items-center gap-2">
                   <span className="text-portal font-display w-6">{opt.id}</span>
                   <input type="text" value={opt.label} onChange={(e) => updateForkOption(oi, e.target.value)}
                     className="flex-1 bg-muted border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-portal" />
-                  {opt.is_correct && <span className="text-xs text-portal">????????????????????</span>}
+                  {opt.is_correct && <span className="text-xs text-portal">правильный</span>}
                 </div>
               ))}
             </div>
           )}
           {round.mechanic === "pitch" && round.player_options && (
             <div className="grid gap-2">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground">???????? ??????????????</p>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">Идеи игроков</p>
               {round.player_options.map((opt: string, oi: number) => (
                 <div key={oi} className="flex items-center gap-2">
                   <span className="text-portal font-display w-6 text-sm">{oi + 1}</span>
@@ -153,11 +153,11 @@ function RoundEditor({ round, index, onChange }: { round: Round; index: number; 
           )}
           {(round.mechanic === "blitz" || round.mechanic === "quiz") && round.questions && (
             <div className="grid gap-4">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground">??????????????</p>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">Вопросы</p>
               {round.questions.map((q: any, qi: number) => (
                 <div key={q.id} className="bg-muted/30 rounded-lg p-4 grid gap-3">
-                  <TextField label={"???????????? " + (qi + 1)} value={q.text} onChange={(v) => updateQuestion(qi, "text", v)} />
-                  <p className="text-xs text-muted-foreground">???????????????? ????????????</p>
+                  <TextField label={"Вопрос " + (qi + 1)} value={q.text} onChange={(v) => updateQuestion(qi, "text", v)} />
+                  <p className="text-xs text-muted-foreground">Варианты выбора</p>
                   {q.options?.map((opt: any, oi: number) => (
                     <div key={opt.id} className="flex items-center gap-2">
                       <span className={"font-display w-6 text-sm " + (opt.id === q.correct_id ? "text-portal" : "text-muted-foreground")}>
@@ -165,7 +165,7 @@ function RoundEditor({ round, index, onChange }: { round: Round; index: number; 
                       </span>
                       <input type="text" value={opt.label} onChange={(e) => updateOption(qi, oi, e.target.value)}
                         className="flex-1 bg-muted border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-portal" />
-                      {opt.id === q.correct_id && <span className="text-xs text-portal">????????????????????</span>}
+                      {opt.id === q.correct_id && <span className="text-xs text-portal">правильный</span>}
                     </div>
                   ))}
                 </div>
@@ -216,8 +216,8 @@ export default function AdminScenarioEdit() {
     const { error } = await supabase.from("scenarios")
       .update({ title, description, price_rub: priceRub, scenario_json: newJson })
       .eq("id", scenarioId);
-    if (error) toast.error("????????????: " + error.message);
-    else toast.success("??????????????????!");
+    if (error) toast.error("Ошибка: " + error.message);
+    else toast.success("Сохранено!");
     setSaving(false);
   };
 
@@ -243,16 +243,16 @@ export default function AdminScenarioEdit() {
       <main className="flex-1 container max-w-4xl py-8">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate("/admin/scenarios")} className="text-muted-foreground hover:text-foreground text-sm">??????????</button>
+            <button onClick={() => navigate("/admin/scenarios")} className="text-muted-foreground hover:text-foreground text-sm">назад</button>
             <span className="font-mono text-xs text-portal border border-portal/30 px-2 py-0.5 rounded-sm">{scenarioId}</span>
             <h1 className="font-display text-2xl">{title}</h1>
           </div>
           <Button onClick={handleSave} disabled={saving} className="bg-portal text-portal-foreground gap-2">
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} ??????????????????
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Сохранить
           </Button>
         </div>
         <div className="flex gap-1 mb-6 border-b border-border">
-          {([["basic","????????????????"],["intro","????????????????????"],["rounds","???????????? ("+String(partyGame?.rounds?.length ?? 0)+")"],["endings","????????????????"]] as [string,string][]).map(([id,label]) => (
+          {([["basic","Основное"],["intro","правильный"],["rounds","Раунды ("+String(partyGame?.rounds?.length ?? 0)+")"],["endings","Основное"]] as [string,string][]).map(([id,label]) => (
             <button key={id} onClick={() => setTab(id as any)}
               className={"px-4 py-2 text-sm font-mono uppercase tracking-wider transition-colors " + (tab === id ? "text-portal border-b-2 border-portal" : "text-muted-foreground hover:text-foreground")}>
               {label}
@@ -261,10 +261,10 @@ export default function AdminScenarioEdit() {
         </div>
         {tab === "basic" && (
           <div className="grid gap-4">
-            <TextField label="????????????????" value={title} onChange={setTitle} />
-            <TextField label="????????????????" value={description} onChange={setDescription} />
+            <TextField label="Основное" value={title} onChange={setTitle} />
+            <TextField label="Основное" value={description} onChange={setDescription} />
             <div className="grid gap-1">
-              <label className="text-xs uppercase tracking-widest text-muted-foreground">???????? (????????????)</label>
+              <label className="text-xs uppercase tracking-widest text-muted-foreground">Цена (рублей)</label>
               <input type="number" value={priceRub} onChange={(e) => setPriceRub(Number(e.target.value))}
                 className="w-32 bg-muted border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-portal" />
             </div>
@@ -272,30 +272,30 @@ export default function AdminScenarioEdit() {
         )}
         {tab === "intro" && partyGame && (
           <div className="grid gap-4">
-            <TextField label="????????????????" value={partyGame.intro.situation} onChange={(v) => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, situation: v } })} />
+            <TextField label="Основное" value={partyGame.intro.situation} onChange={(v) => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, situation: v } })} />
             <div className="grid gap-1">
-              <TextField label="?????????????? ????????" value={partyGame.intro.host_line} onChange={(v) => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, host_line: v } })} />
+              <TextField label="Реплика Рика" value={partyGame.intro.host_line} onChange={(v) => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, host_line: v } })} />
               <MediaUpload scenarioId={scenarioId!} path="intro/host_line" type="audio"
                 currentUrl={partyGame.intro.host_line_audio}
                 onUploaded={(p) => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, host_line_audio: p } })}
                 onRemoved={() => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, host_line_audio: "" } })} />
             </div>
             <div className="grid gap-1">
-              <TextField label="?????????????? ??????????" value={partyGame.intro.morty_line} onChange={(v) => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, morty_line: v } })} />
+              <TextField label="Реплика Морти" value={partyGame.intro.morty_line} onChange={(v) => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, morty_line: v } })} />
               <MediaUpload scenarioId={scenarioId!} path="intro/morty_line" type="audio"
                 currentUrl={partyGame.intro.morty_line_audio}
                 onUploaded={(p) => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, morty_line_audio: p } })}
                 onRemoved={() => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, morty_line_audio: "" } })} />
             </div>
             <div className="grid gap-1">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground">?????????????? ??????????????????????</p>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">Фоновое изображение</p>
               <MediaUpload scenarioId={scenarioId!} path="intro/background" type="image"
                 currentUrl={partyGame.intro.background_image}
                 onUploaded={(p) => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, background_image: p } })}
                 onRemoved={() => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, background_image: "" } })} />
             </div>
             <div className="grid gap-1">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground">?????????????? ????????????</p>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">Фоновая музыка</p>
               <MediaUpload scenarioId={scenarioId!} path="intro/music" type="audio"
                 currentUrl={partyGame.intro.background_music}
                 onUploaded={(p) => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, background_music: p } })}
@@ -303,13 +303,13 @@ export default function AdminScenarioEdit() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-1">
-                <label className="text-xs uppercase tracking-widest text-muted-foreground">?????????? ???????????? ??????????????</label>
+                <label className="text-xs uppercase tracking-widest text-muted-foreground">Порог победы команды</label>
                 <input type="number" value={partyGame.scoring.team_win_threshold}
                   onChange={(e) => setPartyGame({ ...partyGame, scoring: { ...partyGame.scoring, team_win_threshold: Number(e.target.value) } })}
                   className="bg-muted border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-portal" />
               </div>
               <div className="grid gap-1">
-                <label className="text-xs uppercase tracking-widest text-muted-foreground">?????????? ???????????? ??????????????????????</label>
+                <label className="text-xs uppercase tracking-widest text-muted-foreground">Порог победы саботажника</label>
                 <input type="number" value={partyGame.scoring.saboteur_win_threshold}
                   onChange={(e) => setPartyGame({ ...partyGame, scoring: { ...partyGame.scoring, saboteur_win_threshold: Number(e.target.value) } })}
                   className="bg-muted border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-portal" />
@@ -330,21 +330,21 @@ export default function AdminScenarioEdit() {
               <div key={key} className="glass-card p-5 grid gap-3">
                 <p className="font-display text-base text-portal">{ENDING_LABELS[key] ?? key}</p>
                 <div className="grid gap-1">
-                  <TextField label="?????????????? ????????" value={(ending as any).host_line} onChange={(v) => updateEnding(key, "host_line", v)} />
+                  <TextField label="Реплика Рика" value={(ending as any).host_line} onChange={(v) => updateEnding(key, "host_line", v)} />
                   <MediaUpload scenarioId={scenarioId!} path={`endings/${key}/host_line`} type="audio"
                     currentUrl={(ending as any).host_line_audio}
                     onUploaded={(p) => setPartyGame({ ...partyGame!, endings: { ...partyGame!.endings, [key]: { ...(partyGame!.endings as any)[key], host_line_audio: p } } })}
                     onRemoved={() => setPartyGame({ ...partyGame!, endings: { ...partyGame!.endings, [key]: { ...(partyGame!.endings as any)[key], host_line_audio: "" } } })} />
                 </div>
                 <div className="grid gap-1">
-                  <TextField label="?????????????? ??????????" value={(ending as any).morty_line} onChange={(v) => updateEnding(key, "morty_line", v)} />
+                  <TextField label="Реплика Морти" value={(ending as any).morty_line} onChange={(v) => updateEnding(key, "morty_line", v)} />
                   <MediaUpload scenarioId={scenarioId!} path={`endings/${key}/morty_line`} type="audio"
                     currentUrl={(ending as any).morty_line_audio}
                     onUploaded={(p) => setPartyGame({ ...partyGame!, endings: { ...partyGame!.endings, [key]: { ...(partyGame!.endings as any)[key], morty_line_audio: p } } })}
                     onRemoved={() => setPartyGame({ ...partyGame!, endings: { ...partyGame!.endings, [key]: { ...(partyGame!.endings as any)[key], morty_line_audio: "" } } })} />
                 </div>
                 <div className="grid gap-1">
-                  <p className="text-xs uppercase tracking-widest text-muted-foreground">?????????????? ??????????????????????</p>
+                  <p className="text-xs uppercase tracking-widest text-muted-foreground">Фоновое изображение</p>
                   <MediaUpload scenarioId={scenarioId!} path={`endings/${key}/background`} type="image"
                     currentUrl={(ending as any).background_image}
                     onUploaded={(p) => setPartyGame({ ...partyGame!, endings: { ...partyGame!.endings, [key]: { ...(partyGame!.endings as any)[key], background_image: p } } })}
@@ -356,7 +356,7 @@ export default function AdminScenarioEdit() {
         )}
         <div className="mt-8 flex justify-end">
           <Button onClick={handleSave} disabled={saving} className="bg-portal text-portal-foreground gap-2">
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} ?????????????????? ??????????????????
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Сохранить изменения
           </Button>
         </div>
       </main>
