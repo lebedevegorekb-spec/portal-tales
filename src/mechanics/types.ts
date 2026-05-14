@@ -36,6 +36,10 @@ export interface RoundBase {
 export interface JokeVoteRound extends RoundBase {
   mechanic: "joke_vote";
   prompt: string;
+  tie_host?: string;
+  tie_host_audio?: string;
+  tie_morty?: string;
+  tie_morty_audio?: string;
 }
 
 export interface ForkOption {
@@ -202,3 +206,4 @@ export interface MechanicViewProps<T extends RoundConfig = RoundConfig> {
   onSubmit: (payload: Record<string, any>) => Promise<void>;
   onAdvance?: () => Promise<void>;
 }
+

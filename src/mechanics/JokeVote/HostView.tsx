@@ -24,10 +24,12 @@ export function JokeVoteHost({ round, submissions, playerCount, onAdvance }: Mec
     return counts;
   }, [voteSubmissions]);
 
-  const topVotedId = useMemo(
-    () => Object.entries(votes).sort((a, b) => b[1] - a[1])[0]?.[0],
+  const sortedVotes = useMemo(
+    () => Object.entries(votes).sort((a, b) => b[1] - a[1]),
     [votes]
   );
+  const topVotedId = sortedVotes[0]?.[0];
+  const isTie = sortedVotes.length > 1 && sortedVotes[0]?.[1] === sortedVotes[1]?.[1];
 
   if (!allAnswered) {
     return (
@@ -85,3 +87,4 @@ export function JokeVoteHost({ round, submissions, playerCount, onAdvance }: Mec
     </div>
   );
 }
+

@@ -171,8 +171,12 @@ const Scene = () => {
     const result = await advance(runId, roomId);
     if (isHost) {
       const won = result?.team_scored;
+      const isTie = result?.is_tie ?? false;
       const queue: Array<{speaker:"host"|"morty";text:string;audioPath?:string}> = [];
-      if (won) {
+      if (isTie && (currentRound as any).tie_host) {
+        queue.push({ speaker: "host", text: (currentRound as any).tie_host, audioPath: (currentRound as any).tie_host_audio });
+        if ((currentRound as any).tie_morty) queue.push({ speaker: "morty", text: (currentRound as any).tie_morty, audioPath: (currentRound as any).tie_morty_audio });
+      } else if (won) {
         if (currentRound.success_host) queue.push({ speaker: "host", text: currentRound.success_host, audioPath: currentRound.success_host_audio });
         if (currentRound.success_morty) queue.push({ speaker: "morty", text: currentRound.success_morty, audioPath: currentRound.success_morty_audio });
       } else {
@@ -369,6 +373,7 @@ const Scene = () => {
 };
 
 export default Scene;
+
 
 
 

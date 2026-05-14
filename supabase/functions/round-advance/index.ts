@@ -12,7 +12,12 @@ function calcJokeVote(submissions: any[], saboteurPlayerId: string, round: any) 
     const voted = s.payload?.vote_for_submission_id;
     if (voted) votes[voted] = (votes[voted] ?? 0) + 1;
   }
-  const winnerId = Object.entries(votes).sort((a, b) => b[1] - a[1])[0]?.[0];
+  const sorted = Object.entries(votes).sort((a, b) => b[1] - a[1]);
+  const isTie = sorted.length > 1 && sorted[0]?.[1] === sorted[1]?.[1];
+  if (isTie) {
+    return { team_scored: false, saboteur_scored: false, team_points: 0, saboteur_points: 0, is_tie: true };
+  }
+  const winnerId = sorted[0]?.[0];
   const winnerSubmission = submissions.find((s) => s.id === winnerId);
   const saboteurWon = winnerSubmission?.player_id === saboteurPlayerId;
   return {
@@ -20,6 +25,7 @@ function calcJokeVote(submissions: any[], saboteurPlayerId: string, round: any) 
     saboteur_scored: saboteurWon,
     team_points: saboteurWon ? 0 : round.points.team_success,
     saboteur_points: saboteurWon ? round.points.saboteur_success : 0,
+    is_tie: false,
   };
 }
 
@@ -317,5 +323,6 @@ serve(async (req) => {
     });
   }
 });
+
 
 
