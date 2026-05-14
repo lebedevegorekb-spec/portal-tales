@@ -101,7 +101,7 @@ export function ForkHost({ round, submissions, playerCount, onAdvance }: Mechani
                 <div className="flex items-center gap-3">
                   <span className={`font-display text-2xl ${opt.is_joke ? "text-yellow-500" : "text-portal"}`}>{opt.id}</span>
                   <span className="text-lg">{opt.label}</span>
-                  {opt.is_joke && <span className="text-xs text-yellow-500 border border-yellow-500/30 px-1.5 py-0.5 rounded">шутка</span>}
+                  
                 </div>
                 <span className="text-2xl font-display text-portal">{count}</span>
               </div>
