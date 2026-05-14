@@ -118,6 +118,13 @@ const Scene = () => {
     if (gameState?.phase === "final" && runId) navigate(`/final/${runId}`);
   }, [gameState?.phase, runId, navigate]);
 
+  // Игроки: при смене раунда в БД — переходим к playing
+  useEffect(() => {
+    if (!isHost && phase === "result") {
+      setPhase("playing");
+    }
+  }, [gameState?.current_round_index, isHost]);
+
   const onReplicaFinished = useCallback(() => {
     setReplicaQueue(prev => {
       const next = prev.slice(1);
@@ -225,6 +232,31 @@ const Scene = () => {
     );
   }
 
+  // Фаза result — реплики отыграли, ждём хоста
+  if (phase === "result" && !currentReplica) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center gap-6">
+        <BackgroundImage imagePath={currentRound?.background_image} />
+        {isHost ? (
+          <>
+            <p className="text-muted-foreground text-sm uppercase tracking-widest">Раунд завершён</p>
+            <button
+              onClick={() => setPhase("playing")}
+              className="bg-portal text-portal-foreground px-12 py-4 rounded-lg font-display text-xl hover:bg-portal/90 transition-colors"
+            >
+              Следующий раунд →
+            </button>
+          </>
+        ) : (
+          <>
+            <Loader2 className="w-8 h-8 animate-spin text-portal" />
+            <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest">Ждём хоста...</p>
+          </>
+        )}
+      </div>
+    );
+  }
+
   if (!partyConfig || !gameState || !currentRound) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -280,6 +312,8 @@ const Scene = () => {
 };
 
 export default Scene;
+
+
 
 
 
