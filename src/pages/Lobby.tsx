@@ -41,6 +41,7 @@ const Lobby = () => {
     if (error || !r) { toast.error("Комната не найдена"); navigate("/catalog"); return; }
     setRoom(r as Room);
     const { data: ps } = await supabase.from("room_players").select("*").eq("room_id", roomId).order("joined_at", { ascending: true });
+    // фильтр хоста на фронте
     setPlayers((ps as Player[]) ?? []);
     setLoading(false);
   };
@@ -69,7 +70,8 @@ const Lobby = () => {
   }, [roomId, navigate]);
 
   const isHost = room?.host_user_id === user?.id;
-  const playerCount = players.length;
+  const nonHostPlayers = players.filter(p => !p.is_host);
+  const playerCount = nonHostPlayers.length;
   const minReached = playerCount >= (room?.min_players ?? 3);
   const isPaused = room?.status === "paused";
 
@@ -155,7 +157,7 @@ const Lobby = () => {
             </div>
 
             <div className="grid gap-2">
-              {players.map((p) => (
+              {nonHostPlayers.map((p) => (
                 <div key={p.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
                   <div className="w-8 h-8 rounded-full bg-portal/20 flex items-center justify-center text-portal font-display text-sm">
                     {p.display_name[0]?.toUpperCase()}
@@ -208,3 +210,4 @@ const Lobby = () => {
 };
 
 export default Lobby;
+
