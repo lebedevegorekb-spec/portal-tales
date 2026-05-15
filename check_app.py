@@ -1,0 +1,5 @@
+﻿f = open('src/App.tsx', encoding='utf-8')
+c = f.read()
+f.close()
+print('AdminScenarioEdit in file:', 'AdminScenarioEdit' in c)
+print('RoundTest in file:', 'RoundTest' in c)
