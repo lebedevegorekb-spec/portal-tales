@@ -155,7 +155,7 @@ export default function RoundTest() {
       <div className="min-h-screen bg-background text-foreground p-8">
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center gap-4 mb-8">
-            <Link to={/admin/scenarios/} className="text-muted-foreground hover:text-foreground">
+            <Link to={"/admin/scenarios/" + scenarioId} className="text-muted-foreground hover:text-foreground">
               <ChevronLeft className="w-5 h-5" />
             </Link>
             <h1 className="text-3xl font-display">Тест раундов — {scenarioId}</h1>
