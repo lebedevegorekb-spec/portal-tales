@@ -192,8 +192,8 @@ export default function RoundTest() {
         )}
         {phase === "result_screen" && result && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 p-8">
-            <div className={glass-card p-6 max-w-md w-full text-center border }>
-              <p className={	ext-3xl font-display mb-2 }>
+            <div className={`glass-card p-6 max-w-md w-full text-center border `>
+              <p className={	`text-3xl font-display mb-2 `>
                 {result.is_tie ? "Ничья!" : result.team_scored ? "Команда побеждает!" : "Саботажник побеждает!"}
               </p>
               <p className="text-sm text-muted-foreground">+{result.team_points} команда / +{result.saboteur_points} хаос</p>
