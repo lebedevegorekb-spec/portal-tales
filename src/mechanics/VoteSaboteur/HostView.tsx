@@ -78,6 +78,12 @@ export function VoteSaboteurHost({ round, submissions, playerCount, onAdvance, p
           <p className="text-muted-foreground text-sm mb-2">🧪 Рик: «{round.success_host}»</p>
           <p className="text-muted-foreground text-sm">😰 Морти: «{round.success_morty}»</p>
         </div>
+        {onAdvance && (
+          <button onClick={onAdvance}
+            className="bg-portal text-portal-foreground px-10 py-4 rounded-lg font-display text-xl">
+            Далее →
+          </button>
+        )}
       </div>
     );
   }

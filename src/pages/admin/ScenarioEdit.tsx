@@ -5,8 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Loader2, Save, ChevronDown, ChevronUp, FlaskConical } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Loader2, Save, ChevronDown, ChevronUp } from "lucide-react";
 import { MediaUpload } from "@/components/MediaUpload";
 
 type Round = {
@@ -241,7 +240,6 @@ export default function AdminScenarioEdit() {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <SiteHeader />
-        <Link to={"/admin/test/" + scenarioId}><button className="flex items-center gap-2 text-sm border border-portal/40 text-portal px-3 py-1.5 rounded-lg hover:bg-portal/10">Тест раундов</button></Link>
       <main className="flex-1 container max-w-4xl py-8">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">

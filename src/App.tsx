@@ -27,7 +27,6 @@ import Profile from "./pages/Profile.tsx";
 import ScenarioPreview from "./pages/ScenarioPreview.tsx";
 import AdminScenarios from "./pages/admin/Scenarios.tsx";
 import AdminScenarioEdit from "./pages/admin/ScenarioEdit.tsx";
-import RoundTest from "./pages/admin/RoundTest.tsx";
 import NotFound from "./pages/NotFound.tsx";
 const queryClient = new QueryClient();
 const App = () => (
@@ -72,7 +71,6 @@ const App = () => (
               <Route path="/scenarios/:scenarioId" element={<ScenarioPreview />} />
               <Route path="/admin/scenarios" element={<AdminScenarios />} />
               <Route path="/admin/scenarios/:scenarioId" element={<AdminScenarioEdit />} />
-              <Route path="/admin/test/:scenarioId" element={<RoundTest />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>

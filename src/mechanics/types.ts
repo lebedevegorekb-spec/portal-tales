@@ -205,6 +205,5 @@ export interface MechanicViewProps<T extends RoundConfig = RoundConfig> {
   playerCount: number;
   onSubmit: (payload: Record<string, any>) => Promise<void>;
   onAdvance?: () => Promise<void>;
-  players?: { id: string; display_name: string }[];
 }
 

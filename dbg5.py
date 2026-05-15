@@ -1,5 +1,0 @@
-﻿f = open('src/mechanics/Fork/HostView.tsx', encoding='utf-8')
-c = f.read()
-f.close()
-idx = c.find('storage/v1/object/public/scenario-media')
-print(repr(c[idx-30:idx+60]))

@@ -27,7 +27,6 @@ const Scene = () => {
   const [isHost, setIsHost] = useState(false);
   const [partyConfig, setPartyConfig] = useState<PartyGameConfig | null>(null);
   const [playerCount, setPlayerCount] = useState(4);
-  const [players, setPlayers] = useState<{id:string;display_name:string}[]>([]);
   const [loading, setLoading] = useState(true);
   const [phase, setPhase] = useState<ScenePhase>("loading");
   const [replicaQueue, setReplicaQueue] = useState<Array<{speaker:"host"|"morty";text:string;audioPath?:string}>>([]);
@@ -59,8 +58,6 @@ const Scene = () => {
         setIsHost(!!user?.id && room.host_user_id === user.id);
         const { count } = await supabase.from("room_players").select("id", { count: "exact" }).eq("room_id", room.id).eq("is_host", false);
         setPlayerCount(count ?? room.min_players ?? 3);
-        const { data: pls } = await supabase.from("room_players").select("id,display_name").eq("room_id", room.id).eq("is_host", false);
-        setPlayers((pls ?? []) as {id:string;display_name:string}[]);
         if (userId) {
           const { data: playerRow } = await supabase.from("room_players").select("id").eq("room_id", room.id).eq("user_id", userId).maybeSingle();
           if (playerRow) setPlayerId(playerRow.id);
@@ -372,7 +369,6 @@ const Scene = () => {
         isSaboteur={gameState.saboteur_player_id === playerId}
         submissions={submissions}
         playerCount={playerCount}
-        players={players}
         onSubmit={handleSubmit}
         onAdvance={isHost ? handleAdvance : undefined}
       />
