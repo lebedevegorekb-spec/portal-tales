@@ -115,5 +115,5 @@ function calcSituationDeduction(submissions: RoundSubmission[], saboteurPlayerId
 }
 
 export function makeSubmission(playerId: string, roundId: string, mechanic: string, payload: Record<string, any>): RoundSubmission {
-  return { id: 	est---, run_id: "test-run", room_id: "test-room", player_id: playerId, round_id: roundId, mechanic: mechanic as any, payload, submitted_at: new Date().toISOString() };
+  return { id: "test-" + Math.random().toString(36).slice(2), run_id: "test-run", room_id: "test-room", player_id: playerId, round_id: roundId, mechanic: mechanic as any, payload, submitted_at: new Date().toISOString() };
 }
