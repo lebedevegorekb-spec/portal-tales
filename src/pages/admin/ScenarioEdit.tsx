@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -354,7 +354,7 @@ export default function AdminScenarioEdit() {
             ))}
           </div>
         )}
-        <div className="mt-8 flex justify-end">
+        <div className="mt-8 flex justify-between items-center"><Link to={"/admin/scenarios/" + scenarioId + "/test"} className="text-sm px-4 py-2 rounded-lg border border-portal/40 text-portal hover:bg-portal/10 transition-all">Test Rounds</Link>
           <Button onClick={handleSave} disabled={saving} className="bg-portal text-portal-foreground gap-2">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Сохранить изменения
           </Button>
