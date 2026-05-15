@@ -5,9 +5,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { RoundRouter } from "@/components/RoundRouter";
 import { ReplicaPlayer } from "@/components/ReplicaPlayer";
 import { BackgroundImage } from "@/components/BackgroundImage";
-import { Loader2, ChevronLeft, Play, SkipForward, Users, Shuffle } from "lucide-react";
+import { Loader2, ChevronLeft, Play, Users, Shuffle } from "lucide-react";
 import type { RoundConfig, RoundSubmission } from "@/mechanics/types";
-import { calcRoundResult, makeSubmission, TEST_PLAYERS, type TestPlayer, type RoundCalcResult } from "@/utils/roundCalc";
+import { calcRoundResult, makeSubmission, TEST_PLAYERS, type RoundCalcResult } from "@/utils/roundCalc";
 
 type Phase = "playing" | "result_replicas" | "result_screen";
 
@@ -71,7 +71,7 @@ export default function RoundTest() {
     const mech = currentRound.mechanic;
 
     if (mech === "joke_vote") {
-      const answers = players.map(p => makeSubmission(p.id, currentRound.id, mech, { answer: ╨¿╤â╤é╨║╨░ ╨╛╤é  }));
+      const answers = players.map(p => makeSubmission(p.id, currentRound.id, mech, { answer: "joke-" + p.id }));
       if (scenario === "team_wins") {
         const nonSab = answers.filter(a => a.player_id !== saboteurId);
         const votes = nonSab.map(a => makeSubmission(a.player_id === nonSab[0].player_id ? players.find(p => p.id !== nonSab[0].player_id && p.id !== saboteurId)?.id ?? "player-2" : "player-1", currentRound.id, mech, { vote_for_submission_id: nonSab[0].id }));
@@ -93,9 +93,7 @@ export default function RoundTest() {
       const optId = scenario === "team_wins" ? correct?.id : scenario === "tie" ? joke?.id : wrong?.id;
       players.forEach(p => newSubs.push(makeSubmission(p.id, currentRound.id, mech, { option_id: optId })));
     } else if (mech === "guess_author") {
-      players.forEach(p => {
-        newSubs.push(makeSubmission(p.id, currentRound.id, mech, { completion: ╨╛╤é╨▓╨╡╤é ╨╛╤é  }));
-      });
+      players.forEach(p => newSubs.push(makeSubmission(p.id, currentRound.id, mech, { completion: "answer-" + p.id })));
       const guesses: Record<string, string> = {};
       players.forEach(p => { guesses[p.id] = scenario === "team_wins" ? saboteurId : p.id === saboteurId ? "player-1" : "player-2"; });
       players.filter(p => p.id !== saboteurId).forEach(p => newSubs.push(makeSubmission(p.id, currentRound.id, mech, { guesses })));
@@ -155,10 +153,10 @@ export default function RoundTest() {
       <div className="min-h-screen bg-background text-foreground p-8">
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center gap-4 mb-8">
-            <Link to={/admin/scenarios/} className="text-muted-foreground hover:text-foreground">
+            <Link to={"/admin/scenarios/" + scenarioId} className="text-muted-foreground hover:text-foreground">
               <ChevronLeft className="w-5 h-5" />
             </Link>
-            <h1 className="text-3xl font-display">╨ó╨╡╤ü╤é ╤Ç╨░╤â╨╜╨┤╨╛╨▓ ΓÇö {scenarioId}</h1>
+            <h1 className="text-3xl font-display">Тест раундов — {scenarioId}</h1>
           </div>
           <div className="grid gap-3">
             {rounds.map((r, i) => (
@@ -182,35 +180,31 @@ export default function RoundTest() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex">
-      {/* LEFT: Host View */}
       <div className="flex-1 relative overflow-auto">
         <BackgroundImage imagePath={currentRound?.background_image} />
         {currentReplica && (
           <ReplicaPlayer speaker={currentReplica.speaker} text={currentReplica.text} audioPath={currentReplica.audioPath} onFinished={onReplicaFinished} />
         )}
-
         {phase === "result_replicas" && !currentReplica && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <button onClick={() => setPhase("result_screen")} className="bg-portal text-portal-foreground px-10 py-4 rounded-lg font-display text-xl">╨ö╨░╨╗╨╡╨╡ ΓåÆ</button>
+            <button onClick={() => setPhase("result_screen")} className="bg-portal text-portal-foreground px-10 py-4 rounded-lg font-display text-xl">Далее</button>
           </div>
         )}
-
         {phase === "result_screen" && result && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 p-8">
             <div className={glass-card p-6 max-w-md w-full text-center border }>
               <p className={	ext-3xl font-display mb-2 }>
-                {result.is_tie ? "╨¥╨╕╤ç╤î╤Å!" : result.team_scored ? "╨Ü╨╛╨╝╨░╨╜╨┤╨░ ╨┐╨╛╨▒╨╡╨╢╨┤╨░╨╡╤é!" : "╨í╨░╨▒╨╛╤é╨░╨╢╨╜╨╕╨║ ╨┐╨╛╨▒╨╡╨╢╨┤╨░╨╡╤é!"}
+                {result.is_tie ? "Ничья!" : result.team_scored ? "Команда побеждает!" : "Саботажник побеждает!"}
               </p>
-              <p className="text-sm text-muted-foreground">+{result.team_points} ╨║╨╛╨╝╨░╨╜╨┤╨░ / +{result.saboteur_points} ╤à╨░╨╛╤ü</p>
+              <p className="text-sm text-muted-foreground">+{result.team_points} команда / +{result.saboteur_points} хаос</p>
             </div>
             <div className="flex gap-8">
-              <div className="text-center"><p className="text-xs text-muted-foreground">╨Ü╨╛╨╝╨░╨╜╨┤╨░</p><p className="text-4xl font-display text-portal">{scores.team}</p></div>
-              <div className="text-center"><p className="text-xs text-muted-foreground">╨Ñ╨░╨╛╤ü</p><p className="text-4xl font-display text-destructive">{scores.saboteur}</p></div>
+              <div className="text-center"><p className="text-xs text-muted-foreground">Команда</p><p className="text-4xl font-display text-portal">{scores.team}</p></div>
+              <div className="text-center"><p className="text-xs text-muted-foreground">Хаос</p><p className="text-4xl font-display text-destructive">{scores.saboteur}</p></div>
             </div>
-            <button onClick={resetRound} className="bg-portal text-portal-foreground px-10 py-4 rounded-lg font-display text-xl">╨í╤ï╨│╤Ç╨░╤é╤î ╤ü╨╜╨╛╨▓╨░ ΓåÆ</button>
+            <button onClick={resetRound} className="bg-portal text-portal-foreground px-10 py-4 rounded-lg font-display text-xl">Сыграть снова</button>
           </div>
         )}
-
         {phase === "playing" && (
           <RoundRouter
             round={currentRound}
@@ -227,49 +221,39 @@ export default function RoundTest() {
           />
         )}
       </div>
-
-      {/* RIGHT: Control Panel */}
       <div className="w-80 border-l border-border bg-background/95 flex flex-col overflow-auto">
         <div className="p-4 border-b border-border flex items-center justify-between">
           <button onClick={() => setSelectedIndex(null)} className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm">
-            <ChevronLeft className="w-4 h-4" /> ╨á╨░╤â╨╜╨┤╤ï
+            <ChevronLeft className="w-4 h-4" /> Раунды
           </button>
           <span className="text-xs font-mono text-portal">{currentRound.mechanic}</span>
         </div>
-
-        {/* Players */}
         <div className="p-4 border-b border-border">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2"><Users className="w-3 h-3" /> ╨ÿ╨│╤Ç╨╛╨║╨╕</p>
+          <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2"><Users className="w-3 h-3" /> Игроки</p>
           <div className="grid gap-2">
             {players.map(p => (
               <div key={p.id} className="flex items-center justify-between">
-                <button onClick={() => setViewAs(p.id)}
-                  className={	ext-sm px-3 py-1.5 rounded-lg border transition-all }>
+                <button onClick={() => setViewAs(p.id)} className={	ext-sm px-3 py-1.5 rounded-lg border transition-all }>
                   {p.display_name}
                 </button>
-                <button onClick={() => setSaboteurId(p.id)}
-                  className={	ext-xs px-2 py-1 rounded border transition-all }>
-                  {p.id === saboteurId ? "╨í╨░╨▒╨╛╤é╨░╨╢╨╜╨╕╨║" : "╨Ü╨╛╨╝╨░╨╜╨┤╨░"}
+                <button onClick={() => setSaboteurId(p.id)} className={	ext-xs px-2 py-1 rounded border transition-all }>
+                  {p.id === saboteurId ? "Саботажник" : "Команда"}
                 </button>
               </div>
             ))}
           </div>
         </div>
-
-        {/* Auto-submit */}
         <div className="p-4 border-b border-border">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2"><Shuffle className="w-3 h-3" /> ╨í╨╕╨╝╤â╨╗╤Å╤å╨╕╤Å</p>
+          <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2"><Shuffle className="w-3 h-3" /> Симуляция</p>
           <div className="grid gap-2">
-            <button onClick={() => handleAutoSubmit("team_wins")} className="text-sm px-3 py-2 rounded-lg border border-acid/40 text-acid hover:bg-acid/10 transition-all">Γ£ô ╨Ü╨╛╨╝╨░╨╜╨┤╨░ ╨┐╨╛╨▒╨╡╨╢╨┤╨░╨╡╤é</button>
-            <button onClick={() => handleAutoSubmit("saboteur_wins")} className="text-sm px-3 py-2 rounded-lg border border-destructive/40 text-destructive hover:bg-destructive/10 transition-all">Γ£ù ╨í╨░╨▒╨╛╤é╨░╨╢╨╜╨╕╨║ ╨┐╨╛╨▒╨╡╨╢╨┤╨░╨╡╤é</button>
-            <button onClick={() => handleAutoSubmit("tie")} className="text-sm px-3 py-2 rounded-lg border border-yellow-500/40 text-yellow-500 hover:bg-yellow-500/10 transition-all">ΓÜí ╨¥╨╕╤ç╤î╤Å</button>
+            <button onClick={() => handleAutoSubmit("team_wins")} className="text-sm px-3 py-2 rounded-lg border border-acid/40 text-acid hover:bg-acid/10 transition-all">Команда побеждает</button>
+            <button onClick={() => handleAutoSubmit("saboteur_wins")} className="text-sm px-3 py-2 rounded-lg border border-destructive/40 text-destructive hover:bg-destructive/10 transition-all">Саботажник побеждает</button>
+            <button onClick={() => handleAutoSubmit("tie")} className="text-sm px-3 py-2 rounded-lg border border-yellow-500/40 text-yellow-500 hover:bg-yellow-500/10 transition-all">Ничья</button>
           </div>
           <p className="text-xs text-muted-foreground mt-2">Submissions: {submissions.length}</p>
         </div>
-
-        {/* Player View */}
         <div className="p-4 border-b border-border">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">╨Æ╨╕╨┤ ╨╕╨│╤Ç╨╛╨║╨░: {players.find(p => p.id === viewAs)?.display_name}</p>
+          <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Вид игрока: {players.find(p => p.id === viewAs)?.display_name}</p>
           <div className="rounded-xl overflow-hidden border border-border" style={{height: 400, overflow: "auto"}}>
             <div style={{transform: "scale(0.6)", transformOrigin: "top left", width: "167%", height: "167%", pointerEvents: "auto"}}>
               <RoundRouter
@@ -287,14 +271,12 @@ export default function RoundTest() {
             </div>
           </div>
         </div>
-
-        {/* Nav between rounds */}
         <div className="p-4 mt-auto flex gap-2">
           {selectedIndex > 0 && (
-            <button onClick={() => selectRound(selectedIndex - 1)} className="flex-1 text-sm px-3 py-2 rounded-lg border border-border hover:border-muted-foreground transition-all">ΓåÉ ╨ƒ╤Ç╨╡╨┤.</button>
+            <button onClick={() => selectRound(selectedIndex - 1)} className="flex-1 text-sm px-3 py-2 rounded-lg border border-border hover:border-muted-foreground transition-all">Пред.</button>
           )}
           {selectedIndex < rounds.length - 1 && (
-            <button onClick={() => selectRound(selectedIndex + 1)} className="flex-1 text-sm px-3 py-2 rounded-lg border border-portal/40 text-portal hover:bg-portal/10 transition-all">╨í╨╗╨╡╨┤. ΓåÆ</button>
+            <button onClick={() => selectRound(selectedIndex + 1)} className="flex-1 text-sm px-3 py-2 rounded-lg border border-portal/40 text-portal hover:bg-portal/10 transition-all">След.</button>
           )}
         </div>
       </div>
