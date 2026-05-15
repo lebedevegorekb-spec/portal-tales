@@ -189,7 +189,7 @@ const SecretAction = () => {
                     type="button"
                     onClick={() => setSelected(opt.id)}
                     disabled={status === "submitting"}
-                    className={`w-full text-left rounded-2xl border-2 p-4 transition-all ${tone`} ${
+                    className={`w-full text-left rounded-2xl border-2 p-4 transition-all ${tone} ${
                       isSelected ? "ring-2 ring-offset-2 ring-offset-background ring-portal scale-[1.01]" : "opacity-90"
                     } disabled:opacity-50`}
                   >
@@ -198,7 +198,7 @@ const SecretAction = () => {
                         <div className="font-display font-semibold text-base">{opt.text}</div>
                         {effectStr && <div className="text-xs text-muted-foreground mt-0.5">{effectStr}</div>}
                       </div>
-                      <div className={`size-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${isSelected ? "bg-portal border-portal" : "border-border"`}`}>
+                      <div className={`size-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${isSelected ? "bg-portal border-portal" : "border-border"}`}>
                         {isSelected && <Check className="size-3.5 text-portal-foreground" />}
                       </div>
                     </div>

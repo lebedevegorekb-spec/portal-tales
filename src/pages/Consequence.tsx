@@ -50,7 +50,7 @@ const StatRow = ({ stat }: { stat: StatChange }) => {
     <li className="rounded-md border border-border bg-card/40 p-5">
       <div className="flex items-center justify-between gap-4 mb-3">
         <span className="font-mono uppercase tracking-[0.16em] text-xs text-muted-foreground">{stat.label}</span>
-        <span className={`inline-flex items-center gap-1 font-display font-bold text-base tabular-nums ${tone`}`}>
+        <span className={`inline-flex items-center gap-1 font-display font-bold text-base tabular-nums ${tone}`}>
           <TrendIcon className="h-4 w-4" />
           {delta > 0 ? "+" : ""}{delta}
         </span>
@@ -58,7 +58,7 @@ const StatRow = ({ stat }: { stat: StatChange }) => {
       <div className="flex items-center gap-4">
         <span className="font-display font-bold text-3xl tabular-nums text-muted-foreground/70">{stat.from}</span>
         <ArrowRight className="h-6 w-6 text-portal flex-none" />
-        <span className={`font-display font-bold text-4xl tabular-nums ${tone`} drop-shadow-[0_0_18px_currentColor]`}>{display}</span>
+        <span className={`font-display font-bold text-4xl tabular-nums ${tone} drop-shadow-[0_0_18px_currentColor]`}>{display}</span>
       </div>
     </li>
   );
