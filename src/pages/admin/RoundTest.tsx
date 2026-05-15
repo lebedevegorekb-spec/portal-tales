@@ -71,7 +71,7 @@ export default function RoundTest() {
     const mech = currentRound.mechanic;
 
     if (mech === "joke_vote") {
-      const answers = players.map(p => makeSubmission(p.id, currentRound.id, mech, { answer: Шутка от  }));
+      const answers = players.map(p => makeSubmission(p.id, currentRound.id, mech, { answer: "joke-" + p.id }));
       if (scenario === "team_wins") {
         const nonSab = answers.filter(a => a.player_id !== saboteurId);
         const votes = nonSab.map(a => makeSubmission(a.player_id === nonSab[0].player_id ? players.find(p => p.id !== nonSab[0].player_id && p.id !== saboteurId)?.id ?? "player-2" : "player-1", currentRound.id, mech, { vote_for_submission_id: nonSab[0].id }));
@@ -94,7 +94,7 @@ export default function RoundTest() {
       players.forEach(p => newSubs.push(makeSubmission(p.id, currentRound.id, mech, { option_id: optId })));
     } else if (mech === "guess_author") {
       players.forEach(p => {
-        newSubs.push(makeSubmission(p.id, currentRound.id, mech, { completion: ответ от  }));
+        newSubs.push(makeSubmission(p.id, currentRound.id, mech, { completion: "answer-" + p.id }));
       });
       const guesses: Record<string, string> = {};
       players.forEach(p => { guesses[p.id] = scenario === "team_wins" ? saboteurId : p.id === saboteurId ? "player-1" : "player-2"; });
