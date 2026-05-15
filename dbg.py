@@ -1,0 +1,5 @@
+﻿f = open('src/pages/admin/RoundTest.tsx', encoding='utf-8')
+c = f.read()
+f.close()
+idx = c.find('glass-card p-6 max-w-md')
+print(repr(c[idx-20:idx+60]))
