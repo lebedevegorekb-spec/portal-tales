@@ -233,10 +233,10 @@ export default function RoundTest() {
           <div className="grid gap-2">
             {players.map(p => (
               <div key={p.id} className="flex items-center justify-between">
-                <button onClick={() => setViewAs(p.id)} className={	ext-sm px-3 py-1.5 rounded-lg border transition-all }>
+                <button onClick={() => setViewAs(p.id)} className={	`text-sm px-3 py-1.5 rounded-lg border transition-all `>
                   {p.display_name}
                 </button>
-                <button onClick={() => setSaboteurId(p.id)} className={	ext-xs px-2 py-1 rounded border transition-all }>
+                <button onClick={() => setSaboteurId(p.id)} className={	`text-xs px-2 py-1 rounded border transition-all `>
                   {p.id === saboteurId ? "Саботажник" : "Команда"}
                 </button>
               </div>
