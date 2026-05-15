@@ -4,7 +4,7 @@ import type { MechanicViewProps, ForkRound } from "@/mechanics/types";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 function getUrl(path?: string) {
   if (!path) return "";
-  return ${SUPABASE_URL}/storage/v1/object/public/scenario-media/;
+  return `${SUPABASE_URL}/storage/v1/object/public/scenario-media/${path}`;
 }
 
 export function ForkHost({ round, submissions, playerCount, onAdvance }: MechanicViewProps<ForkRound>) {
