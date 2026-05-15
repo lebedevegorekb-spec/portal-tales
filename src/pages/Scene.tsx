@@ -13,8 +13,9 @@ import type { PartyGameConfig, RoundConfig } from "@/mechanics/types";
 import { MediaPlayer } from "@/components/MediaPlayer";
 import { ReplicaPlayer } from "@/components/ReplicaPlayer";
 import { BackgroundImage } from "@/components/BackgroundImage";
+import { ComicFrameView } from "@/components/ComicFrameView";
 
-type ScenePhase = "loading" | "intro" | "playing" | "result_replicas" | "result_screen";
+type ScenePhase = "loading" | "comic_intro" | "intro" | "playing" | "result_replicas" | "result_screen";
 
 const Scene = () => {
   const { runId } = useParams<{ runId: string }>();
@@ -33,6 +34,9 @@ const Scene = () => {
   const [currentReplica, setCurrentReplica] = useState<{speaker:"host"|"morty";text:string;audioPath?:string} | null>(null);
   const [introShownForRound, setIntroShownForRound] = useState<number>(-1);
   const [introReplicasShown, setIntroReplicasShown] = useState(false);
+  const [comicFrameIndex, setComicFrameIndex] = useState(0);
+  const [comicReplicasDone, setComicReplicasDone] = useState(false);
+  const [comicFlipping, setComicFlipping] = useState(false);
 
   const gameState = useGameState(runId ?? null);
   const { advance } = useRoundAdvance();
@@ -74,7 +78,9 @@ const Scene = () => {
   useEffect(() => {
     if (loading || !partyConfig || !gameState || phase !== "loading") return;
     const uiPhase = (gameState as any)?.ui_phase;
-    if (isHost && uiPhase === "intro" && partyConfig?.intro?.situation) {
+    if (isHost && uiPhase === "comic_intro" && partyConfig?.intro?.comic_frames?.length) {
+      setPhase("comic_intro");
+    } else if (isHost && uiPhase === "intro" && partyConfig?.intro?.situation) {
       setPhase("intro");
     } else if (uiPhase === "chars_reveal") {
       setPhase("chars_reveal");
@@ -210,6 +216,48 @@ const Scene = () => {
         <h1 className="font-display text-4xl">Игра на паузе</h1>
         <p className="text-muted-foreground">Ожидайте, хост скоро продолжит...</p>
         {isHost && roomId && <PauseButton roomId={roomId} status={roomStatus} />}
+      </div>
+    );
+  }
+
+  if (phase === "comic_intro" && partyConfig?.intro?.comic_frames?.length) {
+    const frames = partyConfig.intro.comic_frames!;
+    const frame = frames[comicFrameIndex];
+    const handleNext = async () => {
+      if (comicFrameIndex < frames.length - 1) {
+        setComicFlipping(true);
+        setComicReplicasDone(false);
+        setTimeout(() => { setComicFrameIndex(i => i + 1); setComicFlipping(false); }, 300);
+        if (runId) {
+          const { data: run } = await supabase.from("runs").select("state_json").eq("id", runId).single();
+          if (run?.state_json) {
+            const newState = { ...run.state_json, party_game: { ...run.state_json.party_game, comic_frame_index: comicFrameIndex + 1 } };
+            await supabase.from("runs").update({ state_json: newState }).eq("id", runId);
+          }
+        }
+      } else {
+        if (runId) {
+          const { data: run } = await supabase.from("runs").select("state_json").eq("id", runId).single();
+          if (run?.state_json) {
+            const newState = { ...run.state_json, party_game: { ...run.state_json.party_game, ui_phase: "intro" } };
+            await supabase.from("runs").update({ state_json: newState }).eq("id", runId);
+          }
+        }
+        setPhase("intro");
+      }
+    };
+    return (
+      <div className={"transition-opacity duration-300 " + (comicFlipping ? "opacity-0" : "opacity-100")}>
+        <ComicFrameView
+          frame={frame}
+          frameIndex={comicFrameIndex}
+          totalFrames={frames.length}
+          isHost={isHost}
+          onNext={isHost ? handleNext : undefined}
+          replicasDone={comicReplicasDone}
+          setReplicasDone={setComicReplicasDone}
+          onReplicasFinished={() => setComicReplicasDone(true)}
+        />
       </div>
     );
   }

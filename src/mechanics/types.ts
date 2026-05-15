@@ -168,6 +168,16 @@ export interface PartyGameEnding {
   morty_line_audio?: string;
 }
 
+export interface ComicFrame {
+  id: string;
+  caption?: string;
+  image?: string;
+  host_line?: string;
+  host_line_audio?: string;
+  morty_line?: string;
+  morty_line_audio?: string;
+}
+
 export interface PartyGameConfig {
   title?: string;
   intro: PartyGameIntro;

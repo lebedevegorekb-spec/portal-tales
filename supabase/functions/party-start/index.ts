@@ -117,7 +117,7 @@ Deno.serve(async (req) => {
         player_characters: playerCharacters,
         saboteur_actions: {},
         characters_ready: [],
-        ui_phase: "intro",
+        ui_phase: scenario?.scenario_json?.party_game?.intro?.comic_frames?.length ? "comic_intro" : "intro",
       },
       saboteur_player_id: saboteurPlayerId,
       player_roles: playerRoles,
