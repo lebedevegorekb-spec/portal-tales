@@ -72,9 +72,9 @@ export function JokeVoteHost({ round, submissions, playerCount, onAdvance }: Mec
         {answerSubmissions
           .sort((a, b) => (votes[b.id] ?? 0) - (votes[a.id] ?? 0))
           .map((s) => (
-            <div key={s.id} className={`glass-card p-5 flex items-center justify-between transition-all ${s.id === topVotedId ? "border-portal shadow-[var(--shadow-portal)]" : ""}`}>
+            <div key={s.id} className={`glass-card p-5 flex items-center justify-between transition-all ${s.id === topVotedId ? "border-portal shadow-[var(--shadow-portal)]" : ""`}`}>
               <span className="text-lg flex-1">{s.payload.answer}</span>
-              <span className={`ml-4 text-2xl font-display ${s.id === topVotedId ? "text-portal" : "text-muted-foreground"}`}>{votes[s.id] ?? 0} 👍</span>
+              <span className={`ml-4 text-2xl font-display ${s.id === topVotedId ? "text-portal" : "text-muted-foreground"`}`}>{votes[s.id] ?? 0} 👍</span>
             </div>
           ))}
       </div>

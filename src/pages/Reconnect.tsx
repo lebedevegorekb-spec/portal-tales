@@ -106,30 +106,30 @@ const Reconnect = () => {
 
         {/* Status card */}
         <div
-          className={`glass-card rounded-3xl p-7 flex flex-col items-center text-center gap-5 border ${tone.border} ${tone.glow} transition-all duration-500`}
+          className={`glass-card rounded-3xl p-7 flex flex-col items-center text-center gap-5 border ${tone.border`} ${tone.glow} transition-all duration-500`}
         >
           {/* Big icon */}
           <div className="relative size-28 flex items-center justify-center">
             <div className="portal-orb absolute inset-0 -z-10 opacity-60" />
             {status === "reconnecting" && (
               <div
-                className={`size-20 rounded-full ${tone.bg} border-2 ${tone.border} ring-4 ring-portal/20 flex items-center justify-center`}
+                className={`size-20 rounded-full ${tone.bg`} border-2 ${tone.border} ring-4 ring-portal/20 flex items-center justify-center`}
               >
-                <Loader2 className={`size-10 ${tone.text} animate-spin`} />
+                <Loader2 className={`size-10 ${tone.text`} animate-spin`} />
               </div>
             )}
             {status === "online" && (
               <div
-                className={`size-20 rounded-full ${tone.bg} border-2 ${tone.border} ring-4 ring-acid/20 flex items-center justify-center animate-in zoom-in-95 duration-300`}
+                className={`size-20 rounded-full ${tone.bg`} border-2 ${tone.border} ring-4 ring-acid/20 flex items-center justify-center animate-in zoom-in-95 duration-300`}
               >
-                <Check className={`size-10 ${tone.text}`} />
+                <Check className={`size-10 ${tone.text`}`} />
               </div>
             )}
             {status === "failed" && (
               <div
-                className={`size-20 rounded-full ${tone.bg} border-2 ${tone.border} ring-4 ring-destructive/20 flex items-center justify-center animate-in zoom-in-95 duration-300`}
+                className={`size-20 rounded-full ${tone.bg`} border-2 ${tone.border} ring-4 ring-destructive/20 flex items-center justify-center animate-in zoom-in-95 duration-300`}
               >
-                <WifiOff className={`size-10 ${tone.text}`} />
+                <WifiOff className={`size-10 ${tone.text`}`} />
               </div>
             )}
           </div>
@@ -139,7 +139,7 @@ const Reconnect = () => {
             <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground">
               Статус
             </div>
-            <div className={`mt-1 font-display font-bold text-2xl ${tone.text}`}>
+            <div className={`mt-1 font-display font-bold text-2xl ${tone.text`}`}>
               {status === "reconnecting" && "Переподключаемся…"}
               {status === "online" && "Соединение восстановлено"}
               {status === "failed" && "Сервер недоступен"}
@@ -254,7 +254,7 @@ const Chip = ({
       tone === "muted"
         ? "border-border bg-background/30 text-muted-foreground"
         : "border-portal/30 bg-portal/10 text-portal"
-    }`}
+    `}`}
   >
     <Icon className="size-3" />
     {label}

@@ -53,7 +53,7 @@ export function SituationDeductionHost({
         <h1 className="text-5xl font-display text-center mb-6">{round.title}</h1>
         <div className="glass-card p-6 max-w-2xl w-full mb-8 text-center">
           <p className="text-sm text-muted-foreground mb-2">Игрок {currentQ + 1} задаёт вопрос</p>
-          <div className={`text-6xl font-display mb-4 ${timer <= 5 ? "text-destructive" : "text-portal"}`}>{timer}с</div>
+          <div className={`text-6xl font-display mb-4 ${timer <= 5 ? "text-destructive" : "text-portal"`}`}>{timer}с</div>
           <div className="w-full bg-muted rounded-full h-2">
             <div className="bg-portal h-2 rounded-full transition-all duration-1000"
               style={{ width: `${(timer / (round.question_time_seconds ?? 20)) * 100}%` }} />
@@ -119,8 +119,8 @@ export function SituationDeductionHost({
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-8 gap-6">
       <h1 className="text-4xl font-display text-center">Результат</h1>
-      <div className={`glass-card p-6 max-w-2xl w-full border-l-4 ${isCorrect ? "border-portal" : "border-destructive"}`}>
-        <p className={`text-sm uppercase tracking-widest mb-3 ${isCorrect ? "text-portal" : "text-destructive"}`}>
+      <div className={`glass-card p-6 max-w-2xl w-full border-l-4 ${isCorrect ? "border-portal" : "border-destructive"`}`}>
+        <p className={`text-sm uppercase tracking-widest mb-3 ${isCorrect ? "text-portal" : "text-destructive"`}`}>
           {isCorrect ? "✓ Команда угадала!" : "✗ Саботажник обманул всех!"}
         </p>
         <p className="text-lg mb-4">Правильная ситуация: <strong>{correctOpt?.label}</strong></p>

@@ -121,7 +121,7 @@ const Character = () => {
             <p className="text-muted-foreground text-sm">Нажми чтобы узнать секретную роль</p>
           </button>
         ) : (
-          <div className={`glass-card p-6 rounded-2xl animate-in zoom-in-95 duration-300 ${isSaboteur ? "border-destructive/40" : "border-acid/40"}`}>
+          <div className={`glass-card p-6 rounded-2xl animate-in zoom-in-95 duration-300 ${isSaboteur ? "border-destructive/40" : "border-acid/40"`}`}>
             {isSaboteur ? (
               <>
                 <div className="flex items-center gap-3 mb-3">

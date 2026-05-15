@@ -187,13 +187,13 @@ const Secret = () => {
         {!revealed ? (
           <button
             onClick={() => setRevealed(true)}
-            className={`glass-card rounded-3xl p-8 border ${tone.border} ${tone.glow}
+            className={`glass-card rounded-3xl p-8 border ${tone.border`} ${tone.glow}
               flex flex-col items-center justify-center gap-4 min-h-[260px]
               cursor-pointer select-none active:scale-[0.98] transition-transform`}
             aria-label="Нажми чтобы увидеть тайную роль"
           >
-            <div className={`size-20 rounded-full ${tone.bg} ${tone.border} border-2 flex items-center justify-center`}>
-              <Lock className={`size-10 ${tone.text}`} />
+            <div className={`size-20 rounded-full ${tone.bg`} ${tone.border} border-2 flex items-center justify-center`}>
+              <Lock className={`size-10 ${tone.text`}`} />
             </div>
             <div className="space-y-1 text-center">
               <p className="font-display font-bold text-xl">Нажми, чтобы открыть</p>
@@ -207,26 +207,26 @@ const Secret = () => {
         ) : (
 
           /* ── Revealed card ─────────────────────────────────────────────── */
-          <div className={`glass-card rounded-3xl p-6 space-y-5 border ${tone.border} ${tone.glow}
+          <div className={`glass-card rounded-3xl p-6 space-y-5 border ${tone.border`} ${tone.glow}
             animate-in fade-in zoom-in-95 duration-300`}
           >
             {/* Role badge */}
             <div className="flex flex-col items-center text-center pt-2 gap-2">
-              <div className={`size-20 rounded-full ${tone.bg} ${tone.border} border-2 ring-4 ring-offset-2 ring-offset-background flex items-center justify-center`}>
-                <EyeOff className={`size-10 ${tone.text}`} />
+              <div className={`size-20 rounded-full ${tone.bg`} ${tone.border} border-2 ring-4 ring-offset-2 ring-offset-background flex items-center justify-center`}>
+                <EyeOff className={`size-10 ${tone.text`}`} />
               </div>
-              <div className={`text-[11px] font-mono uppercase tracking-[0.25em] ${tone.text}`}>
+              <div className={`text-[11px] font-mono uppercase tracking-[0.25em] ${tone.text`}`}>
                 Тайная роль
               </div>
               <h2 className="font-display font-bold text-3xl">{role.role}</h2>
             </div>
 
             {/* Goal */}
-            <div className={`rounded-2xl border ${tone.border} ${tone.bg} p-4 space-y-1`}>
+            <div className={`rounded-2xl border ${tone.border`} ${tone.bg} p-4 space-y-1`}>
               <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground">
                 Твоя тайная цель
               </div>
-              <div className={`font-display font-semibold text-base ${tone.text}`}>
+              <div className={`font-display font-semibold text-base ${tone.text`}`}>
                 {role.goal}
               </div>
             </div>
@@ -253,7 +253,7 @@ const Secret = () => {
               <div className={`size-6 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors
                 ${acknowledged ? `${tone.border} ${tone.bg}` : "border-muted-foreground/30"}`}
               >
-                {acknowledged && <Check className={`size-3.5 ${tone.text}`} />}
+                {acknowledged && <Check className={`size-3.5 ${tone.text`}`} />}
               </div>
               <span className="text-sm font-medium">
                 Я прочитал(а) и запомнил(а) свою роль

@@ -287,12 +287,12 @@ const Vote = () => {
               <span className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
                 <Timer className="size-3" /> Осталось
               </span>
-              <span className={`text-[11px] font-mono font-bold ${timeLeft <= 10 ? "text-destructive" : "text-muted-foreground"}`}>
+              <span className={`text-[11px] font-mono font-bold ${timeLeft <= 10 ? "text-destructive" : "text-muted-foreground"`}`}>
                 {timeLeft}с
               </span>
             </div>
             <div className="h-1 rounded-full bg-muted/30 overflow-hidden">
-              <div className={`h-full rounded-full transition-all duration-1000 ${timerColor}`} style={{ width: `${timerPct}%` }} />
+              <div className={`h-full rounded-full transition-all duration-1000 ${timerColor`}`} style={{ width: `${timerPct}%` }} />
             </div>
           </div>
         )}
@@ -328,7 +328,7 @@ const Vote = () => {
                   ${isMyVote ? "bg-portal/20 border-portal text-portal hover:bg-portal/25"
                     : voted ? "bg-muted/20 border-border/50 text-muted-foreground"
                     : "bg-background/40 border-border hover:border-portal/50 hover:bg-portal/10"
-                  } border`}
+                  `} border`}
                 variant="outline"
               >
                 {voted && <div className="absolute inset-y-0 left-0 bg-portal/10 transition-all duration-500" style={{ width: `${pct}%` }} />}

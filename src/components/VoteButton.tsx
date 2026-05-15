@@ -56,7 +56,7 @@ export default function VoteButton({ runId, sceneId, optionId, optionText, disab
         ${voted
           ? "bg-acid/20 border-acid/40 text-acid hover:bg-acid/20"
           : "bg-portal/10 border-portal/40 text-portal hover:bg-portal/20"
-        } border`}
+        `} border`}
       variant="outline"
     >
       {loading ? (

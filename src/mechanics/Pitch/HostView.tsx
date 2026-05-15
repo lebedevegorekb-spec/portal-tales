@@ -53,7 +53,7 @@ export function PitchHost({ round, submissions, playerCount, onAdvance, players 
         <>
           <p className="text-2xl text-muted-foreground mb-2">Питчует:</p>
           <p className="text-4xl font-display text-portal mb-8">{pitcher.display_name}</p>
-          <div className={`text-6xl font-display mb-4 ${timeLeft <= 5 ? "text-destructive" : "text-foreground"}`}>
+          <div className={`text-6xl font-display mb-4 ${timeLeft <= 5 ? "text-destructive" : "text-foreground"`}`}>
             {timeLeft}с
           </div>
           <div className="w-full max-w-md bg-muted rounded-full h-2 mb-8">

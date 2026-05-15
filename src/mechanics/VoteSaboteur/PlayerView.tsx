@@ -57,7 +57,7 @@ export function VoteSaboteurPlayer({ round, submissions, playerId, onSubmit, pla
                   selected === p.id
                     ? "border-destructive bg-destructive/10"
                     : "border-transparent hover:border-border"
-                } disabled:opacity-60`}
+                `} disabled:opacity-60`}
               >
                 <span className="text-lg">{p.display_name}</span>
               </button>

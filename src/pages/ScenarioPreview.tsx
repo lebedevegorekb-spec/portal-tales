@@ -93,7 +93,7 @@ export default function ScenarioPreview() {
       <SiteHeader />
 
       {/* HERO */}
-      <div className={`relative w-full h-80 bg-gradient-to-br ${meta.gradient} overflow-hidden`}>
+      <div className={`relative w-full h-80 bg-gradient-to-br ${meta.gradient`} overflow-hidden`}>
         {p.cover_image && (
           <img
             src={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/scenario-media/${p.cover_image}`}

@@ -40,8 +40,8 @@ export function SituationDeductionPlayer({
           <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-3">
             {round.title}
           </p>
-          <div className={`glass-card p-5 mb-6 border-l-2 ${isSaboteur ? "border-yellow-500" : "border-portal"}`}>
-            <p className={`text-xs uppercase tracking-widest mb-2 ${isSaboteur ? "text-yellow-500" : "text-portal"}`}>
+          <div className={`glass-card p-5 mb-6 border-l-2 ${isSaboteur ? "border-yellow-500" : "border-portal"`}`}>
+            <p className={`text-xs uppercase tracking-widest mb-2 ${isSaboteur ? "text-yellow-500" : "text-portal"`}`}>
               {situationLabel}
             </p>
             <p className="text-base leading-relaxed">{situation}</p>
@@ -77,7 +77,7 @@ export function SituationDeductionPlayer({
       <div className="min-h-screen bg-background text-foreground px-4 py-8 pb-24">
         <div className="max-w-md mx-auto">
           <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-3">Задай вопрос</p>
-          <div className={`glass-card p-4 mb-6 border-l-2 ${isSaboteur ? "border-yellow-500" : "border-portal"}`}>
+          <div className={`glass-card p-4 mb-6 border-l-2 ${isSaboteur ? "border-yellow-500" : "border-portal"`}`}>
             <p className="text-xs text-muted-foreground mb-1">Твоя ситуация</p>
             <p className="text-sm">{situation}</p>
           </div>
@@ -126,7 +126,7 @@ export function SituationDeductionPlayer({
             <button key={opt.id} onClick={() => setSelectedOption(opt.id)}
               className={`glass-card p-4 text-left border-2 transition-all ${
                 selectedOption === opt.id ? "border-portal bg-portal/10" : "border-transparent hover:border-border"
-              }`}>
+              `}`}>
               <span className="text-portal font-display mr-2">{opt.id}.</span>
               <span className="text-sm">{opt.label}</span>
             </button>

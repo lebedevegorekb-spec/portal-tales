@@ -94,7 +94,7 @@ export function VoteSaboteurHost({ round, submissions, playerCount, onAdvance, p
             const count = votes[p.id] ?? 0;
             const pct = submissions.length > 0 ? Math.round((count / submissions.length) * 100) : 0;
             return (
-              <div key={p.id} className={`glass-card p-4 relative overflow-hidden transition-all ${topAccused === p.id && submissions.length > 0 ? "border border-destructive" : ""}`}>
+              <div key={p.id} className={`glass-card p-4 relative overflow-hidden transition-all ${topAccused === p.id && submissions.length > 0 ? "border border-destructive" : ""`}`}>
                 <div className="absolute inset-y-0 left-0 bg-destructive/10 transition-all duration-500" style={{ width: `${pct}%` }} />
                 <div className="relative flex items-center justify-between">
                   <span className="text-lg">{p.display_name}</span>

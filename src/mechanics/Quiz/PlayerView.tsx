@@ -80,7 +80,7 @@ export function QuizPlayer({
                         hiddenOptions[q.id] === opt.id
                           ? "border-destructive bg-destructive/10"
                           : "border-border hover:border-muted-foreground"
-                      }`}
+                      `}`}
                     >
                       <span className="text-portal font-display mr-1">{opt.id.toUpperCase()}.</span>
                       {opt.label}
@@ -127,7 +127,7 @@ export function QuizPlayer({
                         answers[q.id] === opt.id
                           ? "border-portal bg-portal/10"
                           : "border-border hover:border-muted-foreground"
-                      }`}
+                      `}`}
                     >
                       <span className="text-portal font-display mr-1">{opt.id.toUpperCase()}.</span>
                       {opt.label}

@@ -293,8 +293,8 @@ const Scene = () => {
         <BackgroundImage imagePath={currentRound?.background_image} />
         <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Итог раунда</p>
         {lastResult && (
-          <div className={`glass-card p-6 max-w-md w-full text-center border ${lastResult.team_scored ? "border-acid/40" : "border-destructive/40"}`}>
-            <p className={`text-3xl font-display mb-2 ${lastResult.team_scored ? "text-acid" : "text-destructive"}`}>
+          <div className={`glass-card p-6 max-w-md w-full text-center border ${lastResult.team_scored ? "border-acid/40" : "border-destructive/40"`}`}>
+            <p className={`text-3xl font-display mb-2 ${lastResult.team_scored ? "text-acid" : "text-destructive"`}`}>
               {lastResult.team_scored ? "Команда побеждает!" : "Саботажник побеждает!"}
             </p>
           </div>
@@ -350,7 +350,7 @@ const Scene = () => {
               i < gameState.current_round_index ? "bg-portal"
               : i === gameState.current_round_index ? "bg-portal animate-pulse"
               : "bg-muted"
-            }`} />
+            `}`} />
           ))}
         </div>
       </div>

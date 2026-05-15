@@ -52,7 +52,7 @@ export function BlitzHost({ round, submissions, playerCount, onAdvance }: Mechan
             <span className="text-muted-foreground text-sm">
               Вопрос {currentQ + 1} / {round.questions.length}
             </span>
-            <span className={`font-display text-4xl ${timeLeft <= 3 ? "text-destructive" : "text-portal"}`}>
+            <span className={`font-display text-4xl ${timeLeft <= 3 ? "text-destructive" : "text-portal"`}`}>
               {timeLeft}с
             </span>
           </div>

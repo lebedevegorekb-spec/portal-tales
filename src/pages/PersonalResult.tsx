@@ -24,7 +24,7 @@ const StatCell = ({ Icon, label, value, tone }: { Icon: React.ComponentType<{ cl
       <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
         <Icon className="size-3.5" />{label}
       </div>
-      <div className={`mt-1 font-display font-bold text-2xl tabular-nums ${accent}`}>{value}</div>
+      <div className={`mt-1 font-display font-bold text-2xl tabular-nums ${accent`}`}>{value}</div>
     </div>
   );
 };
@@ -116,29 +116,29 @@ const PersonalResult = () => {
           {won ? "Ты справился." : "Ты провалился."}
         </h1>
 
-        <div className={`glass-card rounded-3xl p-6 space-y-5 border ${tone.border} ${tone.shadow} transition-all duration-500 ${revealed ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"}`}>
+        <div className={`glass-card rounded-3xl p-6 space-y-5 border ${tone.border`} ${tone.shadow} transition-all duration-500 ${revealed ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"}`}>
           <div className="flex flex-col items-center text-center pt-2">
-            <div className={`relative size-28 rounded-full ${tone.bg} ${tone.border} border-2 ring-4 ${tone.ring} flex items-center justify-center`}>
-              <Icon className={`size-12 ${tone.text}`} />
+            <div className={`relative size-28 rounded-full ${tone.bg`} ${tone.border} border-2 ring-4 ${tone.ring} flex items-center justify-center`}>
+              <Icon className={`size-12 ${tone.text`}`} />
               <div className="portal-orb absolute -inset-4 -z-10 opacity-70" />
             </div>
-            <div className={`mt-4 text-[11px] font-mono uppercase tracking-[0.3em] ${tone.text}`}>Ты был</div>
-            <div className={`mt-1 font-display font-bold text-3xl ${tone.text}`}>{result.role}</div>
+            <div className={`mt-4 text-[11px] font-mono uppercase tracking-[0.3em] ${tone.text`}`}>Ты был</div>
+            <div className={`mt-1 font-display font-bold text-3xl ${tone.text`}`}>{result.role}</div>
           </div>
 
           {result.goal && (
-            <div className={`rounded-2xl border ${tone.border} ${tone.bg} p-4 text-center`}>
+            <div className={`rounded-2xl border ${tone.border`} ${tone.bg} p-4 text-center`}>
               <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground">Твоя цель</div>
               <div className="mt-1 font-display font-semibold text-base text-balance">{result.goal}</div>
             </div>
           )}
 
-          <div className={`rounded-2xl p-4 flex items-center gap-3 border-2 ${won ? "border-acid/50 bg-acid/10" : "border-destructive/50 bg-destructive/10"}`}>
-            <div className={`size-12 rounded-full flex items-center justify-center shrink-0 ${won ? "bg-acid/20 border-2 border-acid/40" : "bg-destructive/20 border-2 border-destructive/40"}`}>
+          <div className={`rounded-2xl p-4 flex items-center gap-3 border-2 ${won ? "border-acid/50 bg-acid/10" : "border-destructive/50 bg-destructive/10"`}`}>
+            <div className={`size-12 rounded-full flex items-center justify-center shrink-0 ${won ? "bg-acid/20 border-2 border-acid/40" : "bg-destructive/20 border-2 border-destructive/40"`}`}>
               {won ? <Check className="size-6 text-acid" /> : <X className="size-6 text-destructive" />}
             </div>
             <div className="flex-1">
-              <div className={`font-display font-bold text-lg ${won ? "text-acid" : "text-destructive"}`}>
+              <div className={`font-display font-bold text-lg ${won ? "text-acid" : "text-destructive"`}`}>
                 {won ? "Цель выполнена" : "Цель провалена"}
               </div>
               {result.summary && <div className="text-xs text-muted-foreground text-pretty">{result.summary}</div>}

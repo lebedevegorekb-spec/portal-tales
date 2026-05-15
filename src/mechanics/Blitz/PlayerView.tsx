@@ -56,7 +56,7 @@ export function BlitzPlayer({ round, submissions, playerId, onSubmit }: Mechanic
                       answers[q.id] === opt.id
                         ? "border-portal bg-portal/10 text-foreground"
                         : "border-border hover:border-muted-foreground"
-                    }`}
+                    `}`}
                   >
                     <span className="text-portal font-display mr-1">{opt.id.toUpperCase()}.</span>
                     {opt.label}

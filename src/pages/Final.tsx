@@ -177,7 +177,7 @@ const Final = () => {
 
           {/* Hero ending */}
           <article className="glass-card scanlines rounded-md overflow-hidden">
-            <div className={`relative aspect-[21/9] bg-gradient-to-br ${gradient}`}>
+            <div className={`relative aspect-[21/9] bg-gradient-to-br ${gradient`}`}>
               <div className="absolute inset-0 portal-orb opacity-30" />
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="text-[140px] md:text-[200px] drop-shadow-[0_8px_30px_hsl(var(--portal)/0.6)] select-none">
@@ -247,7 +247,7 @@ const Final = () => {
                         <tr key={p.id} className="border-t border-border/60 align-middle">
                           <td className="px-3 py-3 font-display font-bold">{p.name}</td>
                           <td className="px-3 py-3">
-                            <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-mono uppercase tracking-wider ${roleToneClass[p.roleTone]}`}>
+                            <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-mono uppercase tracking-wider ${roleToneClass[p.roleTone]`}`}>
                               {p.role}
                             </span>
                           </td>
