@@ -1,0 +1,5 @@
+﻿f = open('src/pages/admin/RoundTest.tsx', encoding='utf-8')
+c = f.read()
+f.close()
+idx = c.find('text-destructive"}')
+print(repr(c[idx:idx+10]))

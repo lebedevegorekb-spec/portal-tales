@@ -1,0 +1,5 @@
+﻿f = open('src/pages/admin/RoundTest.tsx', encoding='utf-8')
+c = f.read()
+f.close()
+idx = c.find('text-3xl font-display mb-2')
+print(repr(c[idx-15:idx+100]))
