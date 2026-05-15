@@ -46,7 +46,7 @@ const Pricing = () => {
               key={t.name}
               className={`glass-card rounded-2xl p-6 ${
                 t.highlight ? "border-2 border-portal shadow-[var(--shadow-portal)]" : ""
-              `}`}
+              }`}
             >
               {t.highlight && (
                 <span className="inline-block text-xs font-bold text-portal-foreground bg-portal px-2 py-0.5 rounded-full mb-2">

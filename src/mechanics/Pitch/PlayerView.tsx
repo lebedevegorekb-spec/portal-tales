@@ -68,7 +68,7 @@ export function PitchPlayer({ round, submissions, playerId, onSubmit, players = 
                   : i === myOptionIndex
                   ? "border-muted opacity-50 cursor-not-allowed"
                   : "border-transparent hover:border-border"
-              `}`}
+              }`}
             >
               <p className="text-sm text-muted-foreground mb-1">{players[i]?.display_name}</p>
               <p className="text-base">{opt}</p>

@@ -59,9 +59,9 @@ const Login = () => {
           {(["signin", "signup"] as const).map((tab) => (
             <TabsContent key={tab} value={tab} className="space-y-4 pt-4">
               <div>
-                <Label htmlFor={`email-${tab}`}>Email</Label>
+                <Label htmlFor={`email-${tab`}`}>Email</Label>
                 <Input
-                  id={`email-${tab}`}
+                  id={`email-${tab`}`}
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -69,9 +69,9 @@ const Login = () => {
                 />
               </div>
               <div>
-                <Label htmlFor={`pw-${tab}`}>Пароль</Label>
+                <Label htmlFor={`pw-${tab`}`}>Пароль</Label>
                 <Input
-                  id={`pw-${tab}`}
+                  id={`pw-${tab`}`}
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

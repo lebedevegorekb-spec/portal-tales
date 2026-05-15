@@ -71,7 +71,7 @@ export function GuessAuthorPlayer({ round, submissions, playerId, onSubmit, play
                         guesses[s.id] === p.id
                           ? "border-portal bg-portal/10"
                           : "border-border hover:border-muted-foreground"
-                      `}`}
+                      }`}
                     >
                       {p.display_name}
                     </button>

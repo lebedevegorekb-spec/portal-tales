@@ -46,7 +46,7 @@ export function ReplicaPlayer({ speaker, text, audioPath, onFinished }: ReplicaP
   }, [audioPath, text]);
 
   return (
-    <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-400 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"`}`}
+    <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-400 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
       style={{ maxWidth: "90vw", width: 480 }}>
       <div className="glass-card p-4 flex items-start gap-3 border border-portal/30 shadow-lg">
         <img src={AVATARS[speaker]} alt={NAMES[speaker]}

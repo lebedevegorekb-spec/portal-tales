@@ -155,7 +155,7 @@ const Catalog = () => {
                   key={s.id}
                   className="glass-card rounded-md overflow-hidden flex flex-col group hover:border-portal/50 transition-colors"
                 >
-                  <div className={`relative aspect-[16/10] overflow-hidden bg-gradient-to-br ${s.meta.gradient`}`}>
+                  <div className={`relative aspect-[16/10] overflow-hidden bg-gradient-to-br ${s.meta.gradient}`}>
                     <div className="absolute inset-0 portal-orb opacity-30" />
                   {s.preview_json?.cover_image ? (
                     <img

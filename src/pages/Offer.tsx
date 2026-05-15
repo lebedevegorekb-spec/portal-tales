@@ -102,7 +102,7 @@ const Offer = () => {
               >
                 {/* Cover */}
                 <div
-                  className={`relative aspect-[16/9] bg-gradient-to-br ${s.gradient`}`}
+                  className={`relative aspect-[16/9] bg-gradient-to-br ${s.gradient}`}
                 >
                   <div className="absolute inset-0 portal-orb opacity-30" />
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -116,7 +116,7 @@ const Offer = () => {
                     </span>
                     {s.badge && (
                       <span
-                        className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider ${badgeTone[s.badge.tone]`}`}
+                        className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider ${badgeTone[s.badge.tone]}`}
                       >
                         {s.badge.tone === "hot" ? (
                           <Flame className="h-3 w-3" />
@@ -142,7 +142,7 @@ const Offer = () => {
                   {/* Meta */}
                   <ul className="mt-4 flex flex-wrap items-center gap-2 text-[10px] font-mono uppercase tracking-wider">
                     <li
-                      className={`inline-flex items-center rounded-md border px-2 py-0.5 ${difficultyTone[s.difficulty]`}`}
+                      className={`inline-flex items-center rounded-md border px-2 py-0.5 ${difficultyTone[s.difficulty]}`}
                     >
                       <Zap className="h-3 w-3 mr-1" />
                       {s.difficulty}

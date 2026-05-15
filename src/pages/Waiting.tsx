@@ -135,7 +135,7 @@ const Waiting = () => {
           {allReady ? "Все готовы!" : "Ждём остальных…"}
         </h1>
 
-        <div className={`glass-card rounded-3xl p-7 flex flex-col items-center text-center gap-5 border transition-colors ${allReady ? "border-acid/40" : "border-portal/40"`}`}>
+        <div className={`glass-card rounded-3xl p-7 flex flex-col items-center text-center gap-5 border transition-colors ${allReady ? "border-acid/40" : "border-portal/40"}`}>
           <div className="relative size-28 flex items-center justify-center">
             {allReady ? (
               <div className="size-20 rounded-full bg-acid/15 border-2 border-acid/40 flex items-center justify-center">
@@ -158,7 +158,7 @@ const Waiting = () => {
 
           <div className="w-full">
             <div className="h-2 rounded-full bg-muted/40 overflow-hidden">
-              <div className={`h-full rounded-full transition-all duration-500 ${allReady ? "bg-acid" : "bg-portal"`}`}
+              <div className={`h-full rounded-full transition-all duration-500 ${allReady ? "bg-acid" : "bg-portal"}`}
                 style={{ width: `${progress}%` }} />
             </div>
           </div>
@@ -174,7 +174,7 @@ const Waiting = () => {
           <div className="glass-card rounded-2xl divide-y divide-border/60 overflow-hidden">
             {players.map((p) => (
               <div key={p.id} className="flex items-center gap-3 p-3.5">
-                <div className={`size-10 rounded-full border flex items-center justify-center font-display font-bold text-sm shrink-0 ${p.ready ? "bg-acid/15 border-acid/40 text-acid" : "bg-muted/40 border-border text-muted-foreground"`}`}>
+                <div className={`size-10 rounded-full border flex items-center justify-center font-display font-bold text-sm shrink-0 ${p.ready ? "bg-acid/15 border-acid/40 text-acid" : "bg-muted/40 border-border text-muted-foreground"}`}>
                   {initials(p.display_name)}
                 </div>
                 <div className="flex-1 min-w-0">
