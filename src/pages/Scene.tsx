@@ -315,51 +315,88 @@ if (uiPhase === "playing" && (phase === "chars_reveal" || phase === "result_scre
   // Фаза result_screen — итоги + реплики одновременно
   if (phase === "result_screen" || phase === "result_replicas") {
     const lastResult = gameState?.round_results?.[gameState.round_results.length - 1];
+    const isTie = lastResult?.is_tie;
+    const teamWon = lastResult?.team_scored && !isTie;
+    const resultBg = isTie
+      ? (currentRound as any)?.result_tie_image
+      : teamWon
+      ? (currentRound as any)?.result_success_image
+      : (currentRound as any)?.result_fail_image || currentRound?.background_image;
+    const accentColor = isTie ? "#facc15" : teamWon ? "hsl(var(--portal))" : "hsl(var(--destructive))";
+    const glowColor = isTie ? "rgba(250,204,21,0.25)" : teamWon ? "rgba(0,255,128,0.2)" : "rgba(255,60,60,0.2)";
+    const resultLabel = isTie ? "Ничья!" : teamWon ? "Команда побеждает!" : "Саботажник побеждает!";
+    const resultEmoji = isTie ? "⚡" : teamWon ? "✶" : "☠";
     return (
-      <div className="min-h-screen text-foreground flex flex-col items-center justify-center gap-6 p-8">
-        {isHost && <BackgroundImage imagePath={
-          lastResult?.is_tie ? (currentRound as any)?.result_tie_image :
-          lastResult?.team_scored ? (currentRound as any)?.result_success_image :
-          (currentRound as any)?.result_fail_image ||
-          currentRound?.background_image
-        } />}
+      <div className="min-h-screen text-foreground relative overflow-hidden flex flex-col items-center justify-center">
+        {isHost && <BackgroundImage imagePath={resultBg} />}
+        <div className="absolute inset-0 z-0" style={{background: `radial-gradient(ellipse at 50% 40%, ${glowColor} 0%, transparent 70%)`}} />
+        <div className="absolute inset-0 z-0 scanlines opacity-20" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full z-0 blur-3xl opacity-30 animate-pulse"
+          style={{background: `radial-gradient(circle, ${accentColor} 0%, transparent 70%)`}} />
+        <div className="relative z-10 flex flex-col items-center gap-6 px-4 w-full max-w-lg animate-in fade-in zoom-in-95 duration-500">
+          <div className="w-full rounded-2xl p-8 text-center backdrop-blur-md"
+            style={{background: "rgba(9,13,21,0.75)", border: `1px solid ${accentColor}40`, boxShadow: `0 0 40px ${glowColor}, inset 0 1px 0 rgba(255,255,255,0.05)`}}>
+            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-3">
+              {"Итог раунда"} {gameState?.current_round_index ?? 1}
+            </p>
+            <div className="text-6xl mb-4 animate-in zoom-in duration-300">{resultEmoji}</div>
+            <h2 className="text-4xl font-display mb-6" style={{color: accentColor, textShadow: `0 0 20px ${accentColor}`}}>
+              {resultLabel}
+            </h2>
+            {lastResult && (
+              <div className="flex justify-center gap-6 mb-6">
+                {(lastResult.team_points ?? 0) > 0 && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-portal font-mono">+{lastResult.team_points}</span>
+                    <span className="text-muted-foreground uppercase tracking-widest text-xs">{"команде"}</span>
+                  </div>
+                )}
+                {(lastResult.saboteur_points ?? 0) > 0 && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-destructive font-mono">+{lastResult.saboteur_points}</span>
+                    <span className="text-muted-foreground uppercase tracking-widest text-xs">{"хаосу"}</span>
+                  </div>
+                )}
+              </div>
+            )}
+            <div className="flex justify-center gap-12 pt-4 border-t border-white/10">
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">{"Команда"}</p>
+                <p className="text-5xl font-display text-portal">{gameState?.scores.team ?? 0}</p>
+              </div>
+              <div className="w-px bg-white/10" />
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">{"Хаос"}</p>
+                <p className="text-5xl font-display text-destructive">{gameState?.scores.saboteur ?? 0}</p>
+              </div>
+            </div>
+          </div>
+          {isHost ? (
+            <button
+              onClick={async () => {
+                if (!runId || !roomId) return;
+                const { supabase: sb } = await import("@/integrations/supabase/client").then(m => ({ supabase: m.supabase }));
+                await sb.functions.invoke("round-result-ack", { body: { run_id: runId, room_id: roomId } });
+                setPhase("playing");
+              }}
+              className="w-full h-14 bg-portal text-portal-foreground rounded-xl font-display text-xl hover:bg-portal/90 transition-all hover:scale-105 active:scale-95"
+              style={{boxShadow: "0 0 20px hsl(var(--portal)/0.4)"}}
+            >
+              {"Следующий раунд →"}
+            </button>
+          ) : (
+            <div className="flex items-center gap-3 text-muted-foreground">
+              <Loader2 className="w-5 h-5 animate-spin text-portal" />
+              <p className="font-mono text-sm uppercase tracking-widest">{"Ждём хоста..."}</p>
+            </div>
+          )}
+        </div>
         {currentReplica && (
           <ReplicaPlayer speaker={currentReplica.speaker} text={currentReplica.text} audioPath={currentReplica.audioPath} onFinished={onReplicaFinished} />
-        )}
-        <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Итог раунда</p>
-        {lastResult && (
-          <div className={`glass-card p-6 max-w-md w-full text-center border ${lastResult.team_scored ? "border-acid/40" : "border-destructive/40"}`}>
-            <p className={`text-3xl font-display mb-2 ${lastResult.team_scored ? "text-acid" : "text-destructive"}`}>
-              {lastResult.team_scored ? "Команда побеждает!" : "Саботажник побеждает!"}
-            </p>
-          </div>
-        )}
-        <div className="flex gap-8 text-center">
-          <div><p className="text-xs text-muted-foreground uppercase tracking-widest">Команда</p><p className="text-4xl font-display text-portal">{gameState?.scores.team ?? 0}</p></div>
-          <div><p className="text-xs text-muted-foreground uppercase tracking-widest">Хаос</p><p className="text-4xl font-display text-destructive">{gameState?.scores.saboteur ?? 0}</p></div>
-        </div>
-        {isHost ? (
-          <button
-            onClick={async () => {
-              if (!runId || !roomId) return;
-              const { supabase: sb } = await import("@/integrations/supabase/client").then(m => ({ supabase: m.supabase }));
-              await sb.functions.invoke("round-result-ack", { body: { run_id: runId, room_id: roomId } });
-              setPhase("playing");
-            }}
-            className="bg-portal text-portal-foreground px-12 py-4 rounded-lg font-display text-xl hover:bg-portal/90 transition-colors"
-          >
-            Следующий раунд →
-          </button>
-        ) : (
-          <div className="flex flex-col items-center gap-3">
-            <Loader2 className="w-6 h-6 animate-spin text-portal" />
-            <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest">Ждём хоста...</p>
-          </div>
         )}
       </div>
     );
   }
-
   if (!partyConfig || !gameState || !currentRound) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
