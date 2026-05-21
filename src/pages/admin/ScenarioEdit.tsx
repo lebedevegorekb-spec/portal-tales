@@ -71,7 +71,7 @@ function TextField({ label, value, onChange }: { label: string; value: string; o
   );
 }
 
-function RoundEditor({ round, index, onChange }: { round: Round; index: number; onChange: (r: Round) => void }) {
+function RoundEditor({ round, index, onChange, scenarioId }: { round: Round; index: number; onChange: (r: Round) => void; scenarioId: string }) {
   const [open, setOpen] = useState(false);
   const fields = ROUND_TEXT_FIELDS[round.mechanic] ?? [];
   const updateField = (key: string, value: string) => onChange({ ...round, [key]: value });
@@ -113,7 +113,7 @@ function RoundEditor({ round, index, onChange }: { round: Round; index: number; 
           <div className="mt-4 grid gap-4">
             <div className="grid gap-1">
             <p className="text-xs uppercase tracking-widest text-muted-foreground">Фоновое изображение раунда</p>
-            <MediaUpload scenarioId={round.id} path={"rounds/" + round.id + "/background"} type="image"
+            <MediaUpload scenarioId={scenarioId} path={"rounds/" + round.id + "/background"} type="image"
               currentUrl={round.background_image}
               onUploaded={(p) => updateField("background_image", p)}
               onRemoved={() => updateField("background_image", "")} />
@@ -414,7 +414,7 @@ export default function AdminScenarioEdit() {
         {tab === "rounds" && partyGame && (
           <div className="grid gap-3">
             {partyGame.rounds.map((round, i) => (
-              <RoundEditor key={round.id} round={round} index={i} onChange={(r) => updateRound(i, r)} />
+              <RoundEditor key={round.id} round={round} index={i} onChange={(r) => updateRound(i, r)} scenarioId={scenarioId!} />
             ))}
           </div>
         )}
