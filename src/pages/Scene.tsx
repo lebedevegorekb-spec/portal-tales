@@ -314,7 +314,7 @@ const Scene = () => {
   if (phase === "result_replicas") {
     return (
       <div className="min-h-screen bg-background text-foreground relative flex flex-col items-center justify-center gap-6">
-        <BackgroundImage imagePath={currentRound?.background_image} />
+        {isHost && <BackgroundImage imagePath={currentRound?.background_image} />}
         {currentReplica && (
           <ReplicaPlayer speaker={currentReplica.speaker} text={currentReplica.text} audioPath={currentReplica.audioPath} onFinished={onReplicaFinished} />
         )}
@@ -338,7 +338,7 @@ const Scene = () => {
     const lastResult = gameState?.round_results?.[gameState.round_results.length - 1];
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center gap-6 p-8">
-        <BackgroundImage imagePath={currentRound?.background_image} />
+        {isHost && <BackgroundImage imagePath={currentRound?.background_image} />}
         <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Итог раунда</p>
         {lastResult && (
           <div className={`glass-card p-6 max-w-md w-full text-center border ${lastResult.team_scored ? "border-acid/40" : "border-destructive/40"}`}>
@@ -406,7 +406,7 @@ const Scene = () => {
         <span className="text-portal">Команда: {gameState.scores.team}</span>
         <span className="text-destructive">Хаос: {gameState.scores.saboteur}</span>
       </div>
-      <BackgroundImage imagePath={currentRound?.background_image} />
+      {isHost && <BackgroundImage imagePath={currentRound?.background_image} />}
       <MediaPlayer musicPath={currentRound?.background_music} />
       {currentReplica && (
         <ReplicaPlayer speaker={currentReplica.speaker} text={currentReplica.text} audioPath={currentReplica.audioPath} onFinished={onReplicaFinished} />

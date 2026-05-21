@@ -34,7 +34,7 @@ export function PitchPlayer({ round, submissions, playerId, onSubmit, players = 
 
   if (myVoteSubmission) {
     return (
-      <div className="min-h-screen text-foreground flex flex-col items-center justify-center px-4">
+      <div className="min-h-screen text-foreground relative z-10 flex flex-col items-center justify-center px-4">
         <div className="max-w-md w-full glass-card p-8 text-center">
           <p className="text-4xl mb-4">✓</p>
           <h2 className="text-2xl font-display mb-2">Голос отдан</h2>
@@ -45,7 +45,7 @@ export function PitchPlayer({ round, submissions, playerId, onSubmit, players = 
   }
 
   return (
-    <div className="min-h-screen text-foreground px-4 py-8">
+    <div className="min-h-screen text-foreground relative z-10 px-4 py-8">
       <div className="max-w-md mx-auto">
         <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-3">Питч</p>
         <h1 className="text-3xl font-display mb-4">{round.title}</h1>

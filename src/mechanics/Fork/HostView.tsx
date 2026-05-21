@@ -32,7 +32,7 @@ export function ForkHost({ round, submissions, playerCount, onAdvance }: Mechani
 
   if (showResult && jokeOpt) {
     return (
-      <div className="min-h-screen text-foreground flex flex-col items-center justify-center p-8 gap-6">
+      <div className="min-h-screen text-foreground relative z-10 flex flex-col items-center justify-center p-8 gap-6">
         {jokeOpt.joke_image && (
           <img src={getUrl(jokeOpt.joke_image)} alt="" className="max-h-64 rounded-xl border border-border object-contain" />
         )}
@@ -59,7 +59,7 @@ export function ForkHost({ round, submissions, playerCount, onAdvance }: Mechani
     const winner = round.options.find((o: any) => o.id === winnerOptId);
     const isCorrect = winner?.is_correct;
     return (
-      <div className="min-h-screen text-foreground flex flex-col items-center justify-center p-8 gap-6">
+      <div className="min-h-screen text-foreground relative z-10 flex flex-col items-center justify-center p-8 gap-6">
         <h1 className="text-5xl font-display text-center">{round.title}</h1>
         <div className={`glass-card p-6 max-w-2xl w-full border-l-2 ${isCorrect ? "border-portal" : "border-destructive"}`}>
           <p className={`text-xs uppercase tracking-widest mb-2 ${isCorrect ? "text-portal" : "text-destructive"}`}>
@@ -84,7 +84,7 @@ export function ForkHost({ round, submissions, playerCount, onAdvance }: Mechani
   }
 
   return (
-    <div className="min-h-screen text-foreground scanlines flex flex-col items-center justify-center p-8">
+    <div className="min-h-screen text-foreground relative z-10 scanlines flex flex-col items-center justify-center p-8">
       <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-4">Раунд — Развилка</p>
       <h1 className="text-5xl font-display text-center mb-4">{round.title}</h1>
       <p className="text-xl text-muted-foreground text-center max-w-2xl mb-10">{round.situation}</p>
