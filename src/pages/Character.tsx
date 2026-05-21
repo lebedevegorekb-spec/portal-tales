@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2, Shield, Zap } from "lucide-react";
+import { ReplicaPlayer } from "@/components/ReplicaPlayer";
 
 function getPlayerId(userId?: string | null): string | null {
   if (userId) return userId;
@@ -24,6 +25,9 @@ const Character = () => {
   const [character, setCharacter] = useState<any>(null);
   const [isSaboteur, setIsSaboteur] = useState(false);
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
+  const [replicaText, setReplicaText] = useState("");
+  const [replicaAudio, setReplicaAudio] = useState<string|undefined>(undefined);
+  const [replicaDone, setReplicaDone] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -47,6 +51,8 @@ const Character = () => {
         const { count } = await supabase.from("room_players").select("id", { count: "exact" }).eq("room_id", roomId).eq("is_host", false);
         setTotalCount(count ?? 0);
 
+        const intro=(run as any).scenarios?.scenario_json?.party_game?.intro;
+        if(intro?.character_reveal_host_line){setReplicaText(intro.character_reveal_host_line);setReplicaAudio(intro.character_reveal_host_line_audio||undefined);}else{setReplicaDone(true);}
         const charId = pg?.player_characters?.[rp.id];
         const characters = (run as any).scenarios?.scenario_json?.characters ?? [];
         setCharacter(characters.find((c: any) => c.id === charId) ?? null);
@@ -98,7 +104,10 @@ const Character = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground px-4 py-8 pb-24">
-      <div className="max-w-md mx-auto space-y-6">
+      {replicaText && !replicaDone && (
+        <ReplicaPlayer speaker="host" text={replicaText} audioPath={replicaAudio} onFinished={() => setReplicaDone(true)} />
+      )}
+      <div className={`max-w-md mx-auto space-y-6 transition-opacity duration-500 ${replicaDone ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
         <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground text-center">Твоя роль</p>
 
         {character && (

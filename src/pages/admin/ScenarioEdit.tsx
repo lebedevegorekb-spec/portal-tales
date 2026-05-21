@@ -187,10 +187,11 @@ export default function AdminScenarioEdit() {
   const [description, setDescription] = useState("");
   const [priceRub, setPriceRub] = useState(250);
   const [partyGame, setPartyGame] = useState<PartyGame | null>(null);
+  const [characters, setCharacters] = useState<any[]>([]);
   const [scenarioJson, setScenarioJson] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
-  const [tab, setTab] = useState<"basic"|"intro"|"rounds"|"endings">("basic");
+  const [tab, setTab] = useState<"basic"|"intro"|"roles"|"rounds"|"endings">("basic");
 
   useEffect(() => { if (!loading && !user) navigate("/login"); }, [user, loading, navigate]);
 
@@ -206,6 +207,8 @@ export default function AdminScenarioEdit() {
       setPriceRub(data.price_rub ?? 250);
       setScenarioJson(data.scenario_json);
       if (data.scenario_json?.party_game) setPartyGame(data.scenario_json.party_game as PartyGame);
+      setCharacters(data.scenario_json?.characters ?? []);
+      setCharacters(data.scenario_json?.characters ?? []);
       setPageLoading(false);
     });
   }, [user, scenarioId, navigate]);
@@ -213,7 +216,7 @@ export default function AdminScenarioEdit() {
   const handleSave = async () => {
     if (!scenarioId) return;
     setSaving(true);
-    const newJson = { ...scenarioJson, ...(partyGame ? { party_game: partyGame } : {}) };
+    const newJson = { ...scenarioJson, ...(partyGame ? { party_game: partyGame } : {}), characters };
     const { error } = await supabase.from("scenarios")
       .update({ title, description, price_rub: priceRub, scenario_json: newJson })
       .eq("id", scenarioId);
@@ -253,7 +256,7 @@ export default function AdminScenarioEdit() {
           </Button>
         </div>
         <div className="flex gap-1 mb-6 border-b border-border">
-          {([["basic","Основное"],["intro","правильный"],["rounds","Раунды ("+String(partyGame?.rounds?.length ?? 0)+")"],["endings","Основное"]] as [string,string][]).map(([id,label]) => (
+          {([["basic","Основное"],["intro","Вступление"],["roles","Персонажи"],["rounds","Раунды ("+String(partyGame?.rounds?.length ?? 0)+")"],["endings","Концовки"]] as [string,string][]).map(([id,label]) => (
             <button key={id} onClick={() => setTab(id as any)}
               className={"px-4 py-2 text-sm font-mono uppercase tracking-wider transition-colors " + (tab === id ? "text-portal border-b-2 border-portal" : "text-muted-foreground hover:text-foreground")}>
               {label}
@@ -287,6 +290,14 @@ export default function AdminScenarioEdit() {
                 currentUrl={partyGame.intro.morty_line_audio}
                 onUploaded={(p) => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, morty_line_audio: p } })}
                 onRemoved={() => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, morty_line_audio: "" } })} />
+            </div>
+            <div className="grid gap-1 border border-portal/20 rounded-lg p-4">
+              <p className="text-xs uppercase tracking-widest text-portal mb-2">Реплика Рика (показ роли)</p>
+              <TextField label="Текст реплики" value={(partyGame.intro as any).character_reveal_host_line ?? ""} onChange={(v) => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, character_reveal_host_line: v } as any })} />
+              <MediaUpload scenarioId={scenarioId!} path="intro/character_reveal" type="audio"
+                currentUrl={(partyGame.intro as any).character_reveal_host_line_audio}
+                onUploaded={(p) => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, character_reveal_host_line_audio: p } as any })}
+                onRemoved={() => setPartyGame({ ...partyGame, intro: { ...partyGame.intro, character_reveal_host_line_audio: "" } as any })} />
             </div>
             <div className="grid gap-1">
               <p className="text-xs uppercase tracking-widest text-muted-foreground">Фоновое изображение</p>
@@ -361,6 +372,36 @@ export default function AdminScenarioEdit() {
                   className="bg-muted border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-portal" />
               </div>
             </div>
+          </div>
+        )}
+        {tab === "roles" && (
+          <div className="grid gap-4">
+            <div className="flex items-center justify-between">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">Персонажи (до 8)</p>
+              {characters.length < 8 && (
+                <button onClick={() => setCharacters([...characters, { id: "char-" + Date.now(), name: "", description: "", traits: [] }])}
+                  className="flex items-center gap-1 text-xs text-portal border border-portal/30 px-2 py-1 rounded hover:bg-portal/10">
+                  <Plus className="w-3 h-3" /> Добавить
+                </button>
+              )}
+            </div>
+            {characters.map((char, ci) => (
+              <div key={char.id} className="glass-card p-5 grid gap-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono text-portal">#{ci + 1}</span>
+                  <button onClick={() => setCharacters(characters.filter((_, i) => i !== ci))}
+                    className="text-destructive hover:text-destructive/80"><Trash2 className="w-4 h-4" /></button>
+                </div>
+                <TextField label="Имя" value={char.name} onChange={(v) => { const arr = [...characters]; arr[ci] = { ...arr[ci], name: v }; setCharacters(arr); }} />
+                <TextField label="Описание" value={char.description} onChange={(v) => { const arr = [...characters]; arr[ci] = { ...arr[ci], description: v }; setCharacters(arr); }} />
+                <div className="grid gap-1">
+                  <label className="text-xs uppercase tracking-widest text-muted-foreground">Черты (через запятую)</label>
+                  <input type="text" value={(char.traits ?? []).join(", ")}
+                    onChange={(e) => { const arr = [...characters]; arr[ci] = { ...arr[ci], traits: e.target.value.split(",").map((t) => t.trim()).filter(Boolean) }; setCharacters(arr); }}
+                    className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-portal" />
+                </div>
+              </div>
+            ))}
           </div>
         )}
         {tab === "rounds" && partyGame && (
