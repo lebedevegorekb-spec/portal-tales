@@ -257,6 +257,7 @@ const Scene = () => {
           replicasDone={comicReplicasDone}
           setReplicasDone={setComicReplicasDone}
           onReplicasFinished={() => setComicReplicasDone(true)}
+          flipping={comicFlipping}
         />
       </div>
     );

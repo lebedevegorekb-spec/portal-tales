@@ -15,8 +15,9 @@ interface ComicFrameProps {
   onNext?: () => void;
   replicasDone: boolean;
   setReplicasDone: (v: boolean) => void;
+  flipping?: boolean;
 }
-export function ComicFrameView({ frame, frameIndex, totalFrames, isHost, onNext, replicasDone, setReplicasDone }: ComicFrameProps) {
+export function ComicFrameView({ frame, frameIndex, totalFrames, isHost, onNext, replicasDone, setReplicasDone, flipping }: ComicFrameProps) {
   const queue: Array<{speaker:"host"|"morty";text:string;audioPath?:string}> = [];
   if (frame.host_line || frame.host_line_audio) queue.push({ speaker: "host", text: frame.host_line ?? "", audioPath: frame.host_line_audio });
   if (frame.morty_line || frame.morty_line_audio) queue.push({ speaker: "morty", text: frame.morty_line ?? "", audioPath: frame.morty_line_audio });
@@ -50,7 +51,7 @@ export function ComicFrameView({ frame, frameIndex, totalFrames, isHost, onNext,
           </div>
         </div>
       )}
-      {queue.length > 0 && !replicasDone && (
+      {queue.length > 0 && !replicasDone && !flipping && (
         <ReplicaChain key={frameIndex} queue={queue} onFinished={handleReplicasDone} />
       )}
 
