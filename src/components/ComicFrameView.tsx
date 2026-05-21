@@ -53,13 +53,7 @@ export function ComicFrameView({ frame, frameIndex, totalFrames, isHost, onNext,
       {queue.length > 0 && !replicasDone && (
         <ReplicaChain key={frameIndex} queue={queue} onFinished={handleReplicasDone} />
       )}
-      {isHost && (replicasDone || queue.length === 0) && onNext && (
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
-          <button onClick={onNext} className="bg-portal text-portal-foreground px-12 py-4 rounded-lg font-display text-xl animate-in fade-in duration-500">
-            {frameIndex < totalFrames - 1 ? "Далее →" : "Начать игру →"}
-          </button>
-        </div>
-      )}
+
       {!isHost && (
         <p className="absolute bottom-8 left-1/2 -translate-x-1/2 text-muted-foreground font-mono text-xs uppercase tracking-widest animate-pulse">Ждём хоста...</p>
       )}
