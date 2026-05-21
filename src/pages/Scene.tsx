@@ -382,7 +382,7 @@ const Scene = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground relative">
+    <div className="min-h-screen text-foreground relative">
       {isHost && roomId && (
         <div className="fixed top-4 right-4 z-50">
           <PauseButton roomId={roomId} status={roomStatus} />
