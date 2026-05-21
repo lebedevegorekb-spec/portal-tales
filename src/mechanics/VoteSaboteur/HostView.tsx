@@ -39,7 +39,7 @@ export function VoteSaboteurHost({ round, submissions, playerCount, onAdvance, p
   if (showResult) {
     if (isTie) {
       return (
-        <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-8 gap-6">
+        <div className="min-h-screen text-foreground flex flex-col items-center justify-center p-8 gap-6">
           <h1 className="text-5xl font-display text-center">Ничья!</h1>
           <div className="glass-card p-6 max-w-2xl w-full border-l-4 border-yellow-500">
             <p className="text-xs uppercase tracking-widest text-yellow-500 mb-3">Голоса разделились поровну</p>
@@ -68,7 +68,7 @@ export function VoteSaboteurHost({ round, submissions, playerCount, onAdvance, p
     }
 
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-8 gap-6">
+      <div className="min-h-screen text-foreground flex flex-col items-center justify-center p-8 gap-6">
         <h1 className="text-5xl font-display text-center">Решение принято</h1>
         <div className="glass-card p-6 max-w-2xl w-full border-l-4 border-portal">
           <p className="text-xs uppercase tracking-widest text-portal mb-3">Большинство голосов</p>
@@ -89,7 +89,7 @@ export function VoteSaboteurHost({ round, submissions, playerCount, onAdvance, p
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground scanlines flex flex-col items-center justify-center p-8">
+    <div className="min-h-screen text-foreground scanlines flex flex-col items-center justify-center p-8">
       <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-4">Финальное голосование</p>
       <h1 className="text-5xl font-display text-center mb-4">{round.title}</h1>
       <p className="text-xl text-muted-foreground text-center max-w-2xl mb-10">{round.intro_host}</p>

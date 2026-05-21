@@ -33,7 +33,7 @@ export function JokeVoteHost({ round, submissions, playerCount, onAdvance }: Mec
 
   if (!allAnswered) {
     return (
-      <div className="min-h-screen bg-background text-foreground scanlines flex flex-col items-center justify-center p-8">
+      <div className="min-h-screen text-foreground scanlines flex flex-col items-center justify-center p-8">
         <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-4">Раунд — Шутка</p>
         <h1 className="text-5xl font-display text-center mb-4">{round.title}</h1>
         <p className="text-xl text-muted-foreground text-center max-w-2xl mb-8">{round.prompt}</p>
@@ -47,7 +47,7 @@ export function JokeVoteHost({ round, submissions, playerCount, onAdvance }: Mec
 
   if (!allVoted) {
     return (
-      <div className="min-h-screen bg-background text-foreground scanlines flex flex-col items-center justify-center p-8">
+      <div className="min-h-screen text-foreground scanlines flex flex-col items-center justify-center p-8">
         <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-4">Раунд — Шутка</p>
         <h1 className="text-5xl font-display text-center mb-8">{round.title}</h1>
         <div className="grid gap-4 w-full max-w-2xl mb-8">
@@ -65,7 +65,7 @@ export function JokeVoteHost({ round, submissions, playerCount, onAdvance }: Mec
 
   const winner = answerSubmissions.find((s) => s.id === topVotedId);
   return (
-    <div className="min-h-screen bg-background text-foreground scanlines flex flex-col items-center justify-center p-8">
+    <div className="min-h-screen text-foreground scanlines flex flex-col items-center justify-center p-8">
       <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-4">Раунд — Шутка</p>
       <h1 className="text-5xl font-display text-center mb-8">{round.title}</h1>
       <div className="grid gap-4 w-full max-w-2xl mb-8">

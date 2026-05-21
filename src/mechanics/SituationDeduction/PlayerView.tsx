@@ -23,7 +23,7 @@ export function SituationDeductionPlayer({
 
   if (myVote) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center px-4">
+      <div className="min-h-screen text-foreground flex flex-col items-center justify-center px-4">
         <div className="max-w-md w-full glass-card p-8 text-center">
           <p className="text-4xl mb-4">✓</p>
           <h2 className="text-2xl font-display mb-2">Ответ отправлен</h2>
@@ -35,7 +35,7 @@ export function SituationDeductionPlayer({
 
   if (phase === "read") {
     return (
-      <div className="min-h-screen bg-background text-foreground px-4 py-8">
+      <div className="min-h-screen text-foreground px-4 py-8">
         <div className="max-w-md mx-auto">
           <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-3">
             {round.title}
@@ -74,7 +74,7 @@ export function SituationDeductionPlayer({
 
   if (phase === "questions") {
     return (
-      <div className="min-h-screen bg-background text-foreground px-4 py-8 pb-24">
+      <div className="min-h-screen text-foreground px-4 py-8 pb-24">
         <div className="max-w-md mx-auto">
           <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-3">Задай вопрос</p>
           <div className={`glass-card p-4 mb-6 border-l-2 ${isSaboteur ? "border-yellow-500" : "border-portal"}`}>
@@ -111,7 +111,7 @@ export function SituationDeductionPlayer({
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground px-4 py-8 pb-24">
+    <div className="min-h-screen text-foreground px-4 py-8 pb-24">
       <div className="max-w-md mx-auto">
         <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-3">
           {isSaboteur ? "Угадай настоящую ситуацию" : "Выбери настоящую ситуацию"}

@@ -17,7 +17,7 @@ export function ForkPlayer({ round, submissions, playerId, onSubmit }: MechanicV
 
   if (mySubmission) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center px-4">
+      <div className="min-h-screen text-foreground flex flex-col items-center justify-center px-4">
         <div className="max-w-md w-full glass-card p-8 text-center">
           <p className="text-4xl mb-4">✓</p>
           <h2 className="text-2xl font-display mb-2">Выбор сделан!</h2>
@@ -28,7 +28,7 @@ export function ForkPlayer({ round, submissions, playerId, onSubmit }: MechanicV
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground px-4 py-8">
+    <div className="min-h-screen text-foreground px-4 py-8">
       <div className="max-w-md mx-auto">
         <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-3">Раунд — Развилка</p>
         <h1 className="text-3xl font-display mb-3">{round.title}</h1>

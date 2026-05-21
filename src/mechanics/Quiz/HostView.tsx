@@ -6,7 +6,7 @@ export function QuizHost({ round, submissions, playerCount, onAdvance }: Mechani
   const allAnswered = answeredCount >= playerCount;
 
   return (
-    <div className="min-h-screen bg-background text-foreground scanlines flex flex-col items-center justify-center p-8">
+    <div className="min-h-screen text-foreground scanlines flex flex-col items-center justify-center p-8">
       <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-4">
         Раунд — Экзамен
       </p>
