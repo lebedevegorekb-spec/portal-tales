@@ -304,19 +304,7 @@ const Scene = () => {
         <Loader2 className="w-10 h-10 animate-spin text-portal" />
         <p className="text-2xl font-display">Игроки знакомятся с ролями</p>
         <p className="text-muted-foreground">{charsReady} / {playerCount} готовы</p>
-        {isHost && charsReady >= playerCount && (
-          <button onClick={async () => {
-            if (!runId) return;
-            const { data: run } = await supabase.from("runs").select("state_json").eq("id", runId).single();
-            if (run?.state_json) {
-              const ns = { ...run.state_json, party_game: { ...run.state_json.party_game, ui_phase: "playing" } };
-              await supabase.from("runs").update({ state_json: ns }).eq("id", runId);
-            }
-            setPhase("playing");
-          }} className="bg-portal text-portal-foreground px-8 py-3 rounded-lg font-display text-lg">
-            Начать раунд →
-          </button>
-        )}
+
       </div>
     );
   }
