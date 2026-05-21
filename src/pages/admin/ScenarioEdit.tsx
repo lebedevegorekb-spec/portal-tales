@@ -139,6 +139,16 @@ function RoundEditor({ round, index, onChange, scenarioId }: { round: Round; ind
               onUploaded={(p) => updateField("result_tie_image", p)}
               onRemoved={() => updateField("result_tie_image", "")} />
           </div>
+          {round.options?.some((o: any) => o.is_joke) && (
+            <div className="grid gap-1 border border-yellow-500/20 rounded-lg p-4">
+              <p className="text-xs uppercase tracking-widest text-yellow-500 mb-2">Шутливый вариант (только в этом раунде)</p>
+              <p className="text-xs text-muted-foreground mb-2">Фон при выборе шутки</p>
+              <MediaUpload scenarioId={scenarioId} path={"rounds/" + round.id + "/result_joke"} type="image"
+                currentUrl={(round as any).result_joke_image}
+                onUploaded={(p) => updateField("result_joke_image", p)}
+                onRemoved={() => updateField("result_joke_image", "")} />
+            </div>
+          )}
           {fields.map((f) => (
               <div key={f} className="grid gap-1">
                 <TextField label={FIELD_LABELS[f] ?? f} value={round[f] ?? ""} onChange={(v) => updateField(f, v)} />
