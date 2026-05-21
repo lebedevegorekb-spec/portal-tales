@@ -280,9 +280,7 @@ const Scene = () => {
           <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Вступление</p>
           <h1 className="text-4xl font-display">{partyConfig.title ?? "Портал Хаоса"}</h1>
           <p className="text-xl text-muted-foreground leading-relaxed">{intro.situation}</p>
-          <button onClick={handleIntroFinish} className="mt-8 bg-portal text-portal-foreground px-12 py-4 rounded-lg font-display text-xl hover:bg-portal/90 transition-colors">
-            Начать игру →
-          </button>
+
         </div>
       </div>
     );
