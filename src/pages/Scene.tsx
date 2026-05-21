@@ -100,11 +100,13 @@ const Scene = () => {
     if (intro.host_line) queue.push({ speaker: "host", text: intro.host_line, audioPath: intro.host_line_audio });
     if (intro.morty_line) queue.push({ speaker: "morty", text: intro.morty_line, audioPath: intro.morty_line_audio });
     if (queue.length > 0) { setReplicaQueue(queue); setCurrentReplica(queue[0]); }
+    else { handleIntroFinish(); }
   }, [phase, isHost, partyConfig, introReplicasShown]);
 
   // При смене раунда — показать intro реплики раунда
   useEffect(() => {
-    if (!gameState || !currentRound || !isHost || phase !== "playing") return;
+    if (!gameState || !currentRound || !isHost) return;
+    if (phase !== "playing" && phase !== "loading") return;
     const idx = gameState.current_round_index;
     if (introShownForRound === idx) return;
     setIntroShownForRound(idx);
@@ -147,7 +149,8 @@ const Scene = () => {
       const next = prev.slice(1);
       setCurrentReplica(next.length > 0 ? next[0] : null);
       if (next.length === 0) {
-        setPhase(p => p === "result_replicas" ? "result_screen" : p);
+        if (phase === "result_replicas") setPhase("result_screen");
+        if (phase === "intro") handleIntroFinish();
       }
       return next;
     });
