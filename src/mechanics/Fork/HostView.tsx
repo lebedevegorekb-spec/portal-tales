@@ -84,7 +84,7 @@ export function ForkHost({ round, submissions, playerCount, onAdvance }: Mechani
   }
 
   return (
-    <div className="min-h-screen text-foreground relative z-10 scanlines flex flex-col items-center justify-center p-8">
+    <div className="min-h-screen text-foreground relative z-10 flex flex-col items-center justify-center p-8">
       <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-4">Раунд — Развилка</p>
       <h1 className="text-5xl font-display text-center mb-4">{round.title}</h1>
       <p className="text-xl text-muted-foreground text-center max-w-2xl mb-10">{round.situation}</p>

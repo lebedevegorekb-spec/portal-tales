@@ -43,7 +43,7 @@ export function PitchHost({ round, submissions, playerCount, onAdvance, players 
   const pitcher = players[currentPitcher];
 
   return (
-    <div className="min-h-screen text-foreground relative z-10 scanlines flex flex-col items-center justify-center p-8">
+    <div className="min-h-screen text-foreground relative z-10 flex flex-col items-center justify-center p-8">
       <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-4">
         Раунд — Питч
       </p>

@@ -12,7 +12,7 @@ export function GuessAuthorHost({ round, submissions, playerCount, onAdvance }: 
   const allWrote = answers.length >= playerCount;
 
   return (
-    <div className="min-h-screen text-foreground relative z-10 scanlines flex flex-col items-center justify-center p-8">
+    <div className="min-h-screen text-foreground relative z-10 flex flex-col items-center justify-center p-8">
       <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-4">
         Раунд — Угадай автора
       </p>

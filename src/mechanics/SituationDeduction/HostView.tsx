@@ -48,7 +48,7 @@ export function SituationDeductionHost({
 
   if (phase === "questions") {
     return (
-      <div className="min-h-screen text-foreground relative z-10 scanlines flex flex-col items-center justify-center p-8">
+      <div className="min-h-screen text-foreground relative z-10 flex flex-col items-center justify-center p-8">
         <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-4">Раунд — Не спали ситуацию</p>
         <h1 className="text-5xl font-display text-center mb-6">{round.title}</h1>
         <div className="glass-card p-6 max-w-2xl w-full mb-8 text-center">
@@ -80,7 +80,7 @@ export function SituationDeductionHost({
 
   if (phase === "voting") {
     return (
-      <div className="min-h-screen text-foreground relative z-10 scanlines flex flex-col items-center justify-center p-8">
+      <div className="min-h-screen text-foreground relative z-10 flex flex-col items-center justify-center p-8">
         <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-4">Голосование</p>
         <h1 className="text-4xl font-display text-center mb-8">Выберите настоящую ситуацию</h1>
         <div className="grid gap-4 w-full max-w-2xl mb-8">

@@ -1,0 +1,8 @@
+src/mechanics\Blitz\HostView.tsx
+src/mechanics\Fork\HostView.tsx
+src/mechanics\GuessAuthor\HostView.tsx
+src/mechanics\JokeVote\HostView.tsx
+src/mechanics\Pitch\HostView.tsx
+src/mechanics\Quiz\HostView.tsx
+src/mechanics\SituationDeduction\HostView.tsx
+src/mechanics\VoteSaboteur\HostView.tsx
