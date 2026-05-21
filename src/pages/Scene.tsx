@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useCallback } from "react";
+﻿import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -144,13 +144,15 @@ const Scene = () => {
     if (uiPhase === "result" && phase === "playing") setPhase("result_screen");
   }, [(gameState as any)?.ui_phase, isHost, phase]);
 
+  const phaseRef = useRef<ScenePhase>("loading");
+  useEffect(() => { phaseRef.current = phase; }, [phase]);
   const onReplicaFinished = useCallback(() => {
     setReplicaQueue(prev => {
       const next = prev.slice(1);
       setCurrentReplica(next.length > 0 ? next[0] : null);
       if (next.length === 0) {
-        if (phase === "result_replicas") setPhase("result_screen");
-        if (phase === "intro") handleIntroFinish();
+        if (phaseRef.current === "result_replicas") setPhase("result_screen");
+        if (phaseRef.current === "intro") handleIntroFinish();
       }
       return next;
     });
