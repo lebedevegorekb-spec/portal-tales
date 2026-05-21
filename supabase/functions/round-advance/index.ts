@@ -15,7 +15,7 @@ function calcJokeVote(submissions: any[], saboteurPlayerId: string, round: any) 
   const sorted = Object.entries(votes).sort((a, b) => b[1] - a[1]);
   const isTie = sorted.length > 1 && sorted[0]?.[1] === sorted[1]?.[1];
   if (isTie) {
-    return { team_scored: false, saboteur_scored: false, team_points: 0, saboteur_points: 0, is_tie: true };
+    return { team_scored: true, saboteur_scored: true, team_points: 1, saboteur_points: 1, is_tie: true };
   }
   const winnerId = sorted[0]?.[0];
   const winnerSubmission = submissions.find((s) => s.id === winnerId);

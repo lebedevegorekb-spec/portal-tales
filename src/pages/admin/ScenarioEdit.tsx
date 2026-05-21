@@ -112,11 +112,32 @@ function RoundEditor({ round, index, onChange, scenarioId }: { round: Round; ind
         <div className="px-5 pb-5 grid gap-4 border-t border-border">
           <div className="mt-4 grid gap-4">
             <div className="grid gap-1">
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">Фоновое изображение раунда</p>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">Фон раунда</p>
             <MediaUpload scenarioId={scenarioId} path={"rounds/" + round.id + "/background"} type="image"
               currentUrl={round.background_image}
               onUploaded={(p) => updateField("background_image", p)}
               onRemoved={() => updateField("background_image", "")} />
+          </div>
+          <div className="grid gap-1">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">Фон победы команды</p>
+            <MediaUpload scenarioId={scenarioId} path={"rounds/" + round.id + "/result_success"} type="image"
+              currentUrl={round.result_success_image}
+              onUploaded={(p) => updateField("result_success_image", p)}
+              onRemoved={() => updateField("result_success_image", "")} />
+          </div>
+          <div className="grid gap-1">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">Фон победы саботажника</p>
+            <MediaUpload scenarioId={scenarioId} path={"rounds/" + round.id + "/result_fail"} type="image"
+              currentUrl={round.result_fail_image}
+              onUploaded={(p) => updateField("result_fail_image", p)}
+              onRemoved={() => updateField("result_fail_image", "")} />
+          </div>
+          <div className="grid gap-1">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">Фон ничьей</p>
+            <MediaUpload scenarioId={scenarioId} path={"rounds/" + round.id + "/result_tie"} type="image"
+              currentUrl={round.result_tie_image}
+              onUploaded={(p) => updateField("result_tie_image", p)}
+              onRemoved={() => updateField("result_tie_image", "")} />
           </div>
           {fields.map((f) => (
               <div key={f} className="grid gap-1">

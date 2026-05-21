@@ -307,35 +307,25 @@ if (uiPhase === "playing" && (phase === "chars_reveal" || phase === "result_scre
     );
   }
 
-  // Фаза result_replicas — реплики играют
+  // Фаза result_replicas — переходим сразу в result_screen
   if (phase === "result_replicas") {
+    // просто показываем result_screen с репликами
+  }
+
+  // Фаза result_screen — итоги + реплики одновременно
+  if (phase === "result_screen" || phase === "result_replicas") {
+    const lastResult = gameState?.round_results?.[gameState.round_results.length - 1];
     return (
-      <div className="min-h-screen bg-background text-foreground relative flex flex-col items-center justify-center gap-6">
-        {isHost && <BackgroundImage imagePath={currentRound?.background_image} />}
+      <div className="min-h-screen text-foreground flex flex-col items-center justify-center gap-6 p-8">
+        {isHost && <BackgroundImage imagePath={
+          lastResult?.is_tie ? (currentRound as any)?.result_tie_image :
+          lastResult?.team_scored ? (currentRound as any)?.result_success_image :
+          (currentRound as any)?.result_fail_image ||
+          currentRound?.background_image
+        } />}
         {currentReplica && (
           <ReplicaPlayer speaker={currentReplica.speaker} text={currentReplica.text} audioPath={currentReplica.audioPath} onFinished={onReplicaFinished} />
         )}
-        {!currentReplica && isHost && (
-          <button onClick={() => setPhase("result_screen")} className="bg-portal text-portal-foreground px-12 py-4 rounded-lg font-display text-xl">
-            Далее →
-          </button>
-        )}
-        {!isHost && (
-          <div className="flex flex-col items-center gap-3">
-            <Loader2 className="w-8 h-8 animate-spin text-portal" />
-            <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest">Итоги раунда...</p>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // Фаза result_screen — итоги, ждём хоста
-  if (phase === "result_screen") {
-    const lastResult = gameState?.round_results?.[gameState.round_results.length - 1];
-    return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center gap-6 p-8">
-        {isHost && <BackgroundImage imagePath={currentRound?.background_image} />}
         <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Итог раунда</p>
         {lastResult && (
           <div className={`glass-card p-6 max-w-md w-full text-center border ${lastResult.team_scored ? "border-acid/40" : "border-destructive/40"}`}>
