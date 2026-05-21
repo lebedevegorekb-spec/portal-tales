@@ -111,7 +111,14 @@ function RoundEditor({ round, index, onChange }: { round: Round; index: number; 
       {open && (
         <div className="px-5 pb-5 grid gap-4 border-t border-border">
           <div className="mt-4 grid gap-4">
-            {fields.map((f) => (
+            <div className="grid gap-1">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">Фоновое изображение раунда</p>
+            <MediaUpload scenarioId={round.id} path={"rounds/" + round.id + "/background"} type="image"
+              currentUrl={round.background_image}
+              onUploaded={(p) => updateField("background_image", p)}
+              onRemoved={() => updateField("background_image", "")} />
+          </div>
+          {fields.map((f) => (
               <div key={f} className="grid gap-1">
                 <TextField label={FIELD_LABELS[f] ?? f} value={round[f] ?? ""} onChange={(v) => updateField(f, v)} />
                 {f.includes("host") || f.includes("morty") ? (
