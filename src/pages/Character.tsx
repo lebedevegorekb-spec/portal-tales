@@ -78,8 +78,7 @@ const Character = () => {
   }, [runId, waiting, navigate]);
 
   const handleReady = async () => {
-    console.log("handleReady", {myPlayerId, runId, roomId});
-    if (!myPlayerId || !runId || !roomId) return;
+if (!myPlayerId || !runId || !roomId) return;
     setWaiting(true);
     const userId = getPlayerId(user?.id);
     const res = await supabase.functions.invoke("character-ready", {

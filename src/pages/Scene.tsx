@@ -93,8 +93,7 @@ const Scene = () => {
 
   // Запустить реплики intro при входе в фазу intro (только 1 раз)
   useEffect(() => {
-    console.log("intro effect", {phase, isHost, hasIntro: !!partyConfig?.intro, introReplicasShown});
-    if (phase !== "intro" || !isHost || !partyConfig?.intro || introReplicasShown) return;
+if (phase !== "intro" || !isHost || !partyConfig?.intro || introReplicasShown) return;
     setIntroReplicasShown(true);
     const intro = partyConfig.intro;
     const queue: Array<{speaker:"host"|"morty";text:string;audioPath?:string}> = [];
@@ -106,8 +105,7 @@ const Scene = () => {
 
   // При смене раунда — показать intro реплики раунда
   useEffect(() => {
-    console.log("round effect", {phase, isHost, roundIdx: gameState?.current_round_index, introShownForRound});
-    if (!gameState || !currentRound || !isHost) return;
+if (!gameState || !currentRound || !isHost) return;
     if (phase !== "playing" && phase !== "loading") return;
     const idx = gameState.current_round_index;
     if (introShownForRound === idx) return;
@@ -140,8 +138,7 @@ const Scene = () => {
     if (uiPhase === "chars_reveal" && phase === "loading") {
       setPhase(isHost ? "chars_reveal" : "chars_reveal");
     }
-    console.log("ui_phase effect", {uiPhase, phase});
-    if (uiPhase === "playing" && (phase === "chars_reveal" || phase === "result_screen")) {
+if (uiPhase === "playing" && (phase === "chars_reveal" || phase === "result_screen")) {
       setPhase("playing");
     }
     if (uiPhase === "result" && phase === "playing") setPhase("result_screen");

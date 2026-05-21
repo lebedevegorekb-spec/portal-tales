@@ -58,7 +58,8 @@ Deno.serve(async (req) => {
 
     // ÐŸÑ€Ð¾Ð²ÐµÑ€Ð¸Ñ‚ÑŒ Ð¼Ð¸Ð½Ð¸Ð¼ÑƒÐ¼ Ð¸Ð³Ñ€Ð¾ÐºÐ¾Ð² (ÐºÑ€Ð¾Ð¼Ðµ Ñ‚ÐµÑÑ‚Ð¾Ð²Ð¾Ð³Ð¾ Ñ€ÐµÐ¶Ð¸Ð¼Ð°)
     const minPlayers = isTest ? 1 : (room.min_players ?? 3);
-    if (players.length < minPlayers && !isTest) {
+    const nonHostPlayers = players.filter((p: any) => !p.is_host);
+    if (nonHostPlayers.length < minPlayers && !isTest) {
       return json({ error: `ÐÑƒÐ¶Ð½Ð¾ Ð¼Ð¸Ð½Ð¸Ð¼ÑƒÐ¼ ${minPlayers} Ð¸Ð³Ñ€Ð¾ÐºÐ°` }, 400);
     }
 
@@ -87,7 +88,7 @@ Deno.serve(async (req) => {
 
     if (sErr || !scenario) return json({ error: "Scenario not found" }, 404);
 
-    const playerIds = players.map((p: any) => p.id);
+    const playerIds = players.filter((p: any) => !p.is_host).map((p: any) => p.id);
     const saboteurIndex = Math.floor(Math.random() * playerIds.length);
     const saboteurPlayerId = playerIds[saboteurIndex];
 
