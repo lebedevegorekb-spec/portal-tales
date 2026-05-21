@@ -140,6 +140,7 @@ const Scene = () => {
     if (uiPhase === "chars_reveal" && phase === "loading") {
       setPhase(isHost ? "chars_reveal" : "chars_reveal");
     }
+    console.log("ui_phase effect", {uiPhase, phase});
     if (uiPhase === "playing" && (phase === "chars_reveal" || phase === "result_screen")) {
       setPhase("playing");
     }
