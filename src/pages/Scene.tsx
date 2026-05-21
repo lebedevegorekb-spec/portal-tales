@@ -93,6 +93,7 @@ const Scene = () => {
 
   // Запустить реплики intro при входе в фазу intro (только 1 раз)
   useEffect(() => {
+    console.log("intro effect", {phase, isHost, hasIntro: !!partyGame?.intro, introReplicasShown});
     if (phase !== "intro" || !isHost || !partyConfig?.intro || introReplicasShown) return;
     setIntroReplicasShown(true);
     const intro = partyConfig.intro;
@@ -105,6 +106,7 @@ const Scene = () => {
 
   // При смене раунда — показать intro реплики раунда
   useEffect(() => {
+    console.log("round effect", {phase, isHost, roundIdx: gameState?.current_round_index, introShownForRound});
     if (!gameState || !currentRound || !isHost) return;
     if (phase !== "playing" && phase !== "loading") return;
     const idx = gameState.current_round_index;
