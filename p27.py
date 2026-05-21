@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+﻿content = """import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -20,7 +20,7 @@ serve(async (req) => {
     const pg = run.state_json?.party_game ?? {};
     const ready: string[] = pg.characters_ready ?? [];
     if (!ready.includes(player_id)) ready.push(player_id);
-    const { count } = await supabase.from("room_players").select("id", { count: "exact" }).eq("room_id", room_id);
+    const { count } = await supabase.from("room_players").select("id", { count: "exact" }).eq("room_id", room_id).eq("is_host", false);
     const allReady = ready.length >= (count ?? 999);
     // Переходим в playing только если хост уже выставил chars_reveal
     const currentPhase = pg.ui_phase ?? "";
@@ -37,3 +37,6 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: String(err) }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
+"""
+open("supabase/functions/character-ready/index.ts", "w", encoding="utf-8", newline="\n").write(content)
+print("ok")
