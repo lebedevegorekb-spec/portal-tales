@@ -51,7 +51,7 @@ export function ComicFrameView({ frame, frameIndex, totalFrames, isHost, onNext,
           </div>
         </div>
       )}
-      {queue.length > 0 && !replicasDone && !flipping && (
+      {queue.length > 0 && !replicasDone && (
         <ReplicaChain key={frameIndex} queue={queue} onFinished={handleReplicasDone} />
       )}
 
@@ -66,7 +66,7 @@ function ReplicaChain({ queue, onFinished }: { queue: Array<{speaker:"host"|"mor
   const [current, setCurrent] = useState<{speaker:"host"|"morty";text:string;audioPath?:string} | null>(null);
   useEffect(() => {
     indexRef.current = 0;
-    const t = setTimeout(() => setCurrent(queue[0] ?? null), 50);
+    const t = setTimeout(() => setCurrent(queue[0] ?? null), 400);
     return () => clearTimeout(t);
   }, []);
   const handleFinished = () => {
