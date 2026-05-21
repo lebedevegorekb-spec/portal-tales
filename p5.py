@@ -1,4 +1,5 @@
-import { useRef, useState } from "react";
+﻿content = open("src/components/ComicFrameView.tsx", encoding="utf-8").read()
+new_content = """import { useRef, useState } from "react";
 import { ReplicaPlayer } from "@/components/ReplicaPlayer";
 import type { ComicFrame } from "@/mechanics/types";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -75,3 +76,6 @@ function ReplicaChain({ queue, onFinished }: { queue: Array<{speaker:"host"|"mor
   if (!current) return null;
   return <ReplicaPlayer speaker={current.speaker} text={current.text} audioPath={current.audioPath} onFinished={handleFinished} />;
 }
+"""
+open("src/components/ComicFrameView.tsx", "w", encoding="utf-8", newline="\n").write(new_content)
+print("ok")
