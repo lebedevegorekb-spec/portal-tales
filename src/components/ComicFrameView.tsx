@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { ReplicaPlayer } from "@/components/ReplicaPlayer";
 import type { ComicFrame } from "@/mechanics/types";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -18,13 +18,19 @@ interface ComicFrameProps {
 }
 export function ComicFrameView({ frame, frameIndex, totalFrames, isHost, onNext, replicasDone, setReplicasDone }: ComicFrameProps) {
   const queue: Array<{speaker:"host"|"morty";text:string;audioPath?:string}> = [];
-  if (frame.host_line) queue.push({ speaker: "host", text: frame.host_line, audioPath: frame.host_line_audio });
-  if (frame.morty_line) queue.push({ speaker: "morty", text: frame.morty_line, audioPath: frame.morty_line_audio });
+  if (frame.host_line || frame.host_line_audio) queue.push({ speaker: "host", text: frame.host_line ?? "", audioPath: frame.host_line_audio });
+  if (frame.morty_line || frame.morty_line_audio) queue.push({ speaker: "morty", text: frame.morty_line ?? "", audioPath: frame.morty_line_audio });
 
   const handleReplicasDone = () => {
     setReplicasDone(true);
-    if (isHost && onNext) onNext();
+    if (isHost && onNext) setTimeout(() => onNext!(), 800);
   };
+  useEffect(() => {
+    if (queue.length === 0 && isHost && onNext) {
+      const t = setTimeout(() => { setReplicasDone(true); onNext!(); }, 3000);
+      return () => clearTimeout(t);
+    }
+  }, [frameIndex]);
 
   return (
     <div className="fixed inset-0 bg-background overflow-hidden">
@@ -45,7 +51,7 @@ export function ComicFrameView({ frame, frameIndex, totalFrames, isHost, onNext,
         </div>
       )}
       {queue.length > 0 && !replicasDone && (
-        <ReplicaChain queue={queue} onFinished={handleReplicasDone} />
+        <ReplicaChain key={frameIndex} queue={queue} onFinished={handleReplicasDone} />
       )}
       {isHost && (replicasDone || queue.length === 0) && onNext && (
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
