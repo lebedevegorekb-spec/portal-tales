@@ -27,6 +27,12 @@ export function BlitzHost({ round, submissions, playerCount, onAdvance }: Mechan
     (s) => s.payload?.answers?.[question?.id] !== undefined
   ).length;
 
+  useEffect(() => {
+    if (!allAnswered || !onAdvance) return;
+    const t = setTimeout(() => onAdvance(), 2000);
+    return () => clearTimeout(t);
+  }, [allAnswered]);
+
   return (
     <div className="min-h-screen text-foreground relative z-10 flex flex-col items-center justify-center p-8">
       <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-4">
@@ -86,14 +92,7 @@ export function BlitzHost({ round, submissions, playerCount, onAdvance }: Mechan
       {finished && (
         <>
           <p className="text-2xl text-muted-foreground mb-8">Блиц завершён!</p>
-          {onAdvance && (
-            <button
-              onClick={onAdvance}
-              className="bg-portal text-portal-foreground px-10 py-4 rounded-lg font-display text-xl"
-            >
-              Подвести итог →
-            </button>
-          )}
+          
         </>
       )}
     </div>

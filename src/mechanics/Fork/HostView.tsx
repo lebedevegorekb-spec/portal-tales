@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect,  useMemo, useState } from "react";
 import type { MechanicViewProps, ForkRound } from "@/mechanics/types";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -45,12 +45,7 @@ export function ForkHost({ round, submissions, playerCount, onAdvance }: Mechani
             <p className="text-lg text-muted-foreground">😰 Морти: «{jokeOpt.joke_morty_line}»</p>
           )}
         </div>
-        {onAdvance && (
-          <button onClick={onAdvance}
-            className="bg-portal text-portal-foreground px-10 py-4 rounded-lg font-display text-xl">
-            Далее →
-          </button>
-        )}
+        
       </div>
     );
   }
@@ -73,15 +68,16 @@ export function ForkHost({ round, submissions, playerCount, onAdvance }: Mechani
             😰 Морти: «{isCorrect ? round.success_morty : round.fail_morty}»
           </p>
         </div>
-        {onAdvance && (
-          <button onClick={onAdvance}
-            className="bg-portal text-portal-foreground px-10 py-4 rounded-lg font-display text-xl">
-            Далее →
-          </button>
-        )}
+        
       </div>
     );
   }
+
+  useEffect(() => {
+    if (!allVoted || !onAdvance) return;
+    const t = setTimeout(() => onAdvance(), 2000);
+    return () => clearTimeout(t);
+  }, [allVoted]);
 
   return (
     <div className="min-h-screen text-foreground relative z-10 flex flex-col items-center justify-center p-8">

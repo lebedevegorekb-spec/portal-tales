@@ -1,4 +1,4 @@
-﻿import { useState, useMemo } from "react";
+﻿import { useEffect,  useState, useMemo } from "react";
 import type { MechanicViewProps, GuessAuthorRound } from "@/mechanics/types";
 
 export function GuessAuthorHost({ round, submissions, playerCount, onAdvance }: MechanicViewProps<GuessAuthorRound>) {
@@ -10,6 +10,12 @@ export function GuessAuthorHost({ round, submissions, playerCount, onAdvance }: 
   );
 
   const allWrote = answers.length >= playerCount;
+
+  useEffect(() => {
+    if (!allWrote || !onAdvance) return;
+    const t = setTimeout(() => onAdvance(), 2000);
+    return () => clearTimeout(t);
+  }, [allWrote]);
 
   return (
     <div className="min-h-screen text-foreground relative z-10 flex flex-col items-center justify-center p-8">
@@ -50,14 +56,7 @@ export function GuessAuthorHost({ round, submissions, playerCount, onAdvance }: 
               </div>
             ))}
           </div>
-          {onAdvance && (
-            <button
-              onClick={onAdvance}
-              className="bg-portal text-portal-foreground px-10 py-4 rounded-lg font-display text-xl"
-            >
-              Подвести итог →
-            </button>
-          )}
+          
         </>
       )}
     </div>

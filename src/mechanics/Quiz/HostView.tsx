@@ -1,9 +1,15 @@
-﻿import { useMemo } from "react";
+﻿import { useEffect,  useMemo } from "react";
 import type { MechanicViewProps, QuizRound } from "@/mechanics/types";
 
 export function QuizHost({ round, submissions, playerCount, onAdvance }: MechanicViewProps<QuizRound>) {
   const answeredCount = submissions.filter((s) => s.payload?.answers !== undefined).length;
   const allAnswered = answeredCount >= playerCount;
+
+  useEffect(() => {
+    if (!allAnswered || !onAdvance) return;
+    const t = setTimeout(() => onAdvance(), 2000);
+    return () => clearTimeout(t);
+  }, [allAnswered]);
 
   return (
     <div className="min-h-screen text-foreground relative z-10 flex flex-col items-center justify-center p-8">
@@ -36,15 +42,7 @@ export function QuizHost({ round, submissions, playerCount, onAdvance }: Mechani
         Ответили: {answeredCount} / {playerCount}
       </p>
 
-      {onAdvance && (
-        <button
-          onClick={onAdvance}
-          disabled={!allAnswered}
-          className="bg-portal text-portal-foreground px-10 py-4 rounded-lg font-display text-xl disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          {allAnswered ? "Подвести итог →" : `Ждём (${answeredCount}/${playerCount})`}
-        </button>
-      )}
+      
     </div>
   );
 }

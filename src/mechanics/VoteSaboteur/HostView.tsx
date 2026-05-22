@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect,  useMemo, useState } from "react";
 import type { MechanicViewProps, VoteSaboteurRound } from "@/mechanics/types";
 
 interface Player {
@@ -57,12 +57,7 @@ export function VoteSaboteurHost({ round, submissions, playerCount, onAdvance, p
               <p className="text-muted-foreground text-sm">😰 Морти: «{round.tie_morty}»</p>
             )}
           </div>
-          {onAdvance && (
-            <button onClick={onAdvance}
-              className="bg-portal text-portal-foreground px-10 py-4 rounded-lg font-display text-xl">
-              Далее →
-            </button>
-          )}
+          
         </div>
       );
     }
@@ -78,15 +73,16 @@ export function VoteSaboteurHost({ round, submissions, playerCount, onAdvance, p
           <p className="text-muted-foreground text-sm mb-2">🧪 Рик: «{round.success_host}»</p>
           <p className="text-muted-foreground text-sm">😰 Морти: «{round.success_morty}»</p>
         </div>
-        {onAdvance && (
-          <button onClick={onAdvance}
-            className="bg-portal text-portal-foreground px-10 py-4 rounded-lg font-display text-xl">
-            Далее →
-          </button>
-        )}
+        
       </div>
     );
   }
+
+  useEffect(() => {
+    if (!allVoted || !onAdvance) return;
+    const t = setTimeout(() => onAdvance(), 2000);
+    return () => clearTimeout(t);
+  }, [allVoted]);
 
   return (
     <div className="min-h-screen text-foreground relative z-10 flex flex-col items-center justify-center p-8">

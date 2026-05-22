@@ -42,6 +42,12 @@ export function PitchHost({ round, submissions, playerCount, onAdvance, players 
   const allVoted = submissions.filter((s) => s.payload?.vote_for_option_index !== undefined).length >= playerCount;
   const pitcher = players[currentPitcher];
 
+  useEffect(() => {
+    if (!allVoted || !onAdvance) return;
+    const t = setTimeout(() => onAdvance(), 2000);
+    return () => clearTimeout(t);
+  }, [allVoted]);
+
   return (
     <div className="min-h-screen text-foreground relative z-10 flex flex-col items-center justify-center p-8">
       <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-4">
@@ -89,15 +95,7 @@ export function PitchHost({ round, submissions, playerCount, onAdvance, players 
           <p className="text-sm text-muted-foreground mb-6">
             Проголосовали: {submissions.filter((s) => s.payload?.vote_for_option_index !== undefined).length} / {playerCount}
           </p>
-          {onAdvance && (
-            <button
-              onClick={onAdvance}
-              disabled={!allVoted}
-              className="bg-portal text-portal-foreground px-10 py-4 rounded-lg font-display text-xl disabled:opacity-40"
-            >
-              {allVoted ? "Подвести итог →" : "Ждём голосов..."}
-            </button>
-          )}
+          
         </>
       )}
     </div>

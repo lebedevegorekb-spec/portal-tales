@@ -1,4 +1,4 @@
-﻿import { useMemo } from "react";
+﻿import { useEffect,  useMemo } from "react";
 import type { MechanicViewProps, JokeVoteRound } from "@/mechanics/types";
 
 export function JokeVoteHost({ round, submissions, playerCount, onAdvance }: MechanicViewProps<JokeVoteRound>) {
@@ -30,6 +30,12 @@ export function JokeVoteHost({ round, submissions, playerCount, onAdvance }: Mec
   );
   const topVotedId = sortedVotes[0]?.[0];
   const isTie = sortedVotes.length > 1 && sortedVotes[0]?.[1] === sortedVotes[1]?.[1];
+
+  useEffect(() => {
+    if (!allVoted || !onAdvance) return;
+    const t = setTimeout(() => onAdvance(), 2000);
+    return () => clearTimeout(t);
+  }, [allVoted]);
 
   if (!allAnswered) {
     return (
@@ -81,11 +87,7 @@ export function JokeVoteHost({ round, submissions, playerCount, onAdvance }: Mec
           ))}
       </div>
       {winner && <p className="text-muted-foreground mb-8">Победитель: <span className="text-portal font-display">{winner.payload.answer}</span></p>}
-      {onAdvance && (
-        <button onClick={onAdvance} className="bg-portal text-portal-foreground px-10 py-4 rounded-lg font-display text-xl">
-          Подвести итог →
-        </button>
-      )}
+      
     </div>
   );
 }
