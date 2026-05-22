@@ -184,6 +184,7 @@ if (uiPhase === "playing" && (phase === "chars_reveal" || phase === "result_scre
     if (!runId || !roomId || !currentRound) return;
     const advanceRes = await advance(runId, roomId);
     const result = advanceRes?.result;
+    console.log("advance result:", JSON.stringify(advanceRes));
     if (isHost) {
       const won = result?.team_scored;
       const isTie = result?.is_tie ?? false;
