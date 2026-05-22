@@ -299,13 +299,6 @@ if (uiPhase === "playing" && (phase === "chars_reveal" || phase === "result_scre
     const charsReady = (gameState as any)?.characters_ready?.length ?? 0;
     const intro = partyConfig?.intro as any;
     // Запустить реплики chars_reveal автоматически (только хост, только 1 раз)
-    if (isHost && !charsRevealReplicasDone && currentReplica === null && replicaQueue.length === 0) {
-      const queue: Array<{speaker:"host"|"morty";text:string;audioPath?:string}> = [];
-      if (intro?.chars_reveal_host_line) queue.push({ speaker: "host", text: intro.chars_reveal_host_line, audioPath: intro.chars_reveal_host_audio });
-      if (intro?.chars_reveal_morty_line) queue.push({ speaker: "morty", text: intro.chars_reveal_morty_line, audioPath: intro.chars_reveal_morty_audio });
-      if (queue.length > 0) { setReplicaQueue(queue); setCurrentReplica(queue[0]); }
-      setCharsRevealReplicasDone(true);
-    }
     if (!isHost) {
       return (
         <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center gap-4">
@@ -313,6 +306,13 @@ if (uiPhase === "playing" && (phase === "chars_reveal" || phase === "result_scre
           <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest">Смотрим вступление...</p>
         </div>
       );
+    }
+    if (isHost && !charsRevealReplicasDone && currentReplica === null && replicaQueue.length === 0) {
+      const queue: Array<{speaker:"host"|"morty";text:string;audioPath?:string}> = [];
+      if (intro?.chars_reveal_host_line) queue.push({ speaker: "host", text: intro.chars_reveal_host_line, audioPath: intro.chars_reveal_host_audio });
+      if (intro?.chars_reveal_morty_line) queue.push({ speaker: "morty", text: intro.chars_reveal_morty_line, audioPath: intro.chars_reveal_morty_audio });
+      if (queue.length > 0) { setReplicaQueue(queue); setCurrentReplica(queue[0]); }
+      setCharsRevealReplicasDone(true);
     }
     return (
       <div className="min-h-screen text-foreground flex flex-col items-center justify-center gap-6">
