@@ -166,6 +166,7 @@ if (uiPhase === "playing" && (phase === "chars_reveal" || phase === "result_scre
     if (phase !== "result_replicas" || !pendingReplicaRound || !isHost) return;
     const lastResult = gameState?.round_results?.[gameState.round_results.length - 1];
     if (!lastResult) return;
+    if (lastResult.round_id !== pendingReplicaRound.id) return;
     const r = pendingReplicaRound;
     const won = lastResult.team_scored;
     const isTie = (lastResult as any).is_tie;
