@@ -151,6 +151,16 @@ if (uiPhase === "playing" && (phase === "chars_reveal" || phase === "result_scre
   const phaseRef = useRef<ScenePhase>("loading");
   useEffect(() => { phaseRef.current = phase; }, [phase]);
 
+  useEffect(() => {
+    if (phase !== "chars_reveal" || !isHost || charsRevealReplicasDone || !partyConfig) return;
+    const intro = partyConfig.intro as any;
+    const queue: Array<{speaker:"host"|"morty";text:string;audioPath?:string}> = [];
+    if (intro?.chars_reveal_host_line) queue.push({ speaker: "host", text: intro.chars_reveal_host_line, audioPath: intro.chars_reveal_host_audio });
+    if (intro?.chars_reveal_morty_line) queue.push({ speaker: "morty", text: intro.chars_reveal_morty_line, audioPath: intro.chars_reveal_morty_audio });
+    if (queue.length > 0) { setCharsRevealQueue(queue); setCharsRevealReplica(queue[0]); }
+    setCharsRevealReplicasDone(true);
+  }, [phase, isHost, charsRevealReplicasDone, partyConfig]);
+
   // Запустить реплики когда lastResult появился в gameState
   useEffect(() => {
     if (phase !== "result_replicas" || !pendingReplicaRound || !isHost) return;
@@ -322,13 +332,7 @@ if (uiPhase === "playing" && (phase === "chars_reveal" || phase === "result_scre
         </div>
       );
     }
-    if (isHost && !charsRevealReplicasDone) {
-      const queue: Array<{speaker:"host"|"morty";text:string;audioPath?:string}> = [];
-      if (intro?.chars_reveal_host_line) queue.push({ speaker: "host", text: intro.chars_reveal_host_line, audioPath: intro.chars_reveal_host_audio });
-      if (intro?.chars_reveal_morty_line) queue.push({ speaker: "morty", text: intro.chars_reveal_morty_line, audioPath: intro.chars_reveal_morty_audio });
-      if (queue.length > 0) { setCharsRevealQueue(queue); setCharsRevealReplica(queue[0]); }
-      setCharsRevealReplicasDone(true);
-    }
+
     return (
       <div className="min-h-screen text-foreground flex flex-col items-center justify-center gap-6">
         <BackgroundImage imagePath={intro?.chars_reveal_background || partyConfig?.intro?.background_image} />
