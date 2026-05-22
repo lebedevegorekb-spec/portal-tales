@@ -25,9 +25,7 @@ const Character = () => {
   const [character, setCharacter] = useState<any>(null);
   const [isSaboteur, setIsSaboteur] = useState(false);
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
-  const [replicaText, setReplicaText] = useState("");
-  const [replicaAudio, setReplicaAudio] = useState<string|undefined>(undefined);
-  const [replicaDone, setReplicaDone] = useState(false);
+  const [replicaDone] = useState(true);
 
   useEffect(() => {
     const load = async () => {
@@ -104,9 +102,7 @@ if (!myPlayerId || !runId || !roomId) return;
 
   return (
     <div className="min-h-screen bg-background text-foreground px-4 py-8 pb-24">
-      {replicaText && !replicaDone && (
-        <ReplicaPlayer speaker="host" text={replicaText} audioPath={replicaAudio} onFinished={() => setReplicaDone(true)} />
-      )}
+
       <div className={`max-w-md mx-auto space-y-6 transition-opacity duration-500 ${replicaDone ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
         <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground text-center">Твоя роль</p>
 
