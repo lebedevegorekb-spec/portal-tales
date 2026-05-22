@@ -50,7 +50,6 @@ const Character = () => {
         setTotalCount(count ?? 0);
 
         const intro=(run as any).scenarios?.scenario_json?.party_game?.intro;
-        if(intro?.character_reveal_host_line){setReplicaText(intro.character_reveal_host_line);setReplicaAudio(intro.character_reveal_host_line_audio||undefined);}else{setReplicaDone(true);}
         const charId = pg?.player_characters?.[rp.id];
         const characters = (run as any).scenarios?.scenario_json?.characters ?? [];
         setCharacter(characters.find((c: any) => c.id === charId) ?? null);
