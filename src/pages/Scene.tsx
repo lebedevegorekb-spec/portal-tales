@@ -31,6 +31,8 @@ const Scene = () => {
   const [loading, setLoading] = useState(true);
   const [phase, setPhase] = useState<ScenePhase>("loading");
   const [charsRevealReplicasDone, setCharsRevealReplicasDone] = useState(false);
+  const [pendingReplicaRound, setPendingReplicaRound] = useState<any>(null);
+  const [pendingReplicaRound, setPendingReplicaRound] = useState<any>(null);
   const [charsRevealReplica, setCharsRevealReplica] = useState<{speaker:"host"|"morty";text:string;audioPath?:string}|null>(null);
   const [charsRevealQueue, setCharsRevealQueue] = useState<Array<{speaker:"host"|"morty";text:string;audioPath?:string}>>([]);
   const [replicaQueue, setReplicaQueue] = useState<Array<{speaker:"host"|"morty";text:string;audioPath?:string}>>([]);
@@ -149,6 +151,35 @@ if (uiPhase === "playing" && (phase === "chars_reveal" || phase === "result_scre
 
   const phaseRef = useRef<ScenePhase>("loading");
   useEffect(() => { phaseRef.current = phase; }, [phase]);
+
+  // Запустить реплики когда lastResult появился в gameState
+  useEffect(() => {
+    if (phase !== "result_replicas" || !pendingReplicaRound || !isHost) return;
+    const lastResult = gameState?.round_results?.[gameState.round_results.length - 1];
+    if (!lastResult) return;
+    const r = pendingReplicaRound;
+    const won = lastResult.team_scored;
+    const isTie = (lastResult as any).is_tie;
+    const isJoke = (lastResult as any).is_joke;
+    const queue: Array<{speaker:"host"|"morty";text:string;audioPath?:string}> = [];
+    if (isJoke) {
+      const jo = (lastResult as any).joke_option;
+      if (jo?.joke_host_line) queue.push({ speaker: "host", text: jo.joke_host_line, audioPath: jo.joke_host_audio });
+      if (jo?.joke_morty_line) queue.push({ speaker: "morty", text: jo.joke_morty_line, audioPath: jo.joke_morty_audio });
+    } else if (isTie) {
+      if ((r as any).tie_host) queue.push({ speaker: "host", text: (r as any).tie_host, audioPath: (r as any).tie_host_audio });
+      if ((r as any).tie_morty) queue.push({ speaker: "morty", text: (r as any).tie_morty, audioPath: (r as any).tie_morty_audio });
+    } else if (won) {
+      if (r.success_host) queue.push({ speaker: "host", text: r.success_host, audioPath: r.success_host_audio });
+      if (r.success_morty) queue.push({ speaker: "morty", text: r.success_morty, audioPath: r.success_morty_audio });
+    } else {
+      if (r.fail_host) queue.push({ speaker: "host", text: r.fail_host, audioPath: r.fail_host_audio });
+      if (r.fail_morty) queue.push({ speaker: "morty", text: r.fail_morty, audioPath: r.fail_morty_audio });
+    }
+    setReplicaQueue(queue);
+    setCurrentReplica(queue.length > 0 ? queue[0] : null);
+    setPendingReplicaRound(null);
+  }, [gameState?.round_results?.length, phase, pendingReplicaRound, isHost]);
   const onReplicaFinished = useCallback(() => {
     setReplicaQueue(prev => {
       const next = prev.slice(1);
@@ -182,29 +213,10 @@ if (uiPhase === "playing" && (phase === "chars_reveal" || phase === "result_scre
 
   const handleAdvance = async () => {
     if (!runId || !roomId || !currentRound) return;
-    const advanceRes = await advance(runId, roomId);
-    const result = advanceRes?.result;
-    console.log("advance result:", JSON.stringify(advanceRes));
+    const snap = currentRound;
+    await advance(runId, roomId);
     if (isHost) {
-      const won = result?.team_scored;
-      const isTie = result?.is_tie ?? false;
-      const queue: Array<{speaker:"host"|"morty";text:string;audioPath?:string}> = [];
-      if (result?.is_joke) {
-        const jo = result.joke_option;
-        if (jo?.joke_host_line) queue.push({ speaker: "host", text: jo.joke_host_line, audioPath: jo.joke_host_audio });
-        if (jo?.joke_morty_line) queue.push({ speaker: "morty", text: jo.joke_morty_line, audioPath: jo.joke_morty_audio });
-      } else if (isTie && (currentRound as any).tie_host) {
-        queue.push({ speaker: "host", text: (currentRound as any).tie_host, audioPath: (currentRound as any).tie_host_audio });
-        if ((currentRound as any).tie_morty) queue.push({ speaker: "morty", text: (currentRound as any).tie_morty, audioPath: (currentRound as any).tie_morty_audio });
-      } else if (won) {
-        if (currentRound.success_host) queue.push({ speaker: "host", text: currentRound.success_host, audioPath: currentRound.success_host_audio });
-        if (currentRound.success_morty) queue.push({ speaker: "morty", text: currentRound.success_morty, audioPath: currentRound.success_morty_audio });
-      } else {
-        if (currentRound.fail_host) queue.push({ speaker: "host", text: currentRound.fail_host, audioPath: currentRound.fail_host_audio });
-        if (currentRound.fail_morty) queue.push({ speaker: "morty", text: currentRound.fail_morty, audioPath: currentRound.fail_morty_audio });
-      }
-      setReplicaQueue(queue);
-      setCurrentReplica(queue.length > 0 ? queue[0] : null);
+      setPendingReplicaRound(snap);
       setPhase("result_replicas");
     }
   };
