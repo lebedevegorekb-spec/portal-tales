@@ -27,6 +27,8 @@ const Waiting = () => {
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [readying, setReadying] = useState(false);
+  const [showIntroWaiting, setShowIntroWaiting] = useState(false);
+  const [currentRunId, setCurrentRunId] = useState<string|null>(null);
 
   useEffect(() => {
     const t = setInterval(() => setElapsed((s) => s + 1), 1000);
@@ -43,7 +45,12 @@ const Waiting = () => {
         .maybeSingle();
 
       if ((room?.status === "playing" || room?.status === "started") && room?.run_id) {
-        navigate(`/character?run=${room.run_id}&room=${roomId}`);
+        const { data: runData2 } = await supabase.from("runs").select("state_json").eq("id", room.run_id).single();
+        const uiPhase2 = runData2?.state_json?.party_game?.ui_phase;
+        if (uiPhase2 === "playing") { navigate(`/scene/${room.run_id}`); return; }
+        if (uiPhase2 === "chars_reveal") { navigate(`/character?run=${room.run_id}&room=${roomId}`); return; }
+        setShowIntroWaiting(true);
+        setCurrentRunId(room.run_id);
         return;
       }
 
@@ -91,7 +98,8 @@ const Waiting = () => {
             const { data: runData } = await supabase.from("runs").select("state_json").eq("id", r.run_id).single();
             const uiPhase = runData?.state_json?.party_game?.ui_phase;
             if (uiPhase === "playing") navigate(`/scene/${r.run_id}`);
-            else navigate(`/character?run=${r.run_id}&room=${roomId}`);
+            else if (uiPhase === "chars_reveal") navigate(`/character?run=${r.run_id}&room=${roomId}`);
+            else { setShowIntroWaiting(true); setCurrentRunId(r.run_id); }
           }
         })
       .subscribe();
@@ -112,6 +120,15 @@ const Waiting = () => {
   const progress = total > 0 ? (ready / total) * 100 : 0;
   const mm = String(Math.floor(elapsed / 60)).padStart(2, "0");
   const ss = String(elapsed % 60).padStart(2, "0");
+
+  if (showIntroWaiting) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+        <Loader2 className="w-10 h-10 animate-spin text-portal" />
+        <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest">Смотрим вступление...</p>
+      </div>
+    );
+  }
 
   if (loading && !players.length) {
     return (
