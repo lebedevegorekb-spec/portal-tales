@@ -87,7 +87,7 @@ const Scene = () => {
     } else if (isHost && uiPhase === "intro" && partyConfig?.intro?.situation) {
       setPhase("intro");
     } else if (uiPhase === "chars_reveal") {
-      setPhase("chars_reveal");
+      setTimeout(() => setPhase("chars_reveal"), 2000);
     } else if (uiPhase === "playing" || uiPhase === "result") {
       setPhase("playing");
     } else {
