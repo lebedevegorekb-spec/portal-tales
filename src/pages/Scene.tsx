@@ -31,6 +31,8 @@ const Scene = () => {
   const [loading, setLoading] = useState(true);
   const [phase, setPhase] = useState<ScenePhase>("loading");
   const [charsRevealReplicasDone, setCharsRevealReplicasDone] = useState(false);
+  const [charsRevealReplica, setCharsRevealReplica] = useState<{speaker:"host"|"morty";text:string;audioPath?:string}|null>(null);
+  const [charsRevealQueue, setCharsRevealQueue] = useState<Array<{speaker:"host"|"morty";text:string;audioPath?:string}>>([]);
   const [replicaQueue, setReplicaQueue] = useState<Array<{speaker:"host"|"morty";text:string;audioPath?:string}>>([]);
   const [currentReplica, setCurrentReplica] = useState<{speaker:"host"|"morty";text:string;audioPath?:string} | null>(null);
   const [introShownForRound, setIntroShownForRound] = useState<number>(-1);
@@ -307,18 +309,22 @@ if (uiPhase === "playing" && (phase === "chars_reveal" || phase === "result_scre
         </div>
       );
     }
-    if (isHost && !charsRevealReplicasDone && currentReplica === null && replicaQueue.length === 0) {
+    if (isHost && !charsRevealReplicasDone) {
       const queue: Array<{speaker:"host"|"morty";text:string;audioPath?:string}> = [];
       if (intro?.chars_reveal_host_line) queue.push({ speaker: "host", text: intro.chars_reveal_host_line, audioPath: intro.chars_reveal_host_audio });
       if (intro?.chars_reveal_morty_line) queue.push({ speaker: "morty", text: intro.chars_reveal_morty_line, audioPath: intro.chars_reveal_morty_audio });
-      if (queue.length > 0) { setReplicaQueue(queue); setCurrentReplica(queue[0]); }
+      if (queue.length > 0) { setCharsRevealQueue(queue); setCharsRevealReplica(queue[0]); }
       setCharsRevealReplicasDone(true);
     }
     return (
       <div className="min-h-screen text-foreground flex flex-col items-center justify-center gap-6">
         <BackgroundImage imagePath={intro?.chars_reveal_background || partyConfig?.intro?.background_image} />
-        {currentReplica && (
-          <ReplicaPlayer speaker={currentReplica.speaker} text={currentReplica.text} audioPath={currentReplica.audioPath} onFinished={onReplicaFinished} />
+        {charsRevealReplica && (
+          <ReplicaPlayer speaker={charsRevealReplica.speaker} text={charsRevealReplica.text} audioPath={charsRevealReplica.audioPath} onFinished={() => {
+            const next = charsRevealQueue.slice(1);
+            setCharsRevealQueue(next);
+            setCharsRevealReplica(next.length > 0 ? next[0] : null);
+          }} />
         )}
         <div className="relative z-10 glass-card backdrop-blur-md bg-background/60 p-8 rounded-2xl text-center flex flex-col items-center gap-4">
           <Loader2 className="w-10 h-10 animate-spin text-portal" />
