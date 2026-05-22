@@ -106,6 +106,19 @@ const Waiting = () => {
     return () => { supabase.removeChannel(ch); };
   }, [roomId, navigate]);
 
+  useEffect(() => {
+    if (!currentRunId || !roomId) return;
+    const runCh = supabase.channel(`waiting_run:${currentRunId}`)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "runs", filter: `id=eq.${currentRunId}` },
+        (payload) => {
+          const uiPhase = (payload.new as any)?.state_json?.party_game?.ui_phase;
+          if (uiPhase === "chars_reveal") navigate(`/character?run=${currentRunId}&room=${roomId}`);
+          if (uiPhase === "playing") navigate(`/scene/${currentRunId}`);
+        })
+      .subscribe();
+    return () => { supabase.removeChannel(runCh); };
+  }, [currentRunId, roomId, navigate]);
+
   const handleReady = async () => {
     if (!myPlayerId || isReady) return;
     setReadying(true);
