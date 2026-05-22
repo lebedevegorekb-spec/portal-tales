@@ -73,6 +73,7 @@ export function ForkHost({ round, submissions, playerCount, onAdvance }: Mechani
     );
   }
 
+  const allVoted = totalVotes >= playerCount;
   useEffect(() => {
     if (!allVoted || !onAdvance) return;
     const t = setTimeout(() => onAdvance(), 2000);
