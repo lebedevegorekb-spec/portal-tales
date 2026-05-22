@@ -32,7 +32,6 @@ const Scene = () => {
   const [phase, setPhase] = useState<ScenePhase>("loading");
   const [charsRevealReplicasDone, setCharsRevealReplicasDone] = useState(false);
   const [pendingReplicaRound, setPendingReplicaRound] = useState<any>(null);
-  const [pendingReplicaRound, setPendingReplicaRound] = useState<any>(null);
   const [charsRevealReplica, setCharsRevealReplica] = useState<{speaker:"host"|"morty";text:string;audioPath?:string}|null>(null);
   const [charsRevealQueue, setCharsRevealQueue] = useState<Array<{speaker:"host"|"morty";text:string;audioPath?:string}>>([]);
   const [replicaQueue, setReplicaQueue] = useState<Array<{speaker:"host"|"morty";text:string;audioPath?:string}>>([]);
