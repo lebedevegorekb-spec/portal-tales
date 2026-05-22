@@ -316,16 +316,19 @@ if (uiPhase === "playing" && (phase === "chars_reveal" || phase === "result_scre
   if (phase === "result_screen" || phase === "result_replicas") {
     const lastResult = gameState?.round_results?.[gameState.round_results.length - 1];
     const isTie = lastResult?.is_tie;
-    const teamWon = lastResult?.team_scored && !isTie;
-    const resultBg = isTie
+    const isJoke = (lastResult as any)?.is_joke;
+    const teamWon = lastResult?.team_scored && !isTie && !isJoke;
+    const resultBg = isJoke
+      ? (currentRound as any)?.result_joke_image || currentRound?.background_image
+      : isTie
       ? (currentRound as any)?.result_tie_image
       : teamWon
       ? (currentRound as any)?.result_success_image
       : (currentRound as any)?.result_fail_image || currentRound?.background_image;
-    const accentColor = isTie ? "#facc15" : teamWon ? "hsl(var(--portal))" : "hsl(var(--destructive))";
-    const glowColor = isTie ? "rgba(250,204,21,0.25)" : teamWon ? "rgba(0,255,128,0.2)" : "rgba(255,60,60,0.2)";
-    const resultLabel = isTie ? "Ничья!" : teamWon ? "Команда побеждает!" : "Саботажник побеждает!";
-    const resultEmoji = isTie ? "⚡" : teamWon ? "✶" : "☠";
+    const accentColor = isJoke ? "#f97316" : isTie ? "#facc15" : teamWon ? "hsl(var(--portal))" : "hsl(var(--destructive))";
+    const glowColor = isJoke ? "rgba(249,115,22,0.25)" : isTie ? "rgba(250,204,21,0.25)" : teamWon ? "rgba(0,255,128,0.2)" : "rgba(255,60,60,0.2)";
+    const resultLabel = isJoke ? "Ha-ha! Joke time!" : isTie ? "Ничья!" : teamWon ? "Команда побеждает!" : "Саботажник побеждает!";
+    const resultEmoji = isJoke ? "XD" : isTie ? "⚡" : teamWon ? "✶" : "☠";
     return (
       <div className="min-h-screen text-foreground relative overflow-hidden flex flex-col items-center justify-center">
         {isHost && <BackgroundImage imagePath={resultBg} />}
