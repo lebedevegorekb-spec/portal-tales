@@ -147,6 +147,20 @@ function RoundEditor({ round, index, onChange, scenarioId }: { round: Round; ind
                 currentUrl={(round as any).result_joke_image}
                 onUploaded={(p) => updateField("result_joke_image", p)}
                 onRemoved={() => updateField("result_joke_image", "")} />
+              <div className="mt-3 grid gap-2">
+                <p className="text-xs text-muted-foreground">Реплика Рика (шутка)</p>
+                <TextField label="Текст" value={round.options?.find((o:any)=>o.is_joke)?.joke_host_line??""} onChange={(v)=>{const opts=[...(round.options??[])];const ji=opts.findIndex((o:any)=>o.is_joke);if(ji>=0){opts[ji]={...opts[ji],joke_host_line:v};updateField("options",opts);}}} />
+                <MediaUpload scenarioId={scenarioId} path={"rounds/"+round.id+"/joke_host"} type="audio"
+                  currentUrl={round.options?.find((o:any)=>o.is_joke)?.joke_host_audio}
+                  onUploaded={(p)=>{const opts=[...(round.options??[])];const ji=opts.findIndex((o:any)=>o.is_joke);if(ji>=0){opts[ji]={...opts[ji],joke_host_audio:p};updateField("options",opts);}}}
+                  onRemoved={()=>{const opts=[...(round.options??[])];const ji=opts.findIndex((o:any)=>o.is_joke);if(ji>=0){opts[ji]={...opts[ji],joke_host_audio:""};updateField("options",opts);}}} />
+                <p className="text-xs text-muted-foreground">Реплика Морти (шутка)</p>
+                <TextField label="Текст" value={round.options?.find((o:any)=>o.is_joke)?.joke_morty_line??""} onChange={(v)=>{const opts=[...(round.options??[])];const ji=opts.findIndex((o:any)=>o.is_joke);if(ji>=0){opts[ji]={...opts[ji],joke_morty_line:v};updateField("options",opts);}}} />
+                <MediaUpload scenarioId={scenarioId} path={"rounds/"+round.id+"/joke_morty"} type="audio"
+                  currentUrl={round.options?.find((o:any)=>o.is_joke)?.joke_morty_audio}
+                  onUploaded={(p)=>{const opts=[...(round.options??[])];const ji=opts.findIndex((o:any)=>o.is_joke);if(ji>=0){opts[ji]={...opts[ji],joke_morty_audio:p};updateField("options",opts);}}}
+                  onRemoved={()=>{const opts=[...(round.options??[])];const ji=opts.findIndex((o:any)=>o.is_joke);if(ji>=0){opts[ji]={...opts[ji],joke_morty_audio:""};updateField("options",opts);}}} />
+              </div>
             </div>
           )}
           {fields.map((f) => (
