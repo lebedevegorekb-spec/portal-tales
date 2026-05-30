@@ -203,8 +203,8 @@ export default function RoundTest() {
   if (loading) return <div className="min-h-screen bg-background flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-portal" /></div>;
   if (!config) return <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground">No config</div>;
 
-  const accentColor = result?.is_tie ? "#facc15" : result?.team_scored ? "hsl(var(--portal))" : "hsl(var(--destructive))";
-  const resultText = result?.is_tie ? "Ничья!" : result?.team_scored ? "Команда!" : "Саботажник!";
+  const accentColor = result?.is_joke ? "#f59e0b" : result?.is_tie ? "#facc15" : result?.team_scored ? "hsl(var(--portal))" : "hsl(var(--destructive))";
+  const resultText = result?.is_joke ? "Шутка!" : result?.is_tie ? "Ничья!" : result?.team_scored ? "Команда!" : "Саботажник!";
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -297,8 +297,8 @@ export default function RoundTest() {
           {/* Основная зона */}
           <div className="flex-1 relative overflow-auto flex flex-col">
             <BackgroundImage imagePath={
+              result?.is_joke ? (currentRound as any)?.result_joke_image :
               result?.is_tie ? (currentRound as any)?.result_tie_image :
-              (result as any)?.is_joke ? (currentRound as any)?.result_joke_image :
               result?.team_scored ? (currentRound as any)?.result_success_image :
               result ? (currentRound as any)?.result_fail_image :
               currentRound.background_image
