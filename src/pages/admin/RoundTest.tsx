@@ -148,11 +148,23 @@ export default function RoundTest() {
     } else if (mech === "vote_saboteur") {
       const target = scenario === "team_wins" ? saboteurId : players.find(p => p.id !== saboteurId)?.id;
       players.filter(p => p.id !== saboteurId).forEach(p => newSubs.push(makeSubmission(p.id, currentRound.id, mech, { accused_player_id: target })));
-    } else if (mech === "quiz" || mech === "blitz") {
+    } else if (mech === "quiz") {
       const questions = (currentRound as any).questions ?? [];
       players.forEach(p => {
         const answers: Record<string,string> = {};
-        questions.forEach((q: any) => { answers[q.id] = scenario === "team_wins" ? q.correct_id : "wrong"; });
+        questions.forEach((q: any) => { answers[q.id] = scenario === "team_wins" ? q.correct_id : "wrong-answer"; });
+        newSubs.push(makeSubmission(p.id, currentRound.id, mech, { answers }));
+      });
+    } else if (mech === "blitz") {
+      const questions = (currentRound as any).questions ?? [];
+      players.forEach(p => {
+        const answers: Record<string,string> = {};
+        const isSab = p.id === saboteurId;
+        questions.forEach((q: any) => {
+          if (scenario === "team_wins") answers[q.id] = isSab ? "wrong-answer" : q.correct_id;
+          else if (scenario === "saboteur_wins") answers[q.id] = isSab ? q.correct_id : "wrong-answer";
+          else answers[q.id] = q.correct_id;
+        });
         newSubs.push(makeSubmission(p.id, currentRound.id, mech, { answers }));
       });
     } else if (mech === "guess_author") {

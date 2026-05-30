@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -33,13 +33,14 @@ type PartyGame = {
 };
 
 const ROUND_TEXT_FIELDS: Record<string, string[]> = {
-  joke_vote:     ["title","prompt","intro_host","intro_morty","success_host","success_morty","fail_host","fail_morty","tie_host","tie_morty"],
-  fork:          ["title","situation","hint","intro_host","intro_morty","success_host","success_morty","fail_host","fail_morty"],
-  guess_author:  ["title","prompt_prefix","intro_host","intro_morty","success_host","success_morty","fail_host","fail_morty"],
-  pitch:         ["title","situation","intro_host","intro_morty","success_host","success_morty","fail_host","fail_morty"],
-  blitz:         ["title","intro_host","intro_morty","success_host","success_morty","fail_host","fail_morty"],
-  quiz:          ["title","intro_host","intro_morty","success_host","success_morty","fail_host","fail_morty"],
-  vote_saboteur: ["title","intro_host","intro_morty","success_host","success_morty","fail_host","fail_morty"],
+  joke_vote:           ["title","prompt","intro_host","intro_morty","success_host","success_morty","fail_host","fail_morty","tie_host","tie_morty"],
+  fork:                ["title","situation","hint","intro_host","intro_morty","success_host","success_morty","fail_host","fail_morty","tie_host","tie_morty"],
+  guess_author:        ["title","prompt_prefix","intro_host","intro_morty","success_host","success_morty","fail_host","fail_morty","tie_host","tie_morty"],
+  pitch:               ["title","situation","intro_host","intro_morty","success_host","success_morty","fail_host","fail_morty","tie_host","tie_morty"],
+  blitz:               ["title","intro_host","intro_morty","success_host","success_morty","fail_host","fail_morty","tie_host","tie_morty"],
+  quiz:                ["title","intro_host","intro_morty","success_host","success_morty","fail_host","fail_morty","tie_host","tie_morty"],
+  vote_saboteur:       ["title","intro_host","intro_morty","success_host","success_morty","fail_host","fail_morty","tie_host","tie_morty"],
+  situation_deduction: ["title","situation_real","situation_fake","intro_host","intro_morty","success_host","success_morty","fail_host","fail_morty","tie_host","tie_morty"],
 };
 
 const FIELD_LABELS: Record<string, string> = {
