@@ -268,7 +268,7 @@ export default function RoundTest() {
       {tab === "rounds" && selectedIndex !== null && currentRound && (
         <div className="flex-1 flex overflow-hidden">
           {/* Основная зона */}
-          <div className="flex-1 relative overflow-auto">
+          <div className="flex-1 relative overflow-auto flex flex-col">
             <BackgroundImage imagePath={
               result?.is_tie ? (currentRound as any)?.result_tie_image :
               (result as any)?.is_joke ? (currentRound as any)?.result_joke_image :
@@ -280,7 +280,7 @@ export default function RoundTest() {
 
             {/* Экран результата */}
             {(phase === "result_replicas" || phase === "result_screen") && result && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 p-8 z-10">
+              <div className="flex-1 flex flex-col items-center justify-center gap-5 p-8 z-10 relative">
                 <div className="w-full max-w-sm rounded-2xl p-7 text-center backdrop-blur-md"
                   style={{ background: "rgba(9,13,21,0.8)", border: "1px solid " + accentColor + "40", boxShadow: "0 0 30px " + accentColor + "20" }}>
                   <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Итог раунда {(selectedIndex ?? 0) + 1}</p>
