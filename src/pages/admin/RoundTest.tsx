@@ -116,7 +116,10 @@ export default function RoundTest() {
     setPhase(queue.length > 0 ? "result_replicas" : "result_screen");
   };
 
-  const handleAdvance = async () => { if (currentRound) runAdvance(currentRound, submissions); };
+  const handleAdvance = async () => {
+    if (!currentRound) return;
+    setSubmissions(prev => { runAdvance(currentRound, prev); return prev; });
+  };
 
   const handleAutoSubmit = (scenario: "team_wins" | "saboteur_wins" | "tie") => {
     if (!currentRound) return;
@@ -303,7 +306,7 @@ export default function RoundTest() {
 
             {/* Игровой экран */}
             {phase === "playing" && (
-              <RoundRouter round={currentRound} isHost={true} runId="test-run" roomId="test-room" playerId="host" isSaboteur={false} submissions={submissions} playerCount={players.length} players={players} onSubmit={handleSubmit} onAdvance={handleAdvance} />
+              <RoundRouter round={currentRound} isHost={true} runId="test-run" roomId="test-room" playerId="host" isSaboteur={false} submissions={submissions} playerCount={1} players={players} onSubmit={handleSubmit} onAdvance={handleAdvance} />
             )}
           </div>
 
@@ -325,6 +328,7 @@ export default function RoundTest() {
                 <button onClick={() => handleAutoSubmit("saboteur_wins")} className="text-xs px-3 py-2 rounded-lg border border-destructive/40 text-destructive hover:bg-destructive/10 transition-colors">☠ Саботажник побеждает</button>
                 <button onClick={() => handleAutoSubmit("tie")} className="text-xs px-3 py-2 rounded-lg border border-yellow-500/40 text-yellow-500 hover:bg-yellow-500/10 transition-colors">⚡ Ничья / Шутка</button>
               </div>
+              <button onClick={() => handleAutoSubmit("team_wins")} className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:border-muted-foreground w-full mt-1">Только заполнить (без итога)</button>
               <p className="text-xs text-muted-foreground mt-2">Сабмитов: {submissions.length}</p>
             </div>
 
