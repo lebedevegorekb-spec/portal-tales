@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+﻿import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -121,7 +121,7 @@ export default function RoundTest() {
     setSubmissions(prev => { runAdvance(currentRound, prev); return prev; });
   };
 
-  const handleAutoSubmit = (scenario: "team_wins" | "saboteur_wins" | "tie") => {
+  const handleAutoSubmit = (scenario: "team_wins" | "saboteur_wins" | "tie", triggerAdvance = true) => {
     if (!currentRound) return;
     const newSubs: RoundSubmission[] = [];
     const mech = currentRound.mechanic;
@@ -170,7 +170,7 @@ export default function RoundTest() {
       players.forEach(p => newSubs.push(makeSubmission(p.id, currentRound.id, mech, { answer: "auto" })));
     }
     setSubmissions(newSubs);
-    setTimeout(() => runAdvance(currentRound, newSubs), 300);
+    if (triggerAdvance) setTimeout(() => runAdvance(currentRound, newSubs), 300);
   };
 
   if (loading) return <div className="min-h-screen bg-background flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-portal" /></div>;
@@ -306,12 +306,14 @@ export default function RoundTest() {
 
             {/* Игровой экран */}
             {phase === "playing" && (
-              <RoundRouter round={currentRound} isHost={true} runId="test-run" roomId="test-room" playerId="host" isSaboteur={false} submissions={submissions} playerCount={players.length} players={players} onSubmit={handleSubmit} onAdvance={handleAdvance} />
+              <div className="absolute inset-0 overflow-auto z-10">
+                <RoundRouter round={currentRound} isHost={true} runId="test-run" roomId="test-room" playerId="host" isSaboteur={false} submissions={submissions} playerCount={players.length} players={players} onSubmit={handleSubmit} onAdvance={handleAdvance} />
+              </div>
             )}
           </div>
 
           {/* Боковая панель */}
-          <div className="w-64 border-l border-border bg-background flex flex-col shrink-0">
+          <div className="w-64 border-l border-border bg-background flex flex-col shrink-0 relative z-20">
             {/* Навигация */}
             <div className="p-3 border-b border-border flex items-center justify-between">
               <button onClick={() => { setSelectedIndex(null); resetRound(); }} className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-xs">
@@ -328,7 +330,7 @@ export default function RoundTest() {
                 <button onClick={() => handleAutoSubmit("saboteur_wins")} className="text-xs px-3 py-2 rounded-lg border border-destructive/40 text-destructive hover:bg-destructive/10 transition-colors">☠ Саботажник побеждает</button>
                 <button onClick={() => handleAutoSubmit("tie")} className="text-xs px-3 py-2 rounded-lg border border-yellow-500/40 text-yellow-500 hover:bg-yellow-500/10 transition-colors">⚡ Ничья / Шутка</button>
               </div>
-              <button onClick={() => handleAutoSubmit("team_wins")} className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:border-muted-foreground w-full mt-1">Только заполнить (без итога)</button>
+              <button onClick={() => handleAutoSubmit("team_wins", false)} className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:border-muted-foreground w-full mt-1">Только заполнить (без итога)</button>
               <p className="text-xs text-muted-foreground mt-1.5">Сабмитов: {submissions.length}</p>
               {phase === "playing" && submissions.length > 0 && (
                 <button onClick={handleAdvance} className="text-xs px-3 py-2 rounded-lg border border-white/20 text-white hover:bg-white/10 w-full mt-1.5 transition-colors">▶ Подвести итог</button>
@@ -354,7 +356,7 @@ export default function RoundTest() {
             <div className="p-3 flex-1 overflow-hidden">
               <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Вид игрока</p>
               <div className="rounded-xl overflow-hidden border border-border" style={{ height: 280 }}>
-                <div style={{ transform: "scale(0.5)", transformOrigin: "top left", width: "200%", height: "200%" }}>
+                <div style={{ transform: "scale(0.5)", transformOrigin: "top left", width: "200%", height: "200%", pointerEvents: "none" }}>
                   <RoundRouter round={currentRound} isHost={false} runId="test-run" roomId="test-room" playerId={viewAs} isSaboteur={viewAs === saboteurId} submissions={submissions} playerCount={players.length} players={players} onSubmit={handleSubmit} />
                 </div>
               </div>
