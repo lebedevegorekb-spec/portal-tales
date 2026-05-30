@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from "react";
+﻿p = "src/pages/admin/RoundTest.tsx"
+content = '''import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -387,3 +388,6 @@ export default function RoundTest() {
     </div>
   );
 }
+'''
+open(p, 'w', encoding='utf-8', newline='\n').write(content)
+print('ok', len(content), 'chars')
