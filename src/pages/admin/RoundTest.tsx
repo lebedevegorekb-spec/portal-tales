@@ -306,7 +306,7 @@ export default function RoundTest() {
 
             {/* Игровой экран */}
             {phase === "playing" && (
-              <RoundRouter round={currentRound} isHost={true} runId="test-run" roomId="test-room" playerId="host" isSaboteur={false} submissions={submissions} playerCount={1} players={players} onSubmit={handleSubmit} onAdvance={handleAdvance} />
+              <RoundRouter round={currentRound} isHost={true} runId="test-run" roomId="test-room" playerId="host" isSaboteur={false} submissions={submissions} playerCount={players.length} players={players} onSubmit={handleSubmit} onAdvance={handleAdvance} />
             )}
           </div>
 
@@ -329,7 +329,10 @@ export default function RoundTest() {
                 <button onClick={() => handleAutoSubmit("tie")} className="text-xs px-3 py-2 rounded-lg border border-yellow-500/40 text-yellow-500 hover:bg-yellow-500/10 transition-colors">⚡ Ничья / Шутка</button>
               </div>
               <button onClick={() => handleAutoSubmit("team_wins")} className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:border-muted-foreground w-full mt-1">Только заполнить (без итога)</button>
-              <p className="text-xs text-muted-foreground mt-2">Сабмитов: {submissions.length}</p>
+              <p className="text-xs text-muted-foreground mt-1.5">Сабмитов: {submissions.length}</p>
+              {phase === "playing" && submissions.length > 0 && (
+                <button onClick={handleAdvance} className="text-xs px-3 py-2 rounded-lg border border-white/20 text-white hover:bg-white/10 w-full mt-1.5 transition-colors">▶ Подвести итог</button>
+              )}
             </div>
 
             {/* Игроки */}
