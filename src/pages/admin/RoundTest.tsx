@@ -159,13 +159,28 @@ export default function RoundTest() {
       players.forEach(p => newSubs.push(makeSubmission(p.id, currentRound.id, mech, { completion: "test-" + p.id })));
       players.forEach(p => {
         const guesses: Record<string,string> = {};
-        players.filter(x => x.id !== p.id).forEach(x => { guesses[x.id] = scenario === "team_wins" ? saboteurId : x.id; });
+        const others = players.filter(x => x.id !== p.id);
+        others.forEach(x => {
+          if (scenario === "team_wins") guesses[x.id] = saboteurId;
+          else if (scenario === "saboteur_wins") guesses[x.id] = others.find(o => o.id !== saboteurId)?.id ?? x.id;
+          else guesses[x.id] = x.id;
+        });
         newSubs.push(makeSubmission(p.id, currentRound.id, mech, { guesses }));
       });
     } else if (mech === "pitch") {
       const sabIdx = players.findIndex(p => p.id === saboteurId);
+      const nonSabIdx = sabIdx === 0 ? 1 : 0;
       players.forEach((p, i) => newSubs.push(makeSubmission(p.id, currentRound.id, mech, { my_option_index: i })));
-      players.forEach(p => newSubs.push(makeSubmission(p.id, currentRound.id, mech, { vote_for_option_index: scenario === "saboteur_wins" ? sabIdx : (sabIdx === 0 ? 1 : 0) })));
+      if (scenario === "tie") {
+        players.forEach((p, i) => newSubs.push(makeSubmission(p.id, currentRound.id, mech, { vote_for_option_index: i % 2 === 0 ? sabIdx : nonSabIdx })));
+      } else {
+        players.forEach(p => newSubs.push(makeSubmission(p.id, currentRound.id, mech, { vote_for_option_index: scenario === "saboteur_wins" ? sabIdx : nonSabIdx })));
+      }
+    } else if (mech === "situation_deduction") {
+      const correctId = (currentRound as any).correct_option_id;
+      const wrongOpt = (currentRound as any).options?.find((o: any) => o.id !== correctId);
+      const optId = scenario === "team_wins" ? correctId : wrongOpt?.id ?? correctId;
+      players.forEach(p => newSubs.push(makeSubmission(p.id, currentRound.id, mech, { option_id: optId })));
     } else {
       players.forEach(p => newSubs.push(makeSubmission(p.id, currentRound.id, mech, { answer: "auto" })));
     }
