@@ -1,4 +1,4 @@
-import type { RoundConfig, RoundSubmission, MechanicType } from "@/mechanics/types";
+﻿new_content = """import type { RoundConfig, RoundSubmission, MechanicType } from "@/mechanics/types";
 export interface TestPlayer {
   id: string;
   display_name: string;
@@ -205,3 +205,6 @@ export function calcRoundResult(round: RoundConfig, submissions: RoundSubmission
 
   return { team_scored: true, saboteur_scored: false, team_points: 1, saboteur_points: 0 };
 }
+"""
+open("C:/Users/lebed/portal-tales/src/utils/roundCalc.ts", "w", encoding="utf-8", newline="\n").write(new_content)
+print("done")

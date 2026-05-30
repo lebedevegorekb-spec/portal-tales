@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+﻿import urllib.request, os
+
+blitz = r"""import { useState, useEffect } from "react";
 import type { MechanicViewProps, BlitzRound } from "@/mechanics/types";
 export function BlitzHost({ round, submissions, playerCount, onAdvance }: MechanicViewProps<BlitzRound>) {
   const [currentQ, setCurrentQ] = useState(0);
@@ -88,3 +90,7 @@ export function BlitzHost({ round, submissions, playerCount, onAdvance }: Mechan
     </div>
   );
 }
+"""
+
+open("C:/Users/lebed/portal-tales/src/mechanics/Blitz/HostView.tsx", "w", encoding="utf-8", newline="\n").write(blitz)
+print("blitz done")
