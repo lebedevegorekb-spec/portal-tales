@@ -121,7 +121,7 @@ export default function RoundTest() {
     setSubmissions(prev => { runAdvance(currentRound, prev); return prev; });
   };
 
-  const handleAutoSubmit = (scenario: "team_wins" | "saboteur_wins" | "tie", triggerAdvance = true) => {
+  const handleAutoSubmit = (scenario: "team_wins" | "saboteur_wins" | "tie" | "joke", triggerAdvance = true) => {
     if (!currentRound) return;
     const newSubs: RoundSubmission[] = [];
     const mech = currentRound.mechanic;
@@ -129,7 +129,13 @@ export default function RoundTest() {
       const correct = (currentRound as any).options?.find((o: any) => o.is_correct);
       const joke = (currentRound as any).options?.find((o: any) => o.is_joke);
       const wrong = (currentRound as any).options?.find((o: any) => !o.is_correct && !o.is_joke);
-      const optId = scenario === "team_wins" ? correct?.id : scenario === "tie" ? joke?.id : wrong?.id;
+      const allOpts = (currentRound as any).options ?? [];
+      const nonCorrectNonJoke = allOpts.filter((o: any) => !o.is_correct && !o.is_joke);
+      let optId: string | undefined;
+      if (scenario === "team_wins") optId = correct?.id;
+      else if (scenario === "joke") optId = joke?.id;
+      else if (scenario === "tie") { players.slice(0, Math.ceil(players.length/2)).forEach(p => newSubs.push(makeSubmission(p.id, currentRound.id, mech, { option_id: correct?.id }))); players.slice(Math.ceil(players.length/2)).forEach(p => newSubs.push(makeSubmission(p.id, currentRound.id, mech, { option_id: wrong?.id ?? correct?.id }))); setSubmissions(newSubs); if (triggerAdvance) setTimeout(() => runAdvance(currentRound, newSubs), 300); return; }
+      else optId = wrong?.id;
       players.forEach(p => newSubs.push(makeSubmission(p.id, currentRound.id, mech, { option_id: optId })));
     } else if (mech === "joke_vote") {
       const answers = players.map(p => makeSubmission(p.id, currentRound.id, mech, { answer: "joke-" + p.id }));
@@ -355,7 +361,12 @@ export default function RoundTest() {
               <div className="grid gap-1.5">
                 <button onClick={() => handleAutoSubmit("team_wins")} className="text-xs px-3 py-2 rounded-lg border border-acid/40 text-acid hover:bg-acid/10 transition-colors">✦ Команда побеждает</button>
                 <button onClick={() => handleAutoSubmit("saboteur_wins")} className="text-xs px-3 py-2 rounded-lg border border-destructive/40 text-destructive hover:bg-destructive/10 transition-colors">☠ Саботажник побеждает</button>
-                <button onClick={() => handleAutoSubmit("tie")} className="text-xs px-3 py-2 rounded-lg border border-yellow-500/40 text-yellow-500 hover:bg-yellow-500/10 transition-colors">⚡ Ничья / Шутка</button>
+                {currentRound?.mechanic === "fork" ? (<>
+                  <button onClick={() => handleAutoSubmit("joke")} className="text-xs px-3 py-2 rounded-lg border border-yellow-500/40 text-yellow-500 hover:bg-yellow-500/10 transition-colors">🃏 Шутка</button>
+                  <button onClick={() => handleAutoSubmit("tie")} className="text-xs px-3 py-2 rounded-lg border border-yellow-500/40 text-yellow-500 hover:bg-yellow-500/10 transition-colors">⚡ Ничья</button>
+                </>) : (
+                  {currentRound?.mechanic === "fork" ? (<><button onClick={() => handleAutoSubmit("joke")} className="text-xs px-3 py-2 rounded-lg border border-yellow-500/40 text-yellow-500 hover:bg-yellow-500/10 transition-colors">🃏 Шутка</button><button onClick={() => handleAutoSubmit("tie")} className="text-xs px-3 py-2 rounded-lg border border-yellow-500/40 text-yellow-500 hover:bg-yellow-500/10 transition-colors">⚡ Ничья</button></>) : (<button onClick={() => handleAutoSubmit("tie")} className="text-xs px-3 py-2 rounded-lg border border-yellow-500/40 text-yellow-500 hover:bg-yellow-500/10 transition-colors">⚡ Ничья / Шутка</button>)}
+                )}
               </div>
               <button onClick={() => handleAutoSubmit("team_wins", false)} className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:border-muted-foreground w-full mt-1">Только заполнить (без итога)</button>
               <p className="text-xs text-muted-foreground mt-1.5">Сабмитов: {submissions.length}</p>

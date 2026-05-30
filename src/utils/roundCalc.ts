@@ -1,4 +1,4 @@
-import type { RoundConfig, RoundSubmission, MechanicType } from "@/mechanics/types";
+﻿import type { RoundConfig, RoundSubmission, MechanicType } from "@/mechanics/types";
 export interface TestPlayer {
   id: string;
   display_name: string;
@@ -64,7 +64,10 @@ export function calcRoundResult(round: RoundConfig, submissions: RoundSubmission
       const opt = s.payload?.option_id;
       if (opt) votes[opt] = (votes[opt] ?? 0) + 1;
     }
-    const winnerId = Object.entries(votes).sort((a, b) => b[1] - a[1])[0]?.[0];
+    const sorted = Object.entries(votes).sort((a, b) => b[1] - a[1]);
+    const isTie = sorted.length > 1 && sorted[0]?.[1] === sorted[1]?.[1];
+    if (isTie) return { team_scored: false, saboteur_scored: false, team_points: 0, saboteur_points: 0, is_tie: true };
+    const winnerId = sorted[0]?.[0];
     const correctOption = (round as any).options?.find((o: any) => o.is_correct);
     const jokeOption = (round as any).options?.find((o: any) => o.is_joke);
     const isJoke = winnerId === jokeOption?.id;
