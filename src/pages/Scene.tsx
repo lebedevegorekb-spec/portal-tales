@@ -17,6 +17,25 @@ import { ComicFrameView } from "@/components/ComicFrameView";
 
 type ScenePhase = "loading" | "comic_intro" | "intro" | "playing" | "result_replicas" | "result_screen";
 
+function AutoAdvanceButton({ onAdvance }: { onAdvance: () => Promise<void> }) {
+  const [seconds, setSeconds] = useState(5);
+  useEffect(() => {
+    if (seconds <= 0) { onAdvance(); return; }
+    const t = setTimeout(() => setSeconds(s => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [seconds]);
+  return (
+    <button
+      onClick={onAdvance}
+      className="w-full h-14 bg-portal text-portal-foreground rounded-xl font-display text-xl hover:bg-portal/90 transition-all hover:scale-105 active:scale-95 relative overflow-hidden"
+      style={{boxShadow: "0 0 20px hsl(var(--portal)/0.4)"}}
+    >
+      <div className="absolute inset-0 bg-black/20 transition-all duration-1000" style={{width: `${(seconds/5)*100}%`, right: 0, left: "auto"}} />
+      <span className="relative">Следующий раунд → ({seconds})</span>
+    </button>
+  );
+}
+
 const Scene = () => {
   const { runId } = useParams<{ runId: string }>();
   const { user } = useAuth();
@@ -421,18 +440,12 @@ if (uiPhase === "playing" && (phase === "chars_reveal" || phase === "result_scre
             </div>
           </div>
           {isHost ? (
-            <button
-              onClick={async () => {
-                if (!runId || !roomId) return;
-                const { supabase: sb } = await import("@/integrations/supabase/client").then(m => ({ supabase: m.supabase }));
-                await sb.functions.invoke("round-result-ack", { body: { run_id: runId, room_id: roomId } });
-                setPhase("playing");
-              }}
-              className="w-full h-14 bg-portal text-portal-foreground rounded-xl font-display text-xl hover:bg-portal/90 transition-all hover:scale-105 active:scale-95"
-              style={{boxShadow: "0 0 20px hsl(var(--portal)/0.4)"}}
-            >
-              {"Следующий раунд →"}
-            </button>
+            <AutoAdvanceButton onAdvance={async () => {
+              if (!runId || !roomId) return;
+              const { supabase: sb } = await import("@/integrations/supabase/client").then(m => ({ supabase: m.supabase }));
+              await sb.functions.invoke("round-result-ack", { body: { run_id: runId, room_id: roomId } });
+              setPhase("playing");
+            }} />
           ) : (
             <div className="flex items-center gap-3 text-muted-foreground">
               <Loader2 className="w-5 h-5 animate-spin text-portal" />
