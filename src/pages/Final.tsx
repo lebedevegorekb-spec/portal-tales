@@ -320,6 +320,7 @@ const Final = () => {
               <h2 className="text-3xl font-display font-bold mb-3">Подпишись на Telegram</h2>
               <p className="text-muted-foreground mb-6 max-w-md mx-auto">Новые сценарии, обновления и анонсы — первыми в канале.</p>
               
+              <a
                 href="https://t.me/portal_quest"
                 target="_blank"
                 rel="noopener noreferrer"
