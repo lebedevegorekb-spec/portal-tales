@@ -301,10 +301,10 @@ const Index = () => {
               Контакты
             </div>
             <a
-              href="mailto:hi@portal-quest.app"
+              href="mailto:lebedevegor.ekb@mail.ru"
               className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-portal transition-colors"
             >
-              <Mail className="h-4 w-4" /> hi@portal-quest.app
+              <Mail className="h-4 w-4" /> lebedevegor.ekb@mail.ru
             </a>
           </div>
           <div>
@@ -313,15 +313,17 @@ const Index = () => {
             </div>
             <div className="flex gap-3">
               <a
-                href="#"
+                href="https://t.me/portal_quest"
+                target="_blank" rel="noopener noreferrer"
                 aria-label="Telegram"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-portal/30 text-muted-foreground hover:text-portal hover:border-portal/60 transition-colors"
               >
                 <Send className="h-4 w-4" />
               </a>
               <a
-                href="#"
-                aria-label="Discord"
+                href="https://www.instagram.com/easy_fitness_bot?utm_source=qr"
+                target="_blank" rel="noopener noreferrer"
+                aria-label="Instagram"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-portal/30 text-muted-foreground hover:text-portal hover:border-portal/60 transition-colors"
               >
                 <MessageCircle className="h-4 w-4" />
